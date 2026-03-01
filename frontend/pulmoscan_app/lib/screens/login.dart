@@ -4,7 +4,7 @@ import 'package:pulmoscan_app/services/auth_service.dart';
 import 'package:pulmoscan_app/screens/register.dart';
 
 class LoginPageExact extends StatefulWidget {
-  final VoidCallback onLogin;
+   final Function(BuildContext) onLogin;
 
   const LoginPageExact({super.key, required this.onLogin});
 
@@ -291,7 +291,7 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                   onRegisterComplete: (success) {
                                     if (success) {
                                       Navigator.pop(context);
-                                      widget.onLogin();
+                                      widget.onLogin(context);
                                     }
                                   },
                                 ),
@@ -409,7 +409,7 @@ class _LoginPageExactState extends State<LoginPageExact> {
       );
 
       // successful login -> call parent callback to navigate to dashboard
-      widget.onLogin();
+      widget.onLogin(context);
     } catch (e) {
       final err = e.toString();
       if (err.contains('Utilisateur non trouvé') || err.contains('Mot de passe incorrect')) {
