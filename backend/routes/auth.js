@@ -1,90 +1,61 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
+const router  = require('express').Router();
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
+const pool    = require('../db');
 
-const router = express.Router();
-exports.router = router;
-const User = require("../models/User");
+// POST /api/register
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
 
-const pool = require("../db");
-
-
-
-
-// Simuler une base de données (temporaire)
-const users = [];
-
-// REGISTER
-router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const exists = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    if (exists.rows.length)
+      return res.status(409).json({ message: 'Email déjà utilisé' });
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Champs manquants" });
-    }
-
-    const userExists = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
+    const hash = await bcrypt.hash(password, 10);
+    const { rows } = await pool.query(
+      'INSERT INTO users (name, email, password) VALUES ($1,$2,$3) RETURNING id, name, email',
+      [name, email, hash]
     );
-
-    if (userExists.rows.length > 0) {
-      return res.status(400).json({ message: "Email déjà utilisé" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await pool.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-      [name, email, hashedPassword]
-    );
-
-    res.status(201).json({ message: "Utilisateur créé avec succès" });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
+    res.status(201).json({ message: 'Compte créé avec succès', user: rows[0] });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
+// POST /api/login
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ message: 'Email et mot de passe requis' });
 
-router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { rows } = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    const user = rows[0];
+    if (!user)
+      return res.status(401).json({ message: 'Utilisateur non trouvé' });
 
-    const result = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok)
+      return res.status(401).json({ message: 'Mot de passe incorrect' });
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
     );
-
-    if (result.rows.length === 0) {
-      return res.status(400).json({ message: "Utilisateur non trouvé" });
-    }
-
-    const user = result.rows[0];
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Mot de passe incorrect" });
-    }
-
     res.json({
-      message: "Connexion réussie",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      message: 'Connexion réussie',
+      token,
+      user: { id: user.id, name: user.name, email: user.email },
     });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 });
-
-
-
 
 module.exports = router;
