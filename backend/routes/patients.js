@@ -4,10 +4,21 @@ const auth   = require('../middleware/auth');
 
 router.use(auth);
 
-// GET /api/patients
+// GET /api/patients?search=nom
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM patients ORDER BY date_creation DESC');
+    const { search } = req.query;
+    let query  = 'SELECT * FROM patients';
+    let params = [];
+
+    if (search) {
+      query += ' WHERE nom ILIKE $1 OR email ILIKE $1 OR cin ILIKE $1';
+      params = [`%${search}%`];
+    }
+
+    query += ' ORDER BY date_creation DESC';
+
+    const { rows } = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
     console.error(err.message);
