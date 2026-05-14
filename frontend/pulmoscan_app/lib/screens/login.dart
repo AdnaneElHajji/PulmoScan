@@ -365,6 +365,7 @@ class _LoginPageExactState extends State<LoginPageExact> {
         _emailController.text.trim(),
         _passwordController.text,
       );
+      if (!mounted) return;
       widget.onLogin(context);
     } catch (e) {
       setState(() {

@@ -267,7 +267,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -296,7 +296,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0059FF).withOpacity(0.1),
+                  color: const Color(0xFF0059FF).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(26),
                 ),
                 child: const Icon(
@@ -352,7 +352,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: couleur.withOpacity(0.1),
+                      color: couleur.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(

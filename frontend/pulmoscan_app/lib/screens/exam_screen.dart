@@ -25,7 +25,6 @@ class _ExamScreenState extends State<ExamScreen> {
   List<Patient> _patients = [];
   Patient? _patientSelectionne;
   File? _imageSelectionnee;
-  bool _isLoading = false;
   bool _isAnalyzing = false;
 
   @override
@@ -270,7 +269,7 @@ class _ExamScreenState extends State<ExamScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _lancerAnalyse,
+                      onPressed: _isAnalyzing ? null : _lancerAnalyse,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0059FF),
                         foregroundColor: Colors.white,

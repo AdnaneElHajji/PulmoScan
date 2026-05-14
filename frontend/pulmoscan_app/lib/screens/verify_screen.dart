@@ -73,7 +73,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             backgroundColor: Color(0xFF0059FF),
           ),
         );
-        for (var c in _controllers) c.clear();
+        for (var c in _controllers) { c.clear(); }
         _focusNodes[0].requestFocus();
       }
     } catch (e) {
@@ -318,8 +318,8 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   @override
   void dispose() {
-    for (var c in _controllers) c.dispose();
-    for (var f in _focusNodes) f.dispose();
+    for (var c in _controllers) { c.dispose(); }
+    for (var f in _focusNodes) { f.dispose(); }
     super.dispose();
   }
 }

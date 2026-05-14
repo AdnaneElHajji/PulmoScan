@@ -180,7 +180,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
-                              value: _selectedRole.isEmpty
+                              initialValue: _selectedRole.isEmpty
                                   ? null
                                   : _selectedRole,
                               hint: const Text(

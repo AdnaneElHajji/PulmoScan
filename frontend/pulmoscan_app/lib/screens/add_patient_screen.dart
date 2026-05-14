@@ -477,7 +477,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
             border: Border.all(color: const Color(0xFFD1D5DB)),
           ),
           child: DropdownButtonFormField<String>(
-            value: _genre,
+            initialValue: _genre,
             decoration: const InputDecoration(
               prefixIcon: Icon(
                 Icons.wc_outlined,
