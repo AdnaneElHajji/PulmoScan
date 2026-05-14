@@ -45,4 +45,21 @@ class Result {
       dateAnalyse: DateTime.parse(map['dateAnalyse']),
     );
   }
+
+  // Crée un Result depuis une réponse JSON du backend API
+  // La confidence vient en 0-1 du backend → convertie en 0-100 pour l'affichage
+  factory Result.fromJson(Map<String, dynamic> json) {
+    return Result(
+      id: json['id'],
+      examId: json['exam_id'] is int
+          ? json['exam_id']
+          : int.tryParse(json['exam_id'].toString()) ?? 0,
+      diagnostic: json['diagnostic'] ?? '',
+      confidence: ((json['confidence'] ?? 0) * 100).toDouble(),
+      severite: json['severite'] ?? 'faible',
+      details: json['details']?.toString() ?? '',
+      dateAnalyse:
+          DateTime.tryParse(json['date_analyse'] ?? '') ?? DateTime.now(),
+    );
+  }
 }

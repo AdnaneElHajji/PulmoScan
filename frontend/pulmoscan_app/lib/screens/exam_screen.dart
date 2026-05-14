@@ -4,9 +4,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/exam.dart';
 import '../models/patient.dart';
-import '../services/database_service.dart';
+import '../services/api_service.dart';
 import 'results_screen.dart';
 
 class ExamScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class ExamScreen extends StatefulWidget {
 }
 
 class _ExamScreenState extends State<ExamScreen> {
-  final DatabaseService _db = DatabaseService();
+  final ApiService _api = ApiService();
   final _notesController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
@@ -40,8 +39,12 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   Future<void> _chargerPatients() async {
-    final patients = await _db.getTousLesPatients();
-    setState(() => _patients = patients);
+    try {
+      final data = await _api.get('/patients');
+      setState(() => _patients = (data as List)
+          .map((e) => Patient.fromJson(e as Map<String, dynamic>))
+          .toList());
+    } catch (_) {}
   }
 
   // Ouvre la galerie pour choisir une image
@@ -99,7 +102,7 @@ class _ExamScreenState extends State<ExamScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0059FF).withOpacity(0.1),
+                        color: const Color(0xFF0059FF).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Column(
@@ -127,7 +130,7 @@ class _ExamScreenState extends State<ExamScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF388E3C).withOpacity(0.1),
+                        color: const Color(0xFF388E3C).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Column(
@@ -180,23 +183,20 @@ class _ExamScreenState extends State<ExamScreen> {
     setState(() => _isAnalyzing = true);
 
     try {
-      // Enregistre l'examen dans SQLite
-      final exam = Exam(
-        patientId: _patientSelectionne!.id!,
-        imagePath: _imageSelectionnee!.path,
-        notes: _notesController.text.trim(),
-        dateExamen: DateTime.now(),
-        statut: 'en_attente',
-      );
+      // Enregistre l'examen dans le backend
+      final examData = await _api.post('/exams', {
+        'patient_id': _patientSelectionne!.id,
+        'image_path': _imageSelectionnee!.path,
+        'notes': _notesController.text.trim(),
+        'statut': 'en_attente',
+      });
+      final examId = examData['id'] as int;
 
-      final examId = await _db.ajouterExamen(exam);
-
-      // Simule un temps d'analyse IA (1-3 secondes)
+      // Simule un temps d'analyse IA
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
         setState(() => _isAnalyzing = false);
-        // Navigue vers l'écran de résultats
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -313,7 +313,7 @@ class _ExamScreenState extends State<ExamScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: const Color(0xFF0059FF).withOpacity(0.1),
+              color: const Color(0xFF0059FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(50),
             ),
             child: const Padding(
@@ -467,7 +467,7 @@ class _ExamScreenState extends State<ExamScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(

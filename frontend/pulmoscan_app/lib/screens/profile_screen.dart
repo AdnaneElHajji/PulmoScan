@@ -1,12 +1,52 @@
-// lib/screens/profile_screen.dart
-// Écran profil du médecin - basé sur le design Figma
-
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
 
   const ProfileScreen({super.key, required this.onLogout});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ApiService _api = ApiService();
+  String _name = '';
+  String _email = '';
+  String _role = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await _api.getUser();
+    if (mounted) {
+      setState(() {
+        _name = user['name'] ?? '';
+        _email = user['email'] ?? '';
+        _role = _formatRole(user['role'] ?? '');
+      });
+    }
+  }
+
+  String _formatRole(String role) {
+    const labels = {
+      'MEDECIN_GENERALISTE': 'Médecin généraliste',
+      'PNEUMOLOGUE': 'Pneumologue',
+      'RADIOLOGUE': 'Radiologue',
+      'URGENTISTE': 'Urgentiste',
+      'INTERNISTE': 'Interniste',
+      'AUTRE': 'Médecin',
+      'medecin': 'Médecin',
+      '': 'Médecin',
+    };
+    return labels[role] ?? role;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,20 +68,11 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ── Carte profil ──
             _buildCarteProfil(),
             const SizedBox(height: 16),
-
-            // ── Paramètres ──
             _buildSection(
               titre: 'Paramètres',
               items: [
-                _buildItem(
-                  icone: Icons.edit_outlined,
-                  titre: 'Modifier le profil',
-                  sousTitre: 'Mettre à jour vos informations',
-                  onTap: () => _afficherBientot(context),
-                ),
                 _buildItem(
                   icone: Icons.lock_outlined,
                   titre: 'Changer le mot de passe',
@@ -57,26 +88,9 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-
-            // ── À propos ──
             _buildSection(
               titre: 'À propos',
               items: [
-                _buildItem(
-                  icone: Icons.help_outline,
-                  titre: 'Aide et support',
-                  onTap: () => _afficherBientot(context),
-                ),
-                _buildItem(
-                  icone: Icons.description_outlined,
-                  titre: 'Conditions d\'utilisation',
-                  onTap: () => _afficherBientot(context),
-                ),
-                _buildItem(
-                  icone: Icons.privacy_tip_outlined,
-                  titre: 'Politique de confidentialité',
-                  onTap: () => _afficherBientot(context),
-                ),
                 _buildItem(
                   icone: Icons.info_outline,
                   titre: 'Version de l\'application',
@@ -87,8 +101,6 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-
-            // ── Bouton déconnexion ──
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -124,8 +136,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Carte avec photo et infos du médecin
   Widget _buildCarteProfil() {
+    final initials = _name.isNotEmpty
+        ? _name.trim().split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase()
+        : '?';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -135,68 +150,40 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Avatar
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF0059FF).withOpacity(0.1),
+              color: const Color(0xFF0059FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(40),
             ),
-            child: const Icon(
-              Icons.person,
-              size: 44,
-              color: Color(0xFF0059FF),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0059FF),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Dr. Amina Benkirane',
-            style: TextStyle(
+          Text(
+            _name.isEmpty ? 'Chargement...' : _name,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Pneumologue',
-            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+          Text(
+            _role,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 16),
-          // Infos rapides
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoRapide(
-                  icone: Icons.email_outlined,
-                  valeur: 'a.benkirane@hopital.ma',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoRapide(
-                  icone: Icons.local_hospital_outlined,
-                  valeur: 'CHU Ibn Rochd, Casablanca',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoRapide(
-                  icone: Icons.calendar_today_outlined,
-                  valeur: 'Membre depuis 2020',
-                ),
-              ),
-            ],
-          ),
+          _buildInfoRapide(icone: Icons.email_outlined, valeur: _email),
         ],
       ),
     );
@@ -204,6 +191,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildInfoRapide({required IconData icone, required String valeur}) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
@@ -215,11 +203,8 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              valeur,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF374151),
-              ),
+              valeur.isEmpty ? '—' : valeur,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF374151)),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -228,11 +213,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Section avec titre et liste d'items
-  Widget _buildSection({
-    required String titre,
-    required List<Widget> items,
-  }) {
+  Widget _buildSection({required String titre, required List<Widget> items}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -287,31 +268,21 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    titre,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  if (sousTitre != null)
-                    Text(
-                      sousTitre,
+                  Text(titre,
                       style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                    ),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF111827))),
+                  if (sousTitre != null)
+                    Text(sousTitre,
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF9CA3AF))),
                 ],
               ),
             ),
             if (afficherChevron)
-              const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF9CA3AF),
-                size: 20,
-              ),
+              const Icon(Icons.chevron_right,
+                  color: Color(0xFF9CA3AF), size: 20),
           ],
         ),
       ),
@@ -324,7 +295,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Dialogue de confirmation de déconnexion
   void _confirmerDeconnexion(BuildContext context) {
     showDialog(
       context: context,
@@ -337,9 +307,10 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Annuler'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              onLogout();
+              await AuthService().logout();
+              widget.onLogout();
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFD32F2F),

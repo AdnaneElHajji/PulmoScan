@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/patient.dart';
 import '../models/exam.dart';
 import '../models/result.dart';
-import '../services/database_service.dart';
+import '../services/api_service.dart';
 import 'add_patient_screen.dart';
 import 'exam_screen.dart';
 import 'results_screen.dart';
@@ -21,7 +21,7 @@ class PatientDetailScreen extends StatefulWidget {
 
 class _PatientDetailScreenState extends State<PatientDetailScreen>
     with SingleTickerProviderStateMixin {
-  final DatabaseService _db = DatabaseService();
+  final ApiService _api = ApiService();
   late TabController _tabController;
 
   Patient? _patient;
@@ -39,13 +39,24 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   Future<void> _chargerDonnees() async {
     setState(() => _isLoading = true);
     try {
-      final patient = await _db.getPatientParId(widget.patientId);
-      final examens = await _db.getExamensParPatient(widget.patientId);
+      final patientData = await _api.get('/patients/${widget.patientId}');
+      final patient = Patient.fromJson(patientData as Map<String, dynamic>);
 
-      // Charge les résultats de chaque examen
+      final examensData = await _api.get('/exams/patient/${widget.patientId}');
+      final examens = (examensData as List)
+          .map((e) => Exam.fromJson(e as Map<String, dynamic>))
+          .toList();
+
       final Map<int, Result?> resultats = {};
       for (var exam in examens) {
-        resultats[exam.id!] = await _db.getResultatParExam(exam.id!);
+        try {
+          final resData = await _api.get('/results/exam/${exam.id}');
+          final list = resData as List;
+          resultats[exam.id!] =
+              list.isNotEmpty ? Result.fromJson(list[0] as Map<String, dynamic>) : null;
+        } catch (_) {
+          resultats[exam.id!] = null;
+        }
       }
 
       setState(() {
@@ -60,37 +71,25 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   }
 
   // Couleurs selon sévérité
+  bool _isUrgent(String? s) => s == 'urgent' || s == 'severe';
+  bool _isMoyen(String? s) => s == 'moyen' || s == 'modere';
+
   Color _couleurSeverite(String? severite) {
-    switch (severite) {
-      case 'urgent':
-        return const Color(0xFFD32F2F);
-      case 'moyen':
-        return const Color(0xFFD97706);
-      default:
-        return const Color(0xFF388E3C);
-    }
+    if (_isUrgent(severite)) return const Color(0xFFD32F2F);
+    if (_isMoyen(severite)) return const Color(0xFFD97706);
+    return const Color(0xFF388E3C);
   }
 
   Color _bgSeverite(String? severite) {
-    switch (severite) {
-      case 'urgent':
-        return const Color(0xFFFEE2E2);
-      case 'moyen':
-        return const Color(0xFFFEF3C7);
-      default:
-        return const Color(0xFFD1FAE5);
-    }
+    if (_isUrgent(severite)) return const Color(0xFFFEE2E2);
+    if (_isMoyen(severite)) return const Color(0xFFFEF3C7);
+    return const Color(0xFFD1FAE5);
   }
 
   String _labelSeverite(String? severite) {
-    switch (severite) {
-      case 'urgent':
-        return 'Urgent';
-      case 'moyen':
-        return 'À surveiller';
-      default:
-        return 'Normal';
-    }
+    if (_isUrgent(severite)) return 'Urgent';
+    if (_isMoyen(severite)) return 'À surveiller';
+    return 'Normal';
   }
 
   // Formate la date
@@ -230,7 +229,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFF0059FF).withOpacity(0.1),
+              color: const Color(0xFF0059FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(32),
             ),
             child: const Icon(
@@ -427,7 +426,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
         border: Border.all(color: const Color(0xFFF3F4F6)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

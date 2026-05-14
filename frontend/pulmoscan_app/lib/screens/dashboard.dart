@@ -1,100 +1,64 @@
-// lib/screens/dashboard_responsive.dart
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
-class DashboardResponsive extends StatelessWidget {
-  DashboardResponsive({super.key});
+class DashboardResponsive extends StatefulWidget {
+  const DashboardResponsive({super.key});
 
-  final List<Map<String, dynamic>> _stats = [
-    {
-      'label': 'Examens ce mois',
-      'value': '247',
-      'change': '+12%',
-      'icon': Icons.description_outlined,
-      'color': Colors.blue,
-      'trend': 'up',
-    },
-    {
-      'label': 'Patients actifs',
-      'value': '189',
-      'change': '+5%',
-      'icon': Icons.people_outline,
-      'color': Colors.green,
-      'trend': 'up',
-    },
-    {
-      'label': 'Détections positives',
-      'value': '34',
-      'change': '-8%',
-      'icon': Icons.warning_amber_outlined,
-      'color': Colors.orange,
-      'trend': 'down',
-    },
-    {
-      'label': 'Précision IA',
-      'value': '94.2%',
-      'change': '+2%',
-      'icon': Icons.auto_graph_outlined,
-      'color': Colors.purple,
-      'trend': 'up',
-    },
-  ];
+  @override
+  State<DashboardResponsive> createState() => _DashboardResponsiveState();
+}
 
-  final List<Map<String, dynamic>> _recentScans = [
-    {
-      'patient': 'Mohammed Bennani',
-      'date': '2026-01-11 14:30',
-      'diagnosis': 'Pneumonie détectée',
-      'confidence': '92%',
-      'severity': 'high',
-      'severityColor': Color(0xFFDC2626),
-      'severityBg': Color(0xFFFEE2E2),
-    },
-    {
-      'patient': 'Fatima Alami',
-      'date': '2026-01-11 13:15',
-      'diagnosis': 'Normal',
-      'confidence': '98%',
-      'severity': 'normal',
-      'severityColor': Color(0xFF059669),
-      'severityBg': Color(0xFFD1FAE5),
-    },
-    {
-      'patient': 'Hassan El Idrissi',
-      'date': '2026-01-11 11:45',
-      'diagnosis': 'Tuberculose suspectée',
-      'confidence': '87%',
-      'severity': 'high',
-      'severityColor': Color(0xFFDC2626),
-      'severityBg': Color(0xFFFEE2E2),
-    },
-    {
-      'patient': 'Amina Tazi',
-      'date': '2026-01-11 10:20',
-      'diagnosis': 'Normal',
-      'confidence': '96%',
-      'severity': 'normal',
-      'severityColor': Color(0xFF059669),
-      'severityBg': Color(0xFFD1FAE5),
-    },
-    {
-      'patient': 'Youssef Berrada',
-      'date': '2026-01-10 16:50',
-      'diagnosis': 'Fibrose détectée',
-      'confidence': '89%',
-      'severity': 'medium',
-      'severityColor': Color(0xFFD97706),
-      'severityBg': Color(0xFFFEF3C7),
-    },
-  ];
+class _DashboardResponsiveState extends State<DashboardResponsive> {
+  final ApiService _api = ApiService();
+
+  bool _isLoading = true;
+  String? _error;
+
+  int _totalPatients = 0;
+  int _totalExamens = 0;
+  int _totalResultats = 0;
+  List<Map<String, dynamic>> _topDiagnostics = [];
+  List<Map<String, dynamic>> _examensParStatut = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final data = await _api.get('/stats');
+      setState(() {
+        _totalPatients = data['total_patients'] ?? 0;
+        _totalExamens = data['total_examens'] ?? 0;
+        _totalResultats = data['total_resultats'] ?? 0;
+        _topDiagnostics =
+            List<Map<String, dynamic>>.from(data['top_diagnostics'] ?? []);
+        _examensParStatut =
+            List<Map<String, dynamic>>.from(data['examens_par_statut'] ?? []);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -108,100 +72,101 @@ class DashboardResponsive extends StatelessWidget {
             SizedBox(height: 2),
             Text(
               'Vue d\'ensemble de vos examens pulmonaires',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
-              ),
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: Color(0xFF6B7280)),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.search, color: Color(0xFF6B7280)),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh, color: Color(0xFF6B7280)),
+            onPressed: _loadStats,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Stats Grid
-            GridView.count(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: _stats.map((stat) => _buildStatCard(stat)).toList(),
-            ),
-            
-            SizedBox(height: 24),
-            
-            // Recent Exams Card
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Color(0xFFF3F4F6)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(24),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF0059FF)))
+          : _error != null
+              ? _buildError()
+              : RefreshIndicator(
+                  onRefresh: _loadStats,
+                  color: const Color(0xFF0059FF),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Examens récents',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Dernières analyses effectuées',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
+                        _buildStatsGrid(),
+                        const SizedBox(height: 24),
+                        _buildStatutCard(),
+                        const SizedBox(height: 16),
+                        _buildTopDiagnosticsCard(),
                       ],
                     ),
                   ),
-                  
-                  // Table
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (constraints.maxWidth < 600) {
-                        return _buildMobileList();
-                      } else {
-                        return _buildDesktopTable();
-                      }
-                    },
-                  ),
-                ],
-              ),
+                ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Color(0xFFD32F2F)),
+          const SizedBox(height: 16),
+          Text(_error!, style: const TextStyle(color: Color(0xFF6B7280))),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadStats,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Réessayer'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0059FF),
+              foregroundColor: Colors.white,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to new exam
-        },
-        backgroundColor: Color(0xFF0059FF),
-        child: Icon(Icons.add, size: 28),
-      ),
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    final stats = [
+      {
+        'label': 'Total examens',
+        'value': '$_totalExamens',
+        'icon': Icons.description_outlined,
+        'color': Colors.blue,
+      },
+      {
+        'label': 'Patients actifs',
+        'value': '$_totalPatients',
+        'icon': Icons.people_outline,
+        'color': Colors.green,
+      },
+      {
+        'label': 'Résultats analysés',
+        'value': '$_totalResultats',
+        'icon': Icons.analytics_outlined,
+        'color': Colors.orange,
+      },
+      {
+        'label': 'Précision IA',
+        'value': '94.2%',
+        'icon': Icons.auto_graph_outlined,
+        'color': Colors.purple,
+      },
+    ];
+
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1.4,
+      children: stats.map(_buildStatCard).toList(),
     );
   }
 
@@ -210,82 +175,43 @@ class DashboardResponsive extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFF3F4F6)),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: stat['color'].withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  stat['icon'],
-                  color: stat['color'],
-                  size: 20,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (stat['trend'] == 'up' ? Colors.green : Colors.red)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      stat['trend'] == 'up' 
-                          ? Icons.trending_up 
-                          : Icons.trending_down,
-                      size: 12,
-                      color: stat['trend'] == 'up' ? Colors.green : Colors.red,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      stat['change'],
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: stat['trend'] == 'up' ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: (stat['color'] as Color).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(stat['icon'] as IconData,
+                color: stat['color'] as Color, size: 20),
           ),
-          
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                stat['label'],
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
+                stat['label'] as String,
+                style: const TextStyle(
+                    fontSize: 11, color: Color(0xFF6B7280)),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
-                stat['value'],
-                style: TextStyle(
-                  fontSize: 20,
+                stat['value'] as String,
+                style: const TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF111827),
                 ),
@@ -297,237 +223,190 @@ class DashboardResponsive extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.all(16),
-      itemCount: _recentScans.length,
-      separatorBuilder: (context, index) => SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final scan = _recentScans[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Color(0xFFF3F4F6)),
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Patient and Status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    scan['patient'],
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: scan['severityBg'],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          scan['severity'] == 'high'
-                              ? Icons.warning_amber
-                              : Icons.check_circle,
-                          size: 12,
-                          color: scan['severityColor'],
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          scan['severity'] == 'high'
-                              ? 'Urgent'
-                              : scan['severity'] == 'medium'
-                                  ? 'À surveiller'
-                                  : 'Normal',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: scan['severityColor'],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 12),
-              
-              // Date and Diagnosis
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Text(
-                    scan['date'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 8),
-              
-              Row(
-                children: [
-                  Icon(Icons.medical_services, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      scan['diagnosis'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 8),
-              
-              // Confidence
-              Row(
-                children: [
-                  Icon(Icons.percent, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getConfidenceColor(scan['confidence']),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      scan['confidence'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  Widget _buildStatutCard() {
+    if (_examensParStatut.isEmpty) return const SizedBox.shrink();
 
-  Widget _buildDesktopTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowHeight: 56,
-        dataRowHeight: 64,
-        horizontalMargin: 24,
-        columnSpacing: 32,
-        columns: [
-          DataColumn(
-            label: Text('Patient',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Date & Heure',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Diagnostic IA',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Confiance',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Statut',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
-        rows: _recentScans.map((scan) {
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(scan['patient'],
-                    style: TextStyle(fontWeight: FontWeight.w500)),
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFF3F4F6)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Examens par statut',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
               ),
-              DataCell(Text(scan['date'])),
-              DataCell(Text(scan['diagnosis'])),
-              DataCell(
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getConfidenceColor(scan['confidence']),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    scan['confidence'],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: scan['severityBg'],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        scan['severity'] == 'high'
-                            ? Icons.warning_amber
-                            : Icons.check_circle,
-                        size: 14,
-                        color: scan['severityColor'],
+            ),
+            const SizedBox(height: 16),
+            ..._examensParStatut.map((item) {
+              final statut = item['statut'] as String? ?? '';
+              final total = item['total'].toString();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: _statutColor(statut),
+                        shape: BoxShape.circle,
                       ),
-                      SizedBox(width: 6),
-                      Text(
-                        scan['severity'] == 'high'
-                            ? 'Urgent'
-                            : scan['severity'] == 'medium'
-                                ? 'À surveiller'
-                                : 'Normal',
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _statutLabel(statut),
+                        style:
+                            const TextStyle(fontSize: 14, color: Color(0xFF374151)),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: _statutColor(statut).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        total,
                         style: TextStyle(
-                          color: scan['severityColor'],
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          color: _statutColor(statut),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          );
-        }).toList(),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 
-  Color _getConfidenceColor(String confidence) {
-    final percent = int.tryParse(confidence.replaceAll('%', '')) ?? 0;
-    if (percent >= 90) return Colors.green;
-    if (percent >= 80) return Colors.orange;
-    return Colors.red;
+  Widget _buildTopDiagnosticsCard() {
+    if (_topDiagnostics.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFF3F4F6)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top diagnostics IA',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Pathologies les plus détectées',
+              style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 16),
+            ..._topDiagnostics.asMap().entries.map((entry) {
+              final i = entry.key;
+              final item = entry.value;
+              final diag = item['diagnostic'] as String? ?? '';
+              final total = item['total'].toString();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0059FF).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${i + 1}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0059FF),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        diag,
+                        style: const TextStyle(
+                            fontSize: 14, color: Color(0xFF111827)),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0059FF).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$total cas',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0059FF),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _statutColor(String statut) {
+    switch (statut) {
+      case 'termine':
+        return const Color(0xFF059669);
+      case 'analyse':
+        return const Color(0xFF0059FF);
+      case 'en_attente':
+        return const Color(0xFFD97706);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  String _statutLabel(String statut) {
+    switch (statut) {
+      case 'termine':
+        return 'Terminé';
+      case 'analyse':
+        return 'En analyse';
+      case 'en_attente':
+        return 'En attente';
+      default:
+        return statut;
+    }
   }
 }

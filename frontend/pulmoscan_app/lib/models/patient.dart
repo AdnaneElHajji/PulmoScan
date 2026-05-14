@@ -56,6 +56,24 @@ class Patient {
     );
   }
 
+  // Crée un Patient à partir d'une réponse JSON du backend API
+  factory Patient.fromJson(Map<String, dynamic> json) {
+    return Patient(
+      id: json['id'],
+      nom: json['nom'] ?? '',
+      age: json['age'] is int ? json['age'] : int.tryParse(json['age'].toString()) ?? 0,
+      genre: json['genre'] ?? '',
+      email: json['email'] ?? '',
+      telephone: json['telephone'] ?? '',
+      cin: json['cin'] ?? '',
+      antecedents: json['antecedents'] ?? '',
+      dateCreation: DateTime.tryParse(
+            json['date_creation'] ?? json['dateCreation'] ?? '',
+          ) ??
+          DateTime.now(),
+    );
+  }
+
   // Permet de copier un patient en modifiant certains champs
   // Utile pour la modification
   Patient copyWith({

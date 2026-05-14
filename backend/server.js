@@ -10,6 +10,8 @@ app.use('/api',          require('./routes/auth'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/exams',    require('./routes/exams'));
 app.use('/api/results',  require('./routes/results'));
+app.use('/api/stats',   require('./routes/stats'));
+app.use('/api/predict', require('./routes/predict'));
 
 app.get('/', (_, res) => res.send('PulmoScan API 🚀'));
 

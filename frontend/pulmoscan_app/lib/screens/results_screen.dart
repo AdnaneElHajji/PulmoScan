@@ -2,11 +2,10 @@
 // Écran des résultats de l'analyse IA - basé sur le design Figma ScanDetails
 
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/patient.dart';
 import '../models/result.dart';
-import '../services/database_service.dart';
+import '../services/api_service.dart';
 
 class ResultsScreen extends StatefulWidget {
   final int examId;
@@ -25,19 +24,9 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
-  final DatabaseService _db = DatabaseService();
+  final ApiService _api = ApiService();
   Result? _resultat;
   bool _isLoading = true;
-
-  // Liste des diagnostics possibles (simulation IA pour BTS)
-  final List<Map<String, dynamic>> _diagnosticsPossibles = [
-    {'diagnostic': 'Normal', 'severite': 'normal', 'confidence': 96.0},
-    {'diagnostic': 'Pneumonie détectée', 'severite': 'urgent', 'confidence': 92.0},
-    {'diagnostic': 'Tuberculose suspectée', 'severite': 'urgent', 'confidence': 87.0},
-    {'diagnostic': 'Fibrose pulmonaire', 'severite': 'moyen', 'confidence': 89.0},
-    {'diagnostic': 'Nodules détectés', 'severite': 'moyen', 'confidence': 84.0},
-    {'diagnostic': 'Normal', 'severite': 'normal', 'confidence': 98.0},
-  ];
 
   @override
   void initState() {
@@ -45,85 +34,69 @@ class _ResultsScreenState extends State<ResultsScreen> {
     _genererEtSauvegarderResultat();
   }
 
-  // Génère un résultat simulé et le sauvegarde en SQLite
+  // Récupère ou génère le résultat via le backend
   Future<void> _genererEtSauvegarderResultat() async {
-    // Vérifie si un résultat existe déjà pour cet examen
-    final existant = await _db.getResultatParExam(widget.examId);
+    try {
+      // Vérifie si un résultat existe déjà
+      final existing = await _api.get('/results/exam/${widget.examId}');
+      final list = existing as List;
+      if (list.isNotEmpty) {
+        setState(() {
+          _resultat = Result.fromJson(list[0] as Map<String, dynamic>);
+          _isLoading = false;
+        });
+        return;
+      }
 
-    if (existant != null) {
+      // Appelle l'IA via le backend
+      final prediction = await _api.post(
+        '/predict',
+        {'image_path': widget.imagePath},
+      );
+
+      // Sauvegarde le résultat (confidence 0-1 pour le backend)
+      final saved = await _api.post('/results', {
+        'exam_id': widget.examId,
+        'diagnostic': prediction['diagnostic'],
+        'confidence': prediction['confidence'], // 0-1
+        'severite': prediction['severite'],
+        'details': prediction['details'] ?? '',
+      });
+
       setState(() {
-        _resultat = existant;
+        _resultat = Result.fromJson(saved as Map<String, dynamic>);
         _isLoading = false;
       });
-      return;
+    } catch (e) {
+      setState(() => _isLoading = false);
     }
-
-    // Simule un résultat IA aléatoire (pour la démo BTS)
-    final random = Random();
-    final diagnostic = _diagnosticsPossibles[
-        random.nextInt(_diagnosticsPossibles.length)];
-
-    final nouveauResultat = Result(
-      examId: widget.examId,
-      diagnostic: diagnostic['diagnostic'],
-      confidence: diagnostic['confidence'],
-      severite: diagnostic['severite'],
-      details: '{"efficientnet": ${diagnostic['confidence']}, "unet": ${(diagnostic['confidence'] as double) - 2}}',
-      dateAnalyse: DateTime.now(),
-    );
-
-    await _db.ajouterResultat(nouveauResultat);
-    final resultatSauvegarde = await _db.getResultatParExam(widget.examId);
-
-    setState(() {
-      _resultat = resultatSauvegarde;
-      _isLoading = false;
-    });
   }
 
-  // Retourne les couleurs selon la sévérité
+  bool _isUrgent(String s) => s == 'urgent' || s == 'severe';
+  bool _isMoyen(String s) => s == 'moyen' || s == 'modere';
+
   Color _couleurSeverite(String severite) {
-    switch (severite) {
-      case 'urgent':
-        return const Color(0xFFD32F2F);
-      case 'moyen':
-        return const Color(0xFFD97706);
-      default:
-        return const Color(0xFF388E3C);
-    }
+    if (_isUrgent(severite)) return const Color(0xFFD32F2F);
+    if (_isMoyen(severite)) return const Color(0xFFD97706);
+    return const Color(0xFF388E3C);
   }
 
   Color _bgSeverite(String severite) {
-    switch (severite) {
-      case 'urgent':
-        return const Color(0xFFFEE2E2);
-      case 'moyen':
-        return const Color(0xFFFEF3C7);
-      default:
-        return const Color(0xFFD1FAE5);
-    }
+    if (_isUrgent(severite)) return const Color(0xFFFEE2E2);
+    if (_isMoyen(severite)) return const Color(0xFFFEF3C7);
+    return const Color(0xFFD1FAE5);
   }
 
   String _labelSeverite(String severite) {
-    switch (severite) {
-      case 'urgent':
-        return 'Priorité élevée';
-      case 'moyen':
-        return 'À surveiller';
-      default:
-        return 'Normal';
-    }
+    if (_isUrgent(severite)) return 'Priorité élevée';
+    if (_isMoyen(severite)) return 'À surveiller';
+    return 'Normal';
   }
 
   IconData _iconeSeverite(String severite) {
-    switch (severite) {
-      case 'urgent':
-        return Icons.warning_amber_rounded;
-      case 'moyen':
-        return Icons.info_outline;
-      default:
-        return Icons.check_circle_outline;
-    }
+    if (_isUrgent(severite)) return Icons.warning_amber_rounded;
+    if (_isMoyen(severite)) return Icons.info_outline;
+    return Icons.check_circle_outline;
   }
 
   @override
@@ -205,7 +178,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF0059FF).withOpacity(0.1),
+              color: const Color(0xFF0059FF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
             ),
             child: const Icon(Icons.person, color: Color(0xFF0059FF), size: 26),

@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../models/patient.dart';
-import '../services/database_service.dart';
+import '../services/api_service.dart';
 import 'add_patient_screen.dart';
 import 'patient_detail_screen.dart';
 
@@ -15,7 +15,7 @@ class PatientsListScreen extends StatefulWidget {
 }
 
 class _PatientsListScreenState extends State<PatientsListScreen> {
-  final DatabaseService _db = DatabaseService();
+  final ApiService _api = ApiService();
   final TextEditingController _searchController = TextEditingController();
 
   List<Patient> _patients = [];       // Tous les patients
@@ -29,11 +29,18 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
     _chargerPatients();
   }
 
-  // Charge les patients depuis SQLite
+  // Charge les patients depuis l'API backend
   Future<void> _chargerPatients() async {
     setState(() => _isLoading = true);
     try {
-      final patients = await _db.getTousLesPatients();
+      final query = _searchController.text.trim();
+      final path = query.isNotEmpty
+          ? '/patients?search=${Uri.encodeComponent(query)}'
+          : '/patients';
+      final data = await _api.get(path);
+      final patients = (data as List)
+          .map((e) => Patient.fromJson(e as Map<String, dynamic>))
+          .toList();
       setState(() {
         _patients = patients;
         _patientsFiltres = patients;
@@ -45,15 +52,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
     }
   }
 
-  // Filtre les patients selon la recherche et le statut
+  // Déclenche une recherche via l'API
   void _filtrer() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _patientsFiltres = _patients.where((p) {
-        final matchNom = p.nom.toLowerCase().contains(query);
-        return matchNom;
-      }).toList();
-    });
+    _chargerPatients();
   }
 
   // Retourne la couleur selon l'âge (règle d'affichage)
@@ -105,7 +106,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
 
     if (confirme == true) {
       try {
-        await _db.supprimerPatient(patient.id!);
+        await _api.delete('/patients/${patient.id}');
         _chargerPatients(); // Recharge la liste
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

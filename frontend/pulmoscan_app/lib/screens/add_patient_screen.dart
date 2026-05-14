@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../models/patient.dart';
-import '../services/database_service.dart';
+import '../services/api_service.dart';
 
 class AddPatientScreen extends StatefulWidget {
   final Patient? patientAModifier; // null = mode ajout, sinon = mode modification
@@ -17,7 +17,7 @@ class AddPatientScreen extends StatefulWidget {
 
 class _AddPatientScreenState extends State<AddPatientScreen> {
   final _formKey = GlobalKey<FormState>();
-  final DatabaseService _db = DatabaseService();
+  final ApiService _api = ApiService();
   bool _isLoading = false;
 
   // Contrôleurs pour chaque champ du formulaire
@@ -57,18 +57,18 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final body = {
+        'nom': _nomController.text.trim(),
+        'age': int.parse(_ageController.text.trim()),
+        'genre': _genre,
+        'email': _emailController.text.trim(),
+        'telephone': _telephoneController.text.trim(),
+        'cin': _cinController.text.trim(),
+        'antecedents': _antecedentsController.text.trim(),
+      };
+
       if (_estModification) {
-        // MODE MODIFICATION
-        final patientModifie = widget.patientAModifier!.copyWith(
-          nom: _nomController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
-          genre: _genre,
-          email: _emailController.text.trim(),
-          telephone: _telephoneController.text.trim(),
-          cin: _cinController.text.trim(),
-          antecedents: _antecedentsController.text.trim(),
-        );
-        await _db.modifierPatient(patientModifie);
+        await _api.put('/patients/${widget.patientAModifier!.id}', body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -76,21 +76,10 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
               backgroundColor: Color(0xFF388E3C),
             ),
           );
-          Navigator.pop(context, true); // Retourne true = succès
+          Navigator.pop(context, true);
         }
       } else {
-        // MODE AJOUT
-        final nouveauPatient = Patient(
-          nom: _nomController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
-          genre: _genre,
-          email: _emailController.text.trim(),
-          telephone: _telephoneController.text.trim(),
-          cin: _cinController.text.trim(),
-          antecedents: _antecedentsController.text.trim(),
-          dateCreation: DateTime.now(),
-        );
-        await _db.ajouterPatient(nouveauPatient);
+        await _api.post('/patients', body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

@@ -42,6 +42,21 @@ class Exam {
     );
   }
 
+  // Crée un Exam depuis une réponse JSON du backend API
+  factory Exam.fromJson(Map<String, dynamic> json) {
+    return Exam(
+      id: json['id'],
+      patientId: json['patient_id'] is int
+          ? json['patient_id']
+          : int.tryParse(json['patient_id'].toString()) ?? 0,
+      imagePath: json['image_path'] ?? '',
+      notes: json['notes'] ?? '',
+      dateExamen:
+          DateTime.tryParse(json['date_examen'] ?? '') ?? DateTime.now(),
+      statut: json['statut'] ?? 'en_attente',
+    );
+  }
+
   Exam copyWith({
     int? id,
     int? patientId,

@@ -1,6 +1,7 @@
 // lib/screens/register.dart
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'verify_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final Function(bool success) onRegisterComplete;
@@ -417,19 +418,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
+    setState(() { _isLoading = true; _errorMessage = ''; });
 
     try {
       final authService = AuthService();
-      await authService.register(
-        name: _nomController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-      widget.onRegisterComplete(true);
+      // Envoie le code de vérification par email
+      await authService.sendVerificationCode(_emailController.text.trim());
+
+      if (mounted) {
+        // Navigue vers l'écran de vérification
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerifyScreen(
+              email: _emailController.text.trim(),
+              name: _nomController.text.trim(),
+              password: _passwordController.text,
+              role: _selectedRole.isEmpty ? 'medecin' : _selectedRole,
+            ),
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceFirst('Exception: ', '');
