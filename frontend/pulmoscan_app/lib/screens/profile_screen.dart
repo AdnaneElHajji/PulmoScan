@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/v4_theme.dart';
-import '../widgets/aperture_mark.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
+
   const ProfileScreen({super.key, required this.onLogout});
 
   @override
@@ -21,10 +20,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadUser();
   }
 
-  Future<void> _load() async {
+  Future<void> _loadUser() async {
     final user = await _api.getUser();
     if (mounted) {
       setState(() {
@@ -35,7 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String _formatRole(String r) {
+  String _formatRole(String role) {
     const labels = {
       'MEDECIN_GENERALISTE': 'Médecin généraliste',
       'PNEUMOLOGUE': 'Pneumologue',
@@ -46,317 +45,453 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'medecin': 'Médecin',
       '': 'Médecin',
     };
-    return labels[r] ?? r;
-  }
-
-  String get _initials {
-    if (_name.isEmpty) return '?';
-    final parts = _name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return _name.substring(0, _name.length >= 2 ? 2 : 1).toUpperCase();
+    return labels[role] ?? role;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: V4.bg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top bar
-              Row(
-                children: [
-                  const Text(
-                    'Profil',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.6,
-                      color: V4.ink,
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => ScaffoldMessenger.of(context)
-                        .showSnackBar(const SnackBar(
-                            content: Text(
-                                'Édition bientôt disponible'))),
-                    child: const Text('Éditer',
-                        style: TextStyle(
-                            color: V4.teal,
-                            fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Avatar card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: V4.surface1,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: V4.border),
-                ),
-                child: Row(
-                  children: [
-                    // Avatar circle
-                    Stack(
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: V4.teal,
-                            borderRadius: BorderRadius.circular(22),
-                            boxShadow: [
-                              BoxShadow(
-                                color: V4.teal.withValues(alpha: 0.35),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              _initials,
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: V4.bg,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          right: -10,
-                          top: -10,
-                          child: Opacity(
-                            opacity: 0.15,
-                            child: ApertureMark(
-                                size: 60,
-                                active: const [1, 4, 7, 11]),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _name.isEmpty ? 'Chargement…' : _name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: V4.ink,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _role,
-                            style: const TextStyle(
-                                fontSize: 13, color: V4.inkSoft),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              V4.chip('vérifié', V4.teal, filled: true),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Email info row
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: V4.surface1,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: V4.border),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.mail_outline_rounded,
-                        color: V4.inkMuted, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _email.isEmpty ? '—' : _email,
-                        style: const TextStyle(
-                            fontSize: 13, color: V4.inkSoft),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // AI models section
-              _sectionTitle('Modèles IA'),
-              const SizedBox(height: 10),
-              _settingItem(
-                icon: '◐',
-                iconColor: V4.teal,
-                title: 'EfficientNetB1',
-                sub: 'Classification · 14 classes · AUC 0.91',
-              ),
-              const SizedBox(height: 8),
-              _settingItem(
-                icon: '⬡',
-                iconColor: V4.blue,
-                title: 'NIH ChestX-ray14',
-                sub: 'Dataset · 112 120 images · TFLite on-device',
-              ),
-              const SizedBox(height: 24),
-
-              _sectionTitle('Paramètres'),
-              const SizedBox(height: 10),
-              _settingItem(
-                icon: '⌾',
-                iconColor: V4.blue,
-                title: 'Sécurité',
-                sub: 'Changer le mot de passe',
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Bientôt disponible'))),
-              ),
-              const SizedBox(height: 8),
-              _settingItem(
-                icon: 'ⓘ',
-                iconColor: V4.inkSoft,
-                title: 'À propos',
-                sub: 'PulmoScan AI v1.0.0 · CC-BY-NC · BTS 2026',
-              ),
-              const SizedBox(height: 32),
-
-              // Logout
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: _confirmLogout,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: V4.coral,
-                    side: BorderSide(
-                        color: V4.coral.withValues(alpha: 0.35)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout_rounded, size: 18),
-                      SizedBox(width: 8),
-                      Text('Se déconnecter',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+      backgroundColor: const Color(0xFFF9FAFB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Profil',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111827),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _sectionTitle(String title) => Text(
-        title,
-        style: V4.monoLabel.copyWith(
-          fontSize: 11,
-          letterSpacing: 1.6,
-          fontWeight: FontWeight.w600,
-        ),
-      );
-
-  Widget _settingItem({
-    required String icon,
-    required Color iconColor,
-    required String title,
-    required String sub,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: V4.surface1,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: V4.border),
-        ),
-        child: Row(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Text(icon,
-                    style: TextStyle(
-                        color: iconColor, fontWeight: FontWeight.w700)),
-              ),
+            _buildCarteProfil(),
+            const SizedBox(height: 16),
+            _buildSection(
+              titre: 'Paramètres',
+              items: [
+                _buildItem(
+                  icone: Icons.lock_outlined,
+                  titre: 'Changer le mot de passe',
+                  sousTitre: 'Sécurisez votre compte',
+                  onTap: () => _showChangePasswordDialog(context),
+                ),
+                _buildItem(
+                  icone: Icons.notifications_outlined,
+                  titre: 'Notifications',
+                  sousTitre: 'Gérer les préférences',
+                  onTap: () => _afficherBientot(context),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                        fontSize: 14,
+            const SizedBox(height: 16),
+            _buildSection(
+              titre: 'À propos',
+              items: [
+                _buildItem(
+                  icone: Icons.info_outline,
+                  titre: 'Version de l\'application',
+                  sousTitre: 'PulmoScan IA v1.0.0',
+                  onTap: null,
+                  afficherChevron: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _confirmerDeconnexion(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: Color(0xFFD32F2F)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout, color: Color(0xFFD32F2F), size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Déconnexion',
+                      style: TextStyle(
+                        color: Color(0xFFD32F2F),
                         fontWeight: FontWeight.w600,
-                        color: V4.ink,
-                      )),
-                  const SizedBox(height: 2),
-                  Text(sub,
-                      style: const TextStyle(
-                          fontSize: 11, color: V4.inkSoft)),
-                ],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            if (onTap != null)
-              const Icon(Icons.chevron_right_rounded,
-                  color: V4.inkMuted, size: 18),
+            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
-  void _confirmLogout() {
+  Widget _buildCarteProfil() {
+    final initials = _name.isNotEmpty
+        ? _name
+            .trim()
+            .split(' ')
+            .map((w) => w.isNotEmpty ? w[0] : '')
+            .take(2)
+            .join()
+            .toUpperCase()
+        : '?';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0059FF).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0059FF),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            _name.isEmpty ? 'Chargement...' : _name,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _role,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRapide(icone: Icons.email_outlined, valeur: _email),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRapide({required IconData icone, required String valeur}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icone, size: 18, color: const Color(0xFF6B7280)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              valeur.isEmpty ? '—' : valeur,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF374151)),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection({required String titre, required List<Widget> items}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              titre,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B7280),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          ...items,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItem({
+    required IconData icone,
+    required String titre,
+    String? sousTitre,
+    required VoidCallback? onTap,
+    bool afficherChevron = true,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icone, size: 20, color: const Color(0xFF374151)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(titre,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF111827))),
+                  if (sousTitre != null)
+                    Text(sousTitre,
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF9CA3AF))),
+                ],
+              ),
+            ),
+            if (afficherChevron)
+              const Icon(Icons.chevron_right,
+                  color: Color(0xFF9CA3AF), size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _afficherBientot(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Fonctionnalité bientôt disponible')),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final oldPassCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool loading = false;
+    bool oldVisible = false;
+    bool newVisible = false;
+    bool confirmVisible = false;
+
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'Changer le mot de passe',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Old password
+                  TextFormField(
+                    controller: oldPassCtrl,
+                    obscureText: !oldVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe actuel',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          oldVisible ? Icons.visibility_off : Icons.visibility,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setDialogState(() => oldVisible = !oldVisible),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Mot de passe actuel obligatoire';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // New password
+                  TextFormField(
+                    controller: newPassCtrl,
+                    obscureText: !newVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Nouveau mot de passe',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          newVisible ? Icons.visibility_off : Icons.visibility,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setDialogState(() => newVisible = !newVisible),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Nouveau mot de passe obligatoire';
+                      }
+                      if (val.length < 8) {
+                        return 'Minimum 8 caractères';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Confirm password
+                  TextFormField(
+                    controller: confirmCtrl,
+                    obscureText: !confirmVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmer le nouveau mot de passe',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          confirmVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setDialogState(() => confirmVisible = !confirmVisible),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Confirmation obligatoire';
+                      }
+                      if (val != newPassCtrl.text) {
+                        return 'Les mots de passe ne correspondent pas';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: loading ? null : () => Navigator.pop(dialogContext),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => loading = true);
+                      try {
+                        await AuthService().changePassword(
+                          oldPassCtrl.text,
+                          newPassCtrl.text,
+                        );
+                        if (!dialogContext.mounted) return;
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Mot de passe mis à jour avec succès'),
+                            backgroundColor: Color(0xFF059669),
+                          ),
+                        );
+                      } catch (e) {
+                        setDialogState(() => loading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceFirst('Exception: ', ''),
+                            ),
+                            backgroundColor: const Color(0xFFD32F2F),
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0059FF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: loading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Confirmer'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) {
+      oldPassCtrl.dispose();
+      newPassCtrl.dispose();
+      confirmCtrl.dispose();
+    });
+  }
+
+  void _confirmerDeconnexion(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
         title: const Text('Déconnexion'),
-        content: const Text(
-            'Êtes-vous sûr de vouloir vous déconnecter ?'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler',
-                style: TextStyle(color: V4.inkMuted)),
+            child: const Text('Annuler'),
           ),
           TextButton(
             onPressed: () async {
@@ -364,8 +499,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               await AuthService().logout();
               widget.onLogout();
             },
-            child: const Text('Déconnexion',
-                style: TextStyle(color: V4.coral)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFD32F2F),
+            ),
+            child: const Text('Déconnexion'),
           ),
         ],
       ),
