@@ -1,12 +1,12 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-console.log('[db] DATABASE_URL present:', !!process.env.DATABASE_URL);
-console.log('[db] DATABASE_URL prefix:', (process.env.DATABASE_URL || '').slice(0, 20));
+const connStr = process.env.PG_URL || process.env.DATABASE_URL;
+console.log('[db] connection string present:', !!connStr);
 
-const pool = process.env.DATABASE_URL
+const pool = connStr
   ? new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: connStr,
       ssl: { rejectUnauthorized: false },
     })
   : new Pool({
