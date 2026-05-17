@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/exam.dart';
 import '../models/patient.dart';
+import '../models/result.dart';
 import '../services/database_service.dart';
+import '../services/ai_service.dart';
 import 'results_screen.dart';
 
 class ExamScreen extends StatefulWidget {
@@ -191,8 +193,19 @@ class _ExamScreenState extends State<ExamScreen> {
 
       final examId = await _db.ajouterExamen(exam);
 
-      // Simule un temps d'analyse IA (1-3 secondes)
-      await Future.delayed(const Duration(seconds: 2));
+      // Run real EfficientNetB1 TFLite inference
+      final aiService = AiService();
+      final resultatIA = await aiService.analyzeImage(_imageSelectionnee!.path);
+
+      final nouveauResultat = Result(
+        examId: examId,
+        diagnostic: resultatIA['diagnostic'] as String,
+        confidence: resultatIA['confidence'] as double,
+        severite: resultatIA['severite'] as String,
+        details: resultatIA['details'] as String,
+        dateAnalyse: DateTime.now(),
+      );
+      await _db.ajouterResultat(nouveauResultat);
 
       if (mounted) {
         setState(() => _isAnalyzing = false);

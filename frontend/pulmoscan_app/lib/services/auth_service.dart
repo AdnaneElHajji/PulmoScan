@@ -1,27 +1,22 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
-/// Simple AuthService for logging in against the backend API.
-///
-/// - Picks a sensible default base URL depending on platform:
-///   - Android emulator -> 10.0.2.2
-///   - Web / desktop / iOS simulator -> localhost
 class AuthService {
+  static String? _token;
+  static Map<String, dynamic>? _currentUser;
+
   final String baseUrl;
 
   AuthService({String? baseUrl}) : baseUrl = baseUrl ?? _defaultBaseUrl();
 
   static String _defaultBaseUrl() {
-    if (kIsWeb) return 'http://localhost:3000/api';
-    if (Platform.isAndroid) return 'http://10.0.2.2:3000/api';
-    return 'http://localhost:3000/api';
+    return 'https://backend-production-0fdbb.up.railway.app/api';
   }
 
-  /// Attempts to log in with [email] and [password].
-  ///
-  /// Returns void on success; throws an [Exception] with a friendly message on failure.
+  static String? get token => _token;
+  static Map<String, dynamic>? get currentUser => _currentUser;
+
+  /// Logs in and stores the JWT token in memory.
   Future<void> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
     final response = await http.post(
@@ -31,7 +26,10 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      return; // success
+      final body = jsonDecode(response.body);
+      _token = body['token'] as String?;
+      _currentUser = body['user'] as Map<String, dynamic>?;
+      return;
     }
 
     String msg = 'Erreur de connexion';

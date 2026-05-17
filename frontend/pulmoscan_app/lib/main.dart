@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pulmoscan_app/screens/login.dart';
 import 'package:pulmoscan_app/screens/dashboard.dart';
+import 'package:pulmoscan_app/theme/v4_theme.dart';
 
 void main() => runApp(const MyApp());
 
@@ -11,22 +12,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PulmoScan IA',
-      theme: ThemeData(
-        primaryColor: Color(0xFF0059FF),
-        scaffoldBackgroundColor: Color(0xFFF9FAFB),
-        fontFamily: 'Inter',
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFF6B7280)),
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: V4.theme(),
       home: Builder(
         builder: (context) => LoginPageExact(
-          onLogin: () {
+          onLogin: (ctx) {
             Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => DashboardResponsive()),
+              ctx,
+              MaterialPageRoute(builder: (_) => DashboardResponsive()),
             );
           },
         ),
