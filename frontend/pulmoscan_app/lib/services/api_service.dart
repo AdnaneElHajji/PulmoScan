@@ -8,6 +8,7 @@ class ApiService {
   ApiService._internal();
 
   static const _tokenKey = 'jwt_token';
+  static const _rememberMeKey = 'remember_me';
   static const _userNameKey = 'user_name';
   static const _userEmailKey = 'user_email';
   static const _userRoleKey = 'user_role';
@@ -29,6 +30,23 @@ class ApiService {
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+  }
+
+  // ── Remember Me ────────────────────────────────────────────────────────────
+
+  Future<void> saveRememberMe(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_rememberMeKey, value);
+  }
+
+  Future<bool> getRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_rememberMeKey) ?? false;
+  }
+
+  Future<void> clearRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_rememberMeKey);
   }
 
   // ── User info ──────────────────────────────────────────────────────────────
@@ -59,6 +77,7 @@ class ApiService {
   Future<void> logout() async {
     await clearToken();
     await clearUser();
+    await clearRememberMe();
   }
 
   // ── HTTP helpers ───────────────────────────────────────────────────────────

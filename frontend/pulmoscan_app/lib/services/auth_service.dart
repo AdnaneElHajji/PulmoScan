@@ -24,16 +24,28 @@ class AuthService {
     );
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(String email, String password, {bool rememberMe = false}) async {
     final data = await _api.post(
       '/login',
       {'email': email, 'password': password},
       auth: false,
     );
     await _api.saveToken(data['token'] as String);
+    await _api.saveRememberMe(rememberMe);
     if (data['user'] != null) {
       await _api.saveUser(data['user'] as Map<String, dynamic>);
     }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    await _api.post('/forgot-password', {'email': email}, auth: false);
+  }
+
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    await _api.put('/change-password', {
+      'oldPassword': oldPassword,
+      'newPassword': newPassword,
+    });
   }
 
   Future<void> logout() => _api.logout();
