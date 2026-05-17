@@ -1,2 +1,6 @@
 node_modules/
 .env
+<<<<<<< HEAD
+=======
+*.tflite
+>>>>>>> 1b180a0e9472cb09da44ac689c46741859baacf7

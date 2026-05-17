@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,13 +12,7 @@ class ApiService {
   static const _userEmailKey = 'user_email';
   static const _userRoleKey = 'user_role';
 
-  String get baseUrl {
-    if (kIsWeb) return 'http://localhost:3000/api';
-    try {
-      if (Platform.isAndroid) return 'http://192.168.1.3:3000/api';
-    } catch (_) {}
-    return 'http://localhost:3000/api';
-  }
+  String get baseUrl => 'https://backend-production-0fdbb.up.railway.app/api';
 
   // ── Token ──────────────────────────────────────────────────────────────────
 

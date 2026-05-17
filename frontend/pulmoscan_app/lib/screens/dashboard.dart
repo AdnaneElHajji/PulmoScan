@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/v4_theme.dart';
 import '../widgets/aperture_mark.dart';
 import '../services/api_service.dart';
+import 'exam_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,7 +29,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final data = await _api.get('/stats');
       setState(() {
@@ -56,7 +61,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Positioned.fill(child: CustomPaint(painter: GridBackground())),
           const Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: 320,
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -91,11 +98,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
       children: [
         _buildHeader(),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         _buildStatsRow(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+        _buildActionCard(),
+        const SizedBox(height: 16),
         _buildMarkSection(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         if (_examensParStatut.isNotEmpty) _buildStatusCard(),
         if (_examensParStatut.isNotEmpty) const SizedBox(height: 16),
         if (_topDiagnostics.isNotEmpty) _buildTopDiagCard(),
@@ -115,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   'Tableau de bord',
-                  style: const TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 26,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.6,
@@ -123,10 +132,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Vue d\'ensemble · PulmoScan AI',
-                  style: V4.monoLabel,
-                ),
+                Text('Vue d\'ensemble · PulmoScan AI', style: V4.monoLabel),
               ],
             ),
           ),
@@ -151,32 +157,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildStatsRow() {
     final stats = [
-      {'n': '$_totalExamens', 'l': 'examens', 'c': V4.blue},
-      {'n': '$_totalPatients', 'l': 'patients', 'c': V4.teal},
-      {'n': '$_totalResultats', 'l': 'résultats', 'c': V4.amber},
-      {'n': '0.91', 'l': 'AUC', 'c': V4.violet},
+      {'n': '$_totalPatients', 'l': 'Patients', 'c': V4.teal,
+       'icon': Icons.people_outline_rounded},
+      {'n': '$_totalExamens', 'l': 'Examens', 'c': V4.blue,
+       'icon': Icons.document_scanner_outlined},
+      {'n': '$_totalResultats', 'l': 'Résultats', 'c': V4.amber,
+       'icon': Icons.analytics_outlined},
     ];
 
     return Row(
       children: stats.asMap().entries.map((e) {
         final s = e.value;
         final color = s['c'] as Color;
+        final icon = s['icon'] as IconData;
         return Expanded(
           child: Container(
-            margin: EdgeInsets.only(left: e.key == 0 ? 0 : 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            margin: EdgeInsets.only(left: e.key == 0 ? 0 : 10),
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
             decoration: BoxDecoration(
               color: V4.surface1,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: V4.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 16),
+                ),
+                const SizedBox(height: 10),
                 Text(
                   s['n'] as String,
-                  style: TextStyle(
-                    fontSize: 22,
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
                     color: color,
@@ -185,11 +204,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 2),
                 Text(
                   (s['l'] as String).toUpperCase(),
-                  style: const TextStyle(
+                  style: GoogleFonts.jetBrainsMono(
                     fontSize: 9,
                     letterSpacing: 1.2,
                     color: V4.inkMuted,
-                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -197,6 +216,73 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildActionCard() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ExamScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1AAA90), Color(0xFF34E5C5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: V4.teal.withValues(alpha: 0.28),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nouvelle analyse',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: V4.bg,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'EfficientNetB1 · 14 pathologies détectées',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 10,
+                      color: V4.bg.withValues(alpha: 0.65),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: V4.bg.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.document_scanner_rounded,
+                  color: V4.bg, size: 24),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -216,9 +302,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '14 pathologies',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -226,12 +312,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'EfficientNetB1 · TFLite',
-                  style: TextStyle(
+                  style: GoogleFonts.jetBrainsMono(
                     fontSize: 11,
                     color: V4.inkMuted,
-                    fontFamily: 'monospace',
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -261,11 +346,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Text(
         '$label $val',
-        style: TextStyle(
+        style: GoogleFonts.jetBrainsMono(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: color,
-          fontFamily: 'monospace',
           letterSpacing: 0.4,
         ),
       ),
@@ -283,9 +367,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Examens par statut',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: V4.ink,
@@ -303,8 +387,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: BoxDecoration(
-                        color: color, shape: BoxShape.circle),
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -321,11 +405,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: Text(
                       total,
-                      style: TextStyle(
+                      style: GoogleFonts.jetBrainsMono(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: color,
-                        fontFamily: 'monospace',
                       ),
                     ),
                   ),
@@ -349,9 +432,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Top diagnostics IA',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: V4.ink,
@@ -368,9 +451,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final item = entry.value;
             final diag = item['diagnostic'] as String? ?? '';
             final total = item['total'].toString();
-            final color = i < V4.pathColors.length
-                ? V4.pathColors[i]
-                : V4.teal;
+            final pathIdx = V4.pathNames.indexOf(diag);
+            final color = (pathIdx >= 0 && pathIdx < V4.pathColors.length)
+                ? V4.pathColors[pathIdx]
+                : (i < V4.pathColors.length ? V4.pathColors[i] : V4.teal);
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
@@ -385,11 +469,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Center(
                       child: Text(
                         '${i + 1}',
-                        style: TextStyle(
+                        style: GoogleFonts.jetBrainsMono(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: color,
-                          fontFamily: 'monospace',
                         ),
                       ),
                     ),
@@ -397,8 +480,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(diag,
-                        style: const TextStyle(
-                            fontSize: 14, color: V4.inkSoft)),
+                        style:
+                            const TextStyle(fontSize: 14, color: V4.inkSoft)),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -409,11 +492,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: Text(
                       '$total cas',
-                      style: TextStyle(
+                      style: GoogleFonts.jetBrainsMono(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: color,
-                        fontFamily: 'monospace',
                       ),
                     ),
                   ),
@@ -450,19 +532,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Color _statutColor(String s) {
     switch (s) {
-      case 'termine': return V4.teal;
-      case 'analyse': return V4.blue;
-      case 'en_attente': return V4.amber;
-      default: return V4.inkMuted;
+      case 'termine':
+        return V4.teal;
+      case 'analyse':
+        return V4.blue;
+      case 'en_attente':
+        return V4.amber;
+      default:
+        return V4.inkMuted;
     }
   }
 
   String _statutLabel(String s) {
     switch (s) {
-      case 'termine': return 'Terminé';
-      case 'analyse': return 'En analyse';
-      case 'en_attente': return 'En attente';
-      default: return s;
+      case 'termine':
+        return 'Terminé';
+      case 'analyse':
+        return 'En analyse';
+      case 'en_attente':
+        return 'En attente';
+      default:
+        return s;
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/v4_theme.dart';
 
 /// Animated aperture that lights up segments progressively.
@@ -123,35 +124,57 @@ class _AperturePainter extends CustomPainter {
       old.active.length != active.length;
 }
 
-/// Wordmark: Pulmo**Scan** AI
+/// Wordmark: Pulmo + Scan (dimmed) + AI pill
 class Wordmark extends StatelessWidget {
   final double size;
   const Wordmark({super.key, this.size = 26});
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(fontSize: size, letterSpacing: -0.5, height: 1.0),
-        children: [
-          const TextSpan(
-            text: 'Pulmo',
-            style: TextStyle(fontWeight: FontWeight.w400, color: V4.ink),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Pulmo',
+          style: GoogleFonts.inter(
+            fontSize: size,
+            fontWeight: FontWeight.w700,
+            color: V4.ink,
+            letterSpacing: -0.5,
+            height: 1.0,
           ),
-          const TextSpan(
-            text: 'Scan',
-            style: TextStyle(fontWeight: FontWeight.w700, color: V4.ink),
+        ),
+        Text(
+          'Scan',
+          style: GoogleFonts.inter(
+            fontSize: size,
+            fontWeight: FontWeight.w500,
+            color: V4.ink.withValues(alpha: 0.55),
+            letterSpacing: -0.5,
+            height: 1.0,
           ),
-          TextSpan(
-            text: ' AI',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: V4.teal,
-              fontSize: size * 0.62,
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: size * 0.22, vertical: size * 0.08),
+          decoration: BoxDecoration(
+            color: V4.teal,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            'AI',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: size * 0.46,
+              fontWeight: FontWeight.w600,
+              color: V4.bg,
+              letterSpacing: 0.5,
+              height: 1.0,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

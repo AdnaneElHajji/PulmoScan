@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/v4_theme.dart';
 import 'widgets/aperture_mark.dart';
@@ -9,9 +10,11 @@ import 'screens/dashboard.dart';
 import 'screens/patients_list_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/exam_screen.dart';
+import 'screens/history_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -105,10 +108,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: V4.bg,
       body: Stack(
         children: [
-          // Grid texture
-          Positioned.fill(
-              child: CustomPaint(painter: GridBackground())),
-          // Teal radial glow
+          Positioned.fill(child: CustomPaint(painter: GridBackground())),
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
@@ -120,7 +120,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          // Blue secondary glow
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
@@ -132,22 +131,20 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          // Content
           FadeTransition(
             opacity: _fade,
             child: SafeArea(
               child: Column(
                 children: [
                   const Spacer(),
-                  const ApertureMark(
-                      size: 168, active: [1, 4, 7, 11]),
+                  const ApertureMark(size: 168, active: [1, 4, 7, 11]),
                   const SizedBox(height: 32),
                   const Wordmark(size: 32),
                   const SizedBox(height: 14),
-                  const Text(
+                  Text(
                     'quatorze pathologies,\nune radiographie.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 17,
                       color: V4.inkSoft,
                       fontStyle: FontStyle.italic,
@@ -155,7 +152,6 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   const Spacer(),
-                  // Progress dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -167,13 +163,12 @@ class _SplashScreenState extends State<SplashScreen>
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'CHARGEMENT · EFFICIENTNETB1 · TFLITE',
-                    style: TextStyle(
+                  Text(
+                    '2 MODÈLES · 14 PATHOLOGIES',
+                    style: GoogleFonts.jetBrainsMono(
                       fontSize: 9,
                       letterSpacing: 1.8,
                       color: V4.inkMuted,
-                      fontFamily: 'monospace',
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -224,6 +219,7 @@ class _MainNavigationState extends State<MainNavigation> {
     _screens = [
       const DashboardScreen(),
       const PatientsListScreen(),
+      const HistoryScreen(),
       ProfileScreen(onLogout: _logout),
     ];
   }
@@ -257,8 +253,7 @@ class _MainNavigationState extends State<MainNavigation> {
         elevation: 0,
         child: const Icon(Icons.add, size: 28),
       ),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _BottomBar(
         index: _index,
         onTap: (i) => setState(() => _index = i),
@@ -287,15 +282,15 @@ class _BottomBar extends StatelessWidget {
             _item(1, Icons.people_outline, Icons.people, 'Patients'),
             const Expanded(child: SizedBox()),
             const Expanded(child: SizedBox()),
-            _item(2, Icons.person_outline, Icons.person, 'Profil'),
+            _item(2, Icons.history_outlined, Icons.history_rounded, 'Historique'),
+            _item(3, Icons.person_outline, Icons.person, 'Profil'),
           ],
         ),
       ),
     );
   }
 
-  Widget _item(
-      int idx, IconData icon, IconData activeIcon, String label) {
+  Widget _item(int idx, IconData icon, IconData activeIcon, String label) {
     final on = index == idx;
     return Expanded(
       child: InkWell(

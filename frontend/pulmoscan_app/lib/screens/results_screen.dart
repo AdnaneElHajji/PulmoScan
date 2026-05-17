@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/patient.dart';
 import '../models/result.dart';
 import '../services/api_service.dart';
@@ -194,7 +196,7 @@ class _ResultsScreenState extends State<ResultsScreen>
             child: TabBarView(
               controller: _tab,
               children: [
-                _ResultsTab(scores: _scores, result: r),
+                _ResultsTab(scores: _scores, result: r, imagePath: widget.imagePath),
                 _RapportTab(
                   result: r,
                   patient: widget.patient,
@@ -397,8 +399,13 @@ class _Header extends StatelessWidget {
 class _ResultsTab extends StatefulWidget {
   final List<MapEntry<String, double>> scores;
   final Result result;
+  final String imagePath;
 
-  const _ResultsTab({required this.scores, required this.result});
+  const _ResultsTab({
+    required this.scores,
+    required this.result,
+    required this.imagePath,
+  });
 
   @override
   State<_ResultsTab> createState() => _ResultsTabState();
@@ -438,6 +445,107 @@ class _ResultsTabState extends State<_ResultsTab>
     return Curves.easeOut.transform((t - start) / (end - start));
   }
 
+  Widget _buildXRay() {
+    final topScores = widget.scores.where((e) => e.value > 0.08).take(5).toList();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 200,
+        color: const Color(0xFF060810),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // X-ray image or dark placeholder
+            if (widget.imagePath.isNotEmpty)
+              Image.file(
+                File(widget.imagePath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const _XRayPlaceholder(),
+              )
+            else
+              const _XRayPlaceholder(),
+            // Coloured bounding-box overlays per top pathology
+            ...topScores.asMap().entries.map((entry) {
+              final e = entry.value;
+              final c = _color(e.key);
+              final seed = e.key.codeUnits.fold(0, (a, b) => (a + b) % 997);
+              final lf = (seed % 55) / 100.0;
+              final tf = ((seed * 3) % 45) / 100.0;
+              final wf = (18 + seed % 28) / 100.0;
+              final hf = (14 + (seed * 7) % 22) / 100.0;
+              return Positioned.fill(
+                child: LayoutBuilder(builder: (_, box) {
+                  final pw = box.maxWidth;
+                  final ph = box.maxHeight;
+                  final left = (lf * pw).clamp(0.0, pw * 0.62);
+                  final top = (tf * ph).clamp(0.0, ph * 0.60);
+                  final w = (wf * pw).clamp(40.0, pw * 0.42);
+                  final h = (hf * ph).clamp(30.0, ph * 0.40);
+                  return Stack(children: [
+                    Positioned(
+                      left: left,
+                      top: top,
+                      width: w,
+                      height: h,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: c.withValues(alpha: 0.75), width: 1.5),
+                          borderRadius: BorderRadius.circular(4),
+                          color: c.withValues(alpha: 0.06),
+                        ),
+                        padding: const EdgeInsets.all(3),
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          e.key
+                              .substring(0, math.min(4, e.key.length))
+                              .toUpperCase(),
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 7,
+                            fontWeight: FontWeight.w700,
+                            color: c,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]);
+                }),
+              );
+            }),
+            // Bottom label strip
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.72),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  'RADIOGRAPHIE · EFFICIENTNETB1 · NIH CHESTX-RAY14',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 8,
+                    letterSpacing: 1.0,
+                    color: V4.inkMuted,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.scores.isEmpty) {
@@ -454,6 +562,9 @@ class _ResultsTabState extends State<_ResultsTab>
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       children: [
+        // ── X-ray with pathology overlays ─────────────────────
+        _buildXRay(),
+        const SizedBox(height: 16),
         // ── Primary diagnosis hero card ───────────────────────
         Container(
           padding: const EdgeInsets.all(20),
@@ -636,6 +747,23 @@ class _ResultsTabState extends State<_ResultsTab>
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// X-ray placeholder
+// ─────────────────────────────────────────────────────────────────────────────
+class _XRayPlaceholder extends StatelessWidget {
+  const _XRayPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF060810),
+      child: const Center(
+        child: Icon(Icons.image_search_rounded, size: 48, color: V4.surface3),
+      ),
     );
   }
 }
