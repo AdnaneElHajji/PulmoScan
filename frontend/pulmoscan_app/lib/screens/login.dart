@@ -1,11 +1,11 @@
-// lib/screens/login.dart
 import 'package:flutter/material.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
 import '../services/auth_service.dart';
 import 'register.dart';
 
 class LoginPageExact extends StatefulWidget {
   final Function(BuildContext) onLogin;
-
   const LoginPageExact({super.key, required this.onLogin});
 
   @override
@@ -14,363 +14,219 @@ class LoginPageExact extends StatefulWidget {
 
 class _LoginPageExactState extends State<LoginPageExact> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _rememberMe = false;
-  bool _obscurePassword = true;
+  final _emailCtrl = TextEditingController();
+  final _pwdCtrl = TextEditingController();
+  bool _obscure = true;
   bool _isLoading = false;
-  String _errorMessage = '';
+  String _error = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFEFF6FF),
-              Color(0xFFEEF2FF),
-            ],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
+      backgroundColor: V4.bg,
+      body: Stack(
+        children: [
+          Positioned.fill(child: CustomPaint(painter: GridBackground())),
+          Positioned.fill(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 448),
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 25,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(-0.5, -0.5),
+                  radius: 0.9,
+                  colors: [Color(0x2634E5C5), Colors.transparent],
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Logo
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0059FF),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: const Icon(
-                        Icons.monitor_heart_outlined,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'PulmoScan IA',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Détection des maladies pulmonaires',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Message d'erreur
-                    if (_errorMessage.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEE2E2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFCA5A5)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.error_outline,
-                                color: Color(0xFFDC2626), size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage,
-                                style:
-                                    const TextStyle(color: Color(0xFFDC2626)),
-                              ),
-                            ),
-                          ],
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Brand
+                      const Center(
+                          child: ApertureMark(
+                              size: 72, active: [1, 4, 7, 11])),
+                      const SizedBox(height: 20),
+                      const Center(child: Wordmark(size: 28)),
+                      const SizedBox(height: 10),
+                      const Center(
+                        child: Text(
+                          'quatorze pathologies, une radiographie.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: V4.inkSoft,
+                            height: 1.5,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                      const SizedBox(height: 40),
 
-                    // Formulaire
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // Email
-                          _buildChamp(
-                            label: 'Email',
-                            icone: Icons.mail_outline,
-                            controller: _emailController,
-                            hint: 'docteur@hopital.ma',
-                            clavier: TextInputType.emailAddress,
-                            validateur: (val) {
-                              if (val == null || val.isEmpty) {
-                                return 'Email obligatoire';
-                              }
-                              if (!val.contains('@')) return 'Email invalide';
-                              return null;
-                            },
+                      // Error banner
+                      if (_error.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: V4.coral.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: V4.coral.withValues(alpha: 0.30)),
                           ),
-
-                          const SizedBox(height: 20),
-
-                          // Mot de passe
-                          _buildChamp(
-                            label: 'Mot de passe',
-                            icone: Icons.lock_outline,
-                            controller: _passwordController,
-                            hint: '••••••••',
-                            obscure: _obscurePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                size: 20,
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                              onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
-                            ),
-                            validateur: (val) {
-                              if (val == null || val.isEmpty) {
-                                return 'Mot de passe obligatoire';
-                              }
-                              if (val.length < 6) return 'Minimum 6 caractères';
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Se souvenir + mot de passe oublié
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    onChanged: (val) =>
-                                        setState(() => _rememberMe = val!),
-                                    activeColor: const Color(0xFF0059FF),
-                                  ),
-                                  const Text(
-                                    'Se souvenir de moi',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Color(0xFF6B7280)),
-                                  ),
-                                ],
-                              ),
-                              TextButton(
-                                onPressed: () {},
-                                child: const Text(
-                                  'Mot de passe oublié ?',
-                                  style: TextStyle(
-                                      fontSize: 14, color: Color(0xFF0059FF)),
-                                ),
+                              const Icon(Icons.error_outline,
+                                  color: V4.coral, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(_error,
+                                    style: const TextStyle(
+                                        color: V4.coral, fontSize: 13)),
                               ),
                             ],
                           ),
-
-                          const SizedBox(height: 20),
-
-                          // Bouton connexion
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleSubmit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0059FF),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Se connecter',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Lien inscription
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Pas encore inscrit ? ',
-                          style:
-                              TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Email
+                      _label('Email'),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        style: const TextStyle(color: V4.ink),
+                        decoration: V4.inputDec(
+                            hint: 'docteur@hopital.ma',
+                            prefix: Icons.mail_outline_rounded),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Email obligatoire';
+                          }
+                          if (!v.contains('@')) return 'Email invalide';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Password
+                      _label('Mot de passe'),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _pwdCtrl,
+                        obscureText: _obscure,
+                        style: const TextStyle(color: V4.ink),
+                        decoration: V4.inputDec(
+                          hint: '••••••••',
+                          prefix: Icons.lock_outline_rounded,
+                          suffix: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: V4.inkMuted,
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Mot de passe obligatoire';
+                          }
+                          if (v.length < 6) return 'Minimum 6 caractères';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Submit
+                      V4.primaryBtn(
+                        label: 'Se connecter',
+                        onTap: _isLoading ? null : _submit,
+                        loading: _isLoading,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Register link
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Pas encore inscrit ? ',
+                            style: TextStyle(
+                                color: V4.inkMuted, fontSize: 13),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RegisterScreen(
-                                  onRegisterComplete: (success) {
-                                    if (success) {
+                                builder: (_) => RegisterScreen(
+                                  onRegisterComplete: (ok) {
+                                    if (ok) {
                                       Navigator.pop(context);
                                       widget.onLogin(context);
                                     }
                                   },
                                 ),
                               ),
-                            );
-                          },
-                          child: const Text(
-                            'S\'inscrire ici',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF0059FF),
-                              fontWeight: FontWeight.w600,
+                            ),
+                            child: const Text(
+                              'S\'inscrire',
+                              style: TextStyle(
+                                color: V4.teal,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      const Center(
+                        child: Text(
+                          'Accès réservé aux professionnels de santé',
+                          style: TextStyle(
+                              fontSize: 11, color: V4.inkMuted),
                         ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Text(
-                      'Accès réservé aux professionnels de santé',
-                      style:
-                          TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildChamp({
-    required String label,
-    required IconData icone,
-    required TextEditingController controller,
-    required String hint,
-    bool obscure = false,
-    TextInputType clavier = TextInputType.text,
-    Widget? suffixIcon,
-    String? Function(String?)? validateur,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
+  Widget _label(String text) => Text(
+        text,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: V4.inkSoft,
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          obscureText: obscure,
-          keyboardType: clavier,
-          validator: validateur,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            prefixIcon: Icon(icone, color: const Color(0xFF9CA3AF), size: 20),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFF0059FF), width: 2),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final authService = AuthService();
-      await authService.login(
-        _emailController.text.trim(),
-        _passwordController.text,
       );
-      if (!mounted) return;
-      widget.onLogin(context);
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      await AuthService()
+          .login(_emailCtrl.text.trim(), _pwdCtrl.text);
+      if (mounted) widget.onLogin(context);
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      });
+      setState(() =>
+          _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -378,8 +234,8 @@ class _LoginPageExactState extends State<LoginPageExact> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _pwdCtrl.dispose();
     super.dispose();
   }
 }

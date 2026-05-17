@@ -44,8 +44,9 @@ class Exam {
 
   // Crée un Exam depuis une réponse JSON du backend API
   factory Exam.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
     return Exam(
-      id: json['id'],
+      id: rawId == null ? null : (rawId is int ? rawId : int.tryParse(rawId.toString())),
       patientId: json['patient_id'] is int
           ? json['patient_id']
           : int.tryParse(json['patient_id'].toString()) ?? 0,

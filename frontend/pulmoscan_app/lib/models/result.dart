@@ -49,8 +49,9 @@ class Result {
   // Crée un Result depuis une réponse JSON du backend API
   // La confidence vient en 0-1 du backend → convertie en 0-100 pour l'affichage
   factory Result.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
     return Result(
-      id: json['id'],
+      id: rawId == null ? null : (rawId is int ? rawId : int.tryParse(rawId.toString())),
       examId: json['exam_id'] is int
           ? json['exam_id']
           : int.tryParse(json['exam_id'].toString()) ?? 0,

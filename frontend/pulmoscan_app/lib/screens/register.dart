@@ -1,11 +1,11 @@
-// lib/screens/register.dart
 import 'package:flutter/material.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
 import '../services/auth_service.dart';
 import 'verify_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final Function(bool success) onRegisterComplete;
-
   const RegisterScreen({super.key, required this.onRegisterComplete});
 
   @override
@@ -14,18 +14,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nomController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-
-  String _selectedRole = '';
+  final _nomCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _pwdCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  String _role = '';
   bool _isLoading = false;
-  String _errorMessage = '';
-  bool _obscurePassword = true;
+  String _error = '';
+  bool _obscurePwd = true;
   bool _obscureConfirm = true;
 
-  final List<Map<String, String>> _specialites = [
+  static const List<Map<String, String>> _specialites = [
     {'value': 'MEDECIN_GENERALISTE', 'label': 'Médecin généraliste'},
     {'value': 'PNEUMOLOGUE', 'label': 'Pneumologue'},
     {'value': 'RADIOLOGUE', 'label': 'Radiologue'},
@@ -37,412 +36,290 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFEBF5FF), Color(0xFFE0E7FF)],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+      backgroundColor: V4.bg,
+      body: Stack(
+        children: [
+          Positioned.fill(child: CustomPaint(painter: GridBackground())),
+          Positioned.fill(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 448),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 25,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0.6, -0.4),
+                  radius: 0.85,
+                  colors: [Color(0x1E34E5C5), Colors.transparent],
+                ),
               ),
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Logo
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0059FF),
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: const Icon(
-                      Icons.monitor_heart_outlined,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'PulmoScan IA',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    'Créer un compte professionnel',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Message d'erreur
-                  if (_errorMessage.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFCA5A5)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.error_outline,
-                              color: Color(0xFFDC2626), size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(_errorMessage,
-                                style: const TextStyle(
-                                    color: Color(0xFFDC2626))),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Formulaire
-                  Form(
-                    key: _formKey,
-                    child: Column(
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header
+                    Row(
                       children: [
-                        _buildChamp(
-                          label: 'Nom complet *',
-                          icone: Icons.person_outline,
-                          controller: _nomController,
-                          hint: 'Dr. Nom Prénom',
-                          validateur: (val) {
-                            if (val == null || val.isEmpty) {
-                              return 'Nom obligatoire';
-                            }
-                            if (val.length < 2) return 'Minimum 2 caractères';
-                            return null;
-                          },
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: V4.inkSoft, size: 18),
                         ),
+                        const Spacer(),
+                        const Wordmark(size: 20),
+                        const Spacer(),
+                        const SizedBox(width: 40),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
 
-                        const SizedBox(height: 16),
+                    const Text(
+                      'Créer un compte',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.6,
+                        color: V4.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Accès réservé aux professionnels de santé.',
+                      style: TextStyle(fontSize: 13, color: V4.inkSoft),
+                    ),
+                    const SizedBox(height: 28),
 
-                        _buildChamp(
-                          label: 'Email professionnel *',
-                          icone: Icons.mail_outline,
-                          controller: _emailController,
-                          hint: 'docteur@hopital.ma',
-                          clavier: TextInputType.emailAddress,
-                          validateur: (val) {
-                            if (val == null || val.isEmpty) {
-                              return 'Email obligatoire';
-                            }
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                .hasMatch(val)) {
-                              return 'Email invalide';
-                            }
-                            return null;
-                          },
+                    // Error
+                    if (_error.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: V4.coral.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: V4.coral.withValues(alpha: 0.30)),
                         ),
-
-                        const SizedBox(height: 16),
-
-                        // Dropdown spécialité
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            const Text(
-                              'Spécialité *',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF374151),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedRole.isEmpty
-                                  ? null
-                                  : _selectedRole,
-                              hint: const Text(
-                                'Sélectionner une spécialité',
-                                style: TextStyle(color: Color(0xFF9CA3AF)),
-                              ),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.work_outline,
-                                    color: Color(0xFF9CA3AF), size: 20),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFFD1D5DB)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFFD1D5DB)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: Color(0xFF0059FF), width: 2),
-                                ),
-                              ),
-                              items: _specialites.map((s) {
-                                return DropdownMenuItem<String>(
-                                  value: s['value'],
-                                  child: Text(s['label']!),
-                                );
-                              }).toList(),
-                              onChanged: (val) =>
-                                  setState(() => _selectedRole = val ?? ''),
-                              validator: (val) {
-                                if (val == null || val.isEmpty) {
-                                  return 'Spécialité obligatoire';
-                                }
-                                return null;
-                              },
+                            const Icon(Icons.error_outline,
+                                color: V4.coral, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(_error,
+                                  style: const TextStyle(
+                                      color: V4.coral, fontSize: 13)),
                             ),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
-                        const SizedBox(height: 16),
+                    _label('Nom complet'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _nomCtrl,
+                      style: const TextStyle(color: V4.ink),
+                      decoration: V4.inputDec(
+                          hint: 'Dr. Nom Prénom',
+                          prefix: Icons.person_outline_rounded),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Nom obligatoire';
+                        if (v.length < 2) return 'Minimum 2 caractères';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                        _buildChamp(
-                          label: 'Mot de passe *',
-                          icone: Icons.lock_outline,
-                          controller: _passwordController,
-                          hint: '••••••••',
-                          obscure: _obscurePassword,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 20,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                            onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword),
+                    _label('Email professionnel'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(color: V4.ink),
+                      decoration: V4.inputDec(
+                          hint: 'docteur@hopital.ma',
+                          prefix: Icons.mail_outline_rounded),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Email obligatoire';
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) {
+                          return 'Email invalide';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    _label('Spécialité'),
+                    const SizedBox(height: 6),
+                    DropdownButtonFormField<String>(
+                      initialValue: _role.isEmpty ? null : _role,
+                      dropdownColor: V4.surface2,
+                      style: const TextStyle(color: V4.ink, fontSize: 14),
+                      hint: const Text('Sélectionner',
+                          style: TextStyle(color: V4.inkMuted)),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                          color: V4.inkMuted),
+                      decoration: V4.inputDec(
+                          prefix: Icons.work_outline_rounded),
+                      items: _specialites
+                          .map((s) => DropdownMenuItem<String>(
+                                value: s['value'],
+                                child: Text(s['label']!),
+                              ))
+                          .toList(),
+                      onChanged: (v) =>
+                          setState(() => _role = v ?? ''),
+                      validator: (v) =>
+                          (v == null || v.isEmpty)
+                              ? 'Spécialité obligatoire'
+                              : null,
+                    ),
+                    const SizedBox(height: 16),
+
+                    _label('Mot de passe'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _pwdCtrl,
+                      obscureText: _obscurePwd,
+                      style: const TextStyle(color: V4.ink),
+                      decoration: V4.inputDec(
+                        hint: '••••••••',
+                        prefix: Icons.lock_outline_rounded,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscurePwd
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: V4.inkMuted,
+                            size: 20,
                           ),
-                          validateur: (val) {
-                            if (val == null || val.isEmpty) {
-                              return 'Mot de passe obligatoire';
-                            }
-                            if (val.length < 8) return 'Minimum 8 caractères';
-                            return null;
-                          },
+                          onPressed: () =>
+                              setState(() => _obscurePwd = !_obscurePwd),
                         ),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Mot de passe obligatoire';
+                        }
+                        if (v.length < 8) return 'Minimum 8 caractères';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                        const SizedBox(height: 16),
-
-                        _buildChamp(
-                          label: 'Confirmer le mot de passe *',
-                          icone: Icons.lock_outline,
-                          controller: _confirmPasswordController,
-                          hint: '••••••••',
-                          obscure: _obscureConfirm,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureConfirm
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 20,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                            onPressed: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm),
+                    _label('Confirmer le mot de passe'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _confirmCtrl,
+                      obscureText: _obscureConfirm,
+                      style: const TextStyle(color: V4.ink),
+                      decoration: V4.inputDec(
+                        hint: '••••••••',
+                        prefix: Icons.lock_outline_rounded,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscureConfirm
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: V4.inkMuted,
+                            size: 20,
                           ),
-                          validateur: (val) {
-                            if (val == null || val.isEmpty) {
-                              return 'Confirmation obligatoire';
-                            }
-                            if (val != _passwordController.text) {
-                              return 'Les mots de passe ne correspondent pas';
-                            }
-                            return null;
-                          },
+                          onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
                         ),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Confirmation obligatoire';
+                        }
+                        if (v != _pwdCtrl.text) {
+                          return 'Les mots de passe ne correspondent pas';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 28),
 
-                        const SizedBox(height: 24),
+                    V4.primaryBtn(
+                      label: 'S\'inscrire',
+                      onTap: _isLoading ? null : _submit,
+                      loading: _isLoading,
+                    ),
+                    const SizedBox(height: 20),
 
-                        // Bouton inscription
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleRegister,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0059FF),
-                              foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Flexible(
+                          child: Text(
+                            'Déjà inscrit ? ',
+                            style: TextStyle(
+                                color: V4.inkMuted, fontSize: 13),
+                          ),
+                        ),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Text(
+                              'Se connecter',
+                              style: TextStyle(
+                                color: V4.teal,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
                               ),
-                              elevation: 0,
                             ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'S\'inscrire',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600),
-                                  ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Lien connexion
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Déjà inscrit ? ',
-                        style:
-                            TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: const Text(
-                          'Se connecter',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0059FF),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  const Text(
-                    'Accès réservé aux professionnels de santé',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildChamp({
-    required String label,
-    required IconData icone,
-    required TextEditingController controller,
-    required String hint,
-    bool obscure = false,
-    TextInputType clavier = TextInputType.text,
-    Widget? suffixIcon,
-    String? Function(String?)? validateur,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
+  Widget _label(String text) => Text(
+        text,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: V4.inkSoft,
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          obscureText: obscure,
-          keyboardType: clavier,
-          validator: validateur,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            prefixIcon: Icon(icone, color: const Color(0xFF9CA3AF), size: 20),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFF0059FF), width: 2),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+      );
 
-  Future<void> _handleRegister() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() { _isLoading = true; _errorMessage = ''; });
-
+    setState(() { _isLoading = true; _error = ''; });
     try {
-      final authService = AuthService();
-      // Envoie le code de vérification par email
-      await authService.sendVerificationCode(_emailController.text.trim());
-
+      await AuthService()
+          .sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
-        // Navigue vers l'écran de vérification
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerifyScreen(
-              email: _emailController.text.trim(),
-              name: _nomController.text.trim(),
-              password: _passwordController.text,
-              role: _selectedRole.isEmpty ? 'medecin' : _selectedRole,
+            builder: (_) => VerifyScreen(
+              email: _emailCtrl.text.trim(),
+              name: _nomCtrl.text.trim(),
+              password: _pwdCtrl.text,
+              role: _role.isEmpty ? 'medecin' : _role,
             ),
           ),
         );
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      });
+      setState(() =>
+          _error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -450,10 +327,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nomController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    _nomCtrl.dispose();
+    _emailCtrl.dispose();
+    _pwdCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 }

@@ -12,9 +12,9 @@ exports.validateRegister = (req, res, next) => {
 };
 
 exports.validatePatient = (req, res, next) => {
-  const { nom, age, genre, email, telephone, cin, antecedents } = req.body;
-  if (!nom || !age || !genre || !email || !telephone || !cin || !antecedents)
-    return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+  const { nom, age, genre, email, cin } = req.body;
+  if (!nom || !age || !genre || !email || !cin)
+    return res.status(400).json({ message: 'Nom, âge, genre, email et CIN sont obligatoires' });
   if (!emailRegex.test(email))
     return res.status(400).json({ message: 'Format email invalide' });
   if (age < 1 || age > 149)
@@ -35,8 +35,8 @@ exports.validateResult = (req, res, next) => {
     return res.status(400).json({ message: 'exam_id, diagnostic, confidence et severite sont obligatoires' });
   if (confidence < 0 || confidence > 1)
     return res.status(400).json({ message: 'La confidence doit être entre 0 et 1' });
-  const niveaux = ['faible', 'modere', 'severe'];
+  const niveaux = ['faible', 'modere', 'severe', 'normal', 'moyen', 'urgent'];
   if (!niveaux.includes(severite))
-    return res.status(400).json({ message: 'Sévérité invalide (faible / modere / severe)' });
+    return res.status(400).json({ message: 'Sévérité invalide' });
   next();
 };

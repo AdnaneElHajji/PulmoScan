@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
 import '../services/api_service.dart';
 
-class DashboardResponsive extends StatefulWidget {
-  const DashboardResponsive({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
-  State<DashboardResponsive> createState() => _DashboardResponsiveState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardResponsiveState extends State<DashboardResponsive> {
+class _DashboardScreenState extends State<DashboardScreen> {
   final ApiService _api = ApiService();
-
   bool _isLoading = true;
   String? _error;
-
   int _totalPatients = 0;
   int _totalExamens = 0;
   int _totalResultats = 0;
@@ -23,14 +23,11 @@ class _DashboardResponsiveState extends State<DashboardResponsive> {
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _load();
   }
 
-  Future<void> _loadStats() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _load() async {
+    setState(() { _isLoading = true; _error = null; });
     try {
       final data = await _api.get('/stats');
       setState(() {
@@ -54,359 +51,418 @@ class _DashboardResponsiveState extends State<DashboardResponsive> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tableau de bord',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+      backgroundColor: V4.bg,
+      body: Stack(
+        children: [
+          Positioned.fill(child: CustomPaint(painter: GridBackground())),
+          const Positioned(
+            top: 0, left: 0, right: 0,
+            height: 320,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0.6, -0.6),
+                  radius: 1.0,
+                  colors: [Color(0x1E34E5C5), Colors.transparent],
+                ),
               ),
             ),
-            SizedBox(height: 2),
-            Text(
-              'Vue d\'ensemble de vos examens pulmonaires',
-              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF6B7280)),
-            onPressed: _loadStats,
+          ),
+          SafeArea(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: V4.teal))
+                : _error != null
+                    ? _buildError()
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        color: V4.teal,
+                        backgroundColor: V4.surface2,
+                        child: _buildContent(),
+                      ),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF0059FF)))
-          : _error != null
-              ? _buildError()
-              : RefreshIndicator(
-                  onRefresh: _loadStats,
-                  color: const Color(0xFF0059FF),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        _buildStatsGrid(),
-                        const SizedBox(height: 24),
-                        _buildStatutCard(),
-                        const SizedBox(height: 16),
-                        _buildTopDiagnosticsCard(),
-                      ],
-                    ),
+    );
+  }
+
+  Widget _buildContent() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      children: [
+        _buildHeader(),
+        const SizedBox(height: 24),
+        _buildStatsRow(),
+        const SizedBox(height: 20),
+        _buildMarkSection(),
+        const SizedBox(height: 20),
+        if (_examensParStatut.isNotEmpty) _buildStatusCard(),
+        if (_examensParStatut.isNotEmpty) const SizedBox(height: 16),
+        if (_topDiagnostics.isNotEmpty) _buildTopDiagCard(),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tableau de bord',
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.6,
+                    color: V4.ink,
                   ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  'Vue d\'ensemble · PulmoScan AI',
+                  style: V4.monoLabel,
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: _load,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: V4.surface1,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: V4.border),
+              ),
+              child: const Icon(Icons.refresh_rounded,
+                  color: V4.inkMuted, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    final stats = [
+      {'n': '$_totalExamens', 'l': 'examens', 'c': V4.blue},
+      {'n': '$_totalPatients', 'l': 'patients', 'c': V4.teal},
+      {'n': '$_totalResultats', 'l': 'résultats', 'c': V4.amber},
+      {'n': '0.91', 'l': 'AUC', 'c': V4.violet},
+    ];
+
+    return Row(
+      children: stats.asMap().entries.map((e) {
+        final s = e.value;
+        final color = s['c'] as Color;
+        return Expanded(
+          child: Container(
+            margin: EdgeInsets.only(left: e.key == 0 ? 0 : 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: V4.surface1,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: V4.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s['n'] as String,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  (s['l'] as String).toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    letterSpacing: 1.2,
+                    color: V4.inkMuted,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildMarkSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
+      ),
+      child: Row(
+        children: [
+          const ApertureMark(size: 80, active: [1, 4, 7, 11]),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '14 pathologies',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color: V4.ink,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'EfficientNetB1 · TFLite',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: V4.inkMuted,
+                    fontFamily: 'monospace',
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _pillStat('AUC', '0.91', V4.teal),
+                    const SizedBox(width: 8),
+                    _pillStat('NIH', '112K', V4.blue),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pillStat(String label, String val, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        '$label $val',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontFamily: 'monospace',
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Examens par statut',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: V4.ink,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._examensParStatut.map((item) {
+            final statut = item['statut'] as String? ?? '';
+            final total = item['total'].toString();
+            final color = _statutColor(statut);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                        color: color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(_statutLabel(statut),
+                        style:
+                            const TextStyle(fontSize: 13, color: V4.inkSoft)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      total,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopDiagCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Top diagnostics IA',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: V4.ink,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Pathologies les plus détectées',
+            style: TextStyle(fontSize: 12, color: V4.inkMuted),
+          ),
+          const SizedBox(height: 16),
+          ..._topDiagnostics.asMap().entries.map((entry) {
+            final i = entry.key;
+            final item = entry.value;
+            final diag = item['diagnostic'] as String? ?? '';
+            final total = item['total'].toString();
+            final color = i < V4.pathColors.length
+                ? V4.pathColors[i]
+                : V4.teal;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${i + 1}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: color,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(diag,
+                        style: const TextStyle(
+                            fontSize: 14, color: V4.inkSoft)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$total cas',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
   Widget _buildError() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Color(0xFFD32F2F)),
-          const SizedBox(height: 16),
-          Text(_error!, style: const TextStyle(color: Color(0xFF6B7280))),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _loadStats,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Réessayer'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0059FF),
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid() {
-    final stats = [
-      {
-        'label': 'Total examens',
-        'value': '$_totalExamens',
-        'icon': Icons.description_outlined,
-        'color': Colors.blue,
-      },
-      {
-        'label': 'Patients actifs',
-        'value': '$_totalPatients',
-        'icon': Icons.people_outline,
-        'color': Colors.green,
-      },
-      {
-        'label': 'Résultats analysés',
-        'value': '$_totalResultats',
-        'icon': Icons.analytics_outlined,
-        'color': Colors.orange,
-      },
-      {
-        'label': 'Précision IA',
-        'value': '94.2%',
-        'icon': Icons.auto_graph_outlined,
-        'color': Colors.purple,
-      },
-    ];
-
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.4,
-      children: stats.map(_buildStatCard).toList(),
-    );
-  }
-
-  Widget _buildStatCard(Map<String, dynamic> stat) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: (stat['color'] as Color).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(stat['icon'] as IconData,
-                color: stat['color'] as Color, size: 20),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                stat['label'] as String,
-                style: const TextStyle(
-                    fontSize: 11, color: Color(0xFF6B7280)),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                stat['value'] as String,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatutCard() {
-    if (_examensParStatut.isEmpty) return const SizedBox.shrink();
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFFF3F4F6)),
-      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Examens par statut',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
-              ),
-            ),
+            const Icon(Icons.wifi_off_rounded, size: 60, color: V4.inkMuted),
             const SizedBox(height: 16),
-            ..._examensParStatut.map((item) {
-              final statut = item['statut'] as String? ?? '';
-              final total = item['total'].toString();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: _statutColor(statut),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _statutLabel(statut),
-                        style:
-                            const TextStyle(fontSize: 14, color: Color(0xFF374151)),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _statutColor(statut).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        total,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: _statutColor(statut),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
+            Text(
+              _error!,
+              style: const TextStyle(color: V4.inkSoft, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            V4.primaryBtn(label: 'Réessayer', onTap: _load, fullWidth: false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopDiagnosticsCard() {
-    if (_topDiagnostics.isEmpty) return const SizedBox.shrink();
-
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFFF3F4F6)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Top diagnostics IA',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Pathologies les plus détectées',
-              style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 16),
-            ..._topDiagnostics.asMap().entries.map((entry) {
-              final i = entry.key;
-              final item = entry.value;
-              final diag = item['diagnostic'] as String? ?? '';
-              final total = item['total'].toString();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0059FF).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${i + 1}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0059FF),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        diag,
-                        style: const TextStyle(
-                            fontSize: 14, color: Color(0xFF111827)),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0059FF).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '$total cas',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF0059FF),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _statutColor(String statut) {
-    switch (statut) {
-      case 'termine':
-        return const Color(0xFF059669);
-      case 'analyse':
-        return const Color(0xFF0059FF);
-      case 'en_attente':
-        return const Color(0xFFD97706);
-      default:
-        return const Color(0xFF6B7280);
+  Color _statutColor(String s) {
+    switch (s) {
+      case 'termine': return V4.teal;
+      case 'analyse': return V4.blue;
+      case 'en_attente': return V4.amber;
+      default: return V4.inkMuted;
     }
   }
 
-  String _statutLabel(String statut) {
-    switch (statut) {
-      case 'termine':
-        return 'Terminé';
-      case 'analyse':
-        return 'En analyse';
-      case 'en_attente':
-        return 'En attente';
-      default:
-        return statut;
+  String _statutLabel(String s) {
+    switch (s) {
+      case 'termine': return 'Terminé';
+      case 'analyse': return 'En analyse';
+      case 'en_attente': return 'En attente';
+      default: return s;
     }
   }
 }

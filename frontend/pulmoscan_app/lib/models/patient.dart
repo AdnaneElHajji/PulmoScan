@@ -58,8 +58,9 @@ class Patient {
 
   // Crée un Patient à partir d'une réponse JSON du backend API
   factory Patient.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
     return Patient(
-      id: json['id'],
+      id: rawId == null ? null : (rawId is int ? rawId : int.tryParse(rawId.toString())),
       nom: json['nom'] ?? '',
       age: json['age'] is int ? json['age'] : int.tryParse(json['age'].toString()) ?? 0,
       genre: json['genre'] ?? '',

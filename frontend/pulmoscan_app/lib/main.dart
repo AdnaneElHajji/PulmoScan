@@ -1,54 +1,212 @@
-// lib/main.dart — VERSION CORRIGÉE
-// Gère la navigation principale avec barre du bas (Dashboard, Patients, Profil)
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'theme/v4_theme.dart';
+import 'widgets/aperture_mark.dart';
 import 'screens/login.dart';
+import 'screens/onboarding.dart';
 import 'screens/dashboard.dart';
 import 'screens/patients_list_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/exam_screen.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+  runApp(const PulmoApp());
+}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PulmoApp extends StatelessWidget {
+  const PulmoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PulmoScan IA',
-      debugShowCheckedModeBanner: false, // Cache le bandeau "DEBUG"
-      theme: ThemeData(
-        primaryColor: const Color(0xFF0059FF),
-        scaffoldBackgroundColor: const Color(0xFFF9FAFB),
-        fontFamily: 'Inter',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xFF6B7280)),
-        ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0059FF),
-        ),
-      ),
-      // Démarre sur l'écran de connexion
-      home: LoginPageExact(
-        onLogin: (context) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MainNavigation(),
-            ),
-          );
-        },
-      ),
+      title: 'PulmoScan AI',
+      debugShowCheckedModeBanner: false,
+      theme: V4.theme(),
+      home: const SplashScreen(),
     );
   }
 }
 
-// ════════════════════════════════════════════════
-// Navigation principale avec barre du bas
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// SPLASH SCREEN
+// ══════════════════════════════════════════════════════════
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 700));
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted) return;
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingDone = prefs.getBool('onboarding_done') ?? false;
+
+    if (!mounted) return;
+    if (!onboardingDone) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OnboardingScreen(onDone: _goToLogin),
+        ),
+      );
+    } else {
+      _goToLogin(context);
+    }
+  }
+
+  void _goToLogin(BuildContext ctx) {
+    Navigator.pushReplacement(
+      ctx,
+      MaterialPageRoute(
+        builder: (_) => LoginPageExact(
+          onLogin: (loginCtx) => Navigator.pushReplacement(
+            loginCtx,
+            MaterialPageRoute(builder: (_) => const MainNavigation()),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: V4.bg,
+      body: Stack(
+        children: [
+          // Grid texture
+          Positioned.fill(
+              child: CustomPaint(painter: GridBackground())),
+          // Teal radial glow
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -0.3),
+                  radius: 0.85,
+                  colors: [Color(0x3434E5C5), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          // Blue secondary glow
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0.7, 0.7),
+                  radius: 0.6,
+                  colors: [Color(0x165A9BFF), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          // Content
+          FadeTransition(
+            opacity: _fade,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  const Spacer(),
+                  const ApertureMark(
+                      size: 168, active: [1, 4, 7, 11]),
+                  const SizedBox(height: 32),
+                  const Wordmark(size: 32),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'quatorze pathologies,\nune radiographie.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 17,
+                      color: V4.inkSoft,
+                      fontStyle: FontStyle.italic,
+                      height: 1.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  // Progress dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _dot(V4.teal),
+                      const SizedBox(width: 4),
+                      _dot(V4.teal),
+                      const SizedBox(width: 4),
+                      _dot(V4.surface3),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'CHARGEMENT · EFFICIENTNETB1 · TFLITE',
+                    style: TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.8,
+                      color: V4.inkMuted,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Foudali Kenza · El Hajji Adnnane · BTS 2026',
+                    style: TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.4,
+                      color: V4.inkMuted.withValues(alpha: 0.55),
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dot(Color color) => Container(
+        width: 18,
+        height: 3,
+        decoration:
+            BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+      );
+}
+
+// ══════════════════════════════════════════════════════════
+// MAIN NAVIGATION
+// ══════════════════════════════════════════════════════════
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -57,99 +215,120 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _indexActuel = 0; // Onglet actif (0=Dashboard, 1=Patients, 2=Profil)
-
-  // Les 3 écrans principaux
-  late final List<Widget> _ecrans;
+  int _index = 0;
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _ecrans = [
-       DashboardResponsive(),
+    _screens = [
+      const DashboardScreen(),
       const PatientsListScreen(),
-      ProfileScreen(
-        onLogout: _seDeconnecter,
-      ),
+      ProfileScreen(onLogout: _logout),
     ];
   }
 
-  // Déconnecte et retourne à l'écran de login
-  void _seDeconnecter() {
+  void _logout() {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginPageExact(
-          onLogin: (context) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const MainNavigation(),
-              ),
-            );
-          },
+        builder: (_) => LoginPageExact(
+          onLogin: (ctx) => Navigator.pushReplacement(
+            ctx,
+            MaterialPageRoute(builder: (_) => const MainNavigation()),
+          ),
         ),
       ),
-      (route) => false, // Supprime tout l'historique de navigation
+      (_) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Affiche l'écran selon l'onglet actif
-      body: IndexedStack(
-        index: _indexActuel,
-        children: _ecrans,
-      ),
-
-      // Bouton flottant "Nouvel examen" visible sur Dashboard et Patients
-      floatingActionButton: _indexActuel != 2
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ExamScreen(),
-                  ),
-                );
-              },
-              backgroundColor: const Color(0xFF0059FF),
-              child: const Icon(Icons.add, size: 28, color: Colors.white),
-            )
-          : null,
-
-      // Barre de navigation du bas
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _indexActuel,
-        onTap: (index) => setState(() => _indexActuel = index),
-        selectedItemColor: const Color(0xFF0059FF),
-        unselectedItemColor: const Color(0xFF9CA3AF),
-        backgroundColor: Colors.white,
-        elevation: 8,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+      body: IndexedStack(index: _index, children: _screens),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ExamScreen()),
         ),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+        backgroundColor: V4.teal,
+        foregroundColor: V4.bg,
+        elevation: 0,
+        child: const Icon(Icons.add, size: 28),
+      ),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _BottomBar(
+        index: _index,
+        onTap: (i) => setState(() => _index = i),
+      ),
+    );
+  }
+}
+
+class _BottomBar extends StatelessWidget {
+  final int index;
+  final ValueChanged<int> onTap;
+
+  const _BottomBar({required this.index, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomAppBar(
+      color: V4.surface1,
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 6,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            _item(0, Icons.dashboard_outlined, Icons.dashboard, 'Accueil'),
+            _item(1, Icons.people_outline, Icons.people, 'Patients'),
+            const Expanded(child: SizedBox()),
+            const Expanded(child: SizedBox()),
+            _item(2, Icons.person_outline, Icons.person, 'Profil'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _item(
+      int idx, IconData icon, IconData activeIcon, String label) {
+    final on = index == idx;
+    return Expanded(
+      child: InkWell(
+        onTap: () => onTap(idx),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: on ? V4.teal : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Icon(on ? activeIcon : icon,
+                  color: on ? V4.teal : V4.inkMuted, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: on ? FontWeight.w700 : FontWeight.w400,
+                  color: on ? V4.teal : V4.inkMuted,
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
-            label: 'Patients',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
+        ),
       ),
     );
   }

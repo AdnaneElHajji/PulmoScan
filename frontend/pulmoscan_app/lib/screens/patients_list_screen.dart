@@ -1,9 +1,8 @@
-// lib/screens/patients_list_screen.dart
-// Écran liste des patients avec recherche, filtres et navigation
-
 import 'package:flutter/material.dart';
 import '../models/patient.dart';
 import '../services/api_service.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
 import 'add_patient_screen.dart';
 import 'patient_detail_screen.dart';
 
@@ -16,401 +15,308 @@ class PatientsListScreen extends StatefulWidget {
 
 class _PatientsListScreenState extends State<PatientsListScreen> {
   final ApiService _api = ApiService();
-  final TextEditingController _searchController = TextEditingController();
-
-  List<Patient> _patients = [];       // Tous les patients
-  List<Patient> _patientsFiltres = []; // Patients après filtre/recherche
-  
+  final TextEditingController _search = TextEditingController();
+  List<Patient> _patients = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _chargerPatients();
+    _load();
   }
 
-  // Charge les patients depuis l'API backend
-  Future<void> _chargerPatients() async {
+  Future<void> _load() async {
     setState(() => _isLoading = true);
     try {
-      final query = _searchController.text.trim();
-      final path = query.isNotEmpty
-          ? '/patients?search=${Uri.encodeComponent(query)}'
+      final q = _search.text.trim();
+      final path = q.isNotEmpty
+          ? '/patients?search=${Uri.encodeComponent(q)}'
           : '/patients';
       final data = await _api.get(path);
       final patients = (data as List)
           .map((e) => Patient.fromJson(e as Map<String, dynamic>))
           .toList();
-      setState(() {
-        _patients = patients;
-        _patientsFiltres = patients;
-        _isLoading = false;
-      });
-    } catch (e) {
+      setState(() { _patients = patients; _isLoading = false; });
+    } catch (_) {
       setState(() => _isLoading = false);
-      _afficherErreur('Erreur lors du chargement des patients');
     }
   }
 
-  // Déclenche une recherche via l'API
-  void _filtrer() {
-    _chargerPatients();
-  }
-
-  // Retourne la couleur selon l'âge (règle d'affichage)
-  Color _couleurStatut(Patient patient) {
-    if (patient.age > 60) return const Color(0xFFD32F2F); // Rouge = senior
-    if (patient.age > 40) return const Color(0xFFD97706); // Orange = adulte
-    return const Color(0xFF388E3C);                        // Vert = jeune
-  }
-
-  String _labelStatut(Patient patient) {
-    if (patient.age > 60) return 'Sénior';
-    if (patient.age > 40) return 'Adulte';
-    return 'Jeune';
-  }
-
-  void _afficherErreur(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFFD32F2F),
-      ),
-    );
-  }
-
-  // Supprime un patient avec confirmation
-  Future<void> _supprimerPatient(Patient patient) async {
-    final confirme = await showDialog<bool>(
+  Future<void> _delete(Patient p) async {
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Supprimer le patient'),
-        content: Text(
-          'Êtes-vous sûr de vouloir supprimer ${patient.nom} ?\n\nTous ses examens seront aussi supprimés.',
-        ),
+        content:
+            Text('Supprimer ${p.nom} ? Ses examens seront aussi supprimés.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: const Text('Annuler',
+                style: TextStyle(color: V4.inkMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFD32F2F),
-            ),
-            child: const Text('Supprimer'),
+            child: const Text('Supprimer',
+                style: TextStyle(color: V4.coral)),
           ),
         ],
       ),
     );
-
-    if (confirme == true) {
+    if (ok == true) {
       try {
-        await _api.delete('/patients/${patient.id}');
-        _chargerPatients(); // Recharge la liste
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${patient.nom} supprimé avec succès'),
-              backgroundColor: const Color(0xFF388E3C),
-            ),
-          );
-        }
-      } catch (e) {
-        _afficherErreur('Erreur lors de la suppression');
-      }
+        await _api.delete('/patients/${p.id}');
+        _load();
+      } catch (_) {}
     }
+  }
+
+  // Derive initials + colour from patient
+  String _initials(Patient p) {
+    final parts = p.nom.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return p.nom.substring(0, p.nom.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  Color _avatarColor(Patient p) {
+    if (p.age > 60) return V4.coral;
+    if (p.age > 40) return V4.amber;
+    return V4.teal;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Patients',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
-              ),
-            ),
-            Text(
-              '${_patients.length} patients au total',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: V4.bg,
       body: Column(
         children: [
-          // ── Barre de recherche ──
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Champ recherche
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (_) => _filtrer(),
-                      decoration: const InputDecoration(
-                        hintText: 'Rechercher un patient...',
-                        hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Bouton filtre
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: PopupMenuButton<String>(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color(0xFF6B7280),
-                    ),
-                     onSelected: (value) {
-                        _filtrer();
-                  },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'Tous', child: Text('Tous')),
-                      const PopupMenuItem(value: 'Sénior', child: Text('Sénior (+60 ans)')),
-                      const PopupMenuItem(value: 'Adulte', child: Text('Adulte (40-60 ans)')),
-                      const PopupMenuItem(value: 'Jeune', child: Text('Jeune (-40 ans)')),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Liste des patients ──
+          _buildHeader(),
+          _buildSearchBar(),
+          const SizedBox(height: 4),
           Expanded(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF0059FF),
-                    ),
-                  )
-                : _patientsFiltres.isEmpty
-                    ? _buildEtatVide()
+                    child: CircularProgressIndicator(color: V4.teal))
+                : _patients.isEmpty
+                    ? _buildEmpty()
                     : RefreshIndicator(
-                        onRefresh: _chargerPatients,
-                        color: const Color(0xFF0059FF),
+                        onRefresh: _load,
+                        color: V4.teal,
+                        backgroundColor: V4.surface2,
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _patientsFiltres.length,
-                          itemBuilder: (context, index) {
-                            return _buildCartePatient(_patientsFiltres[index]);
-                          },
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                          itemCount: _patients.length,
+                          itemBuilder: (_, i) =>
+                              _buildCard(_patients[i]),
                         ),
                       ),
           ),
         ],
-      ),
-
-      // ── Bouton flottant Nouveau patient ──
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Navigue vers l'écran d'ajout
-          final resultat = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddPatientScreen(),
-            ),
-          );
-          // Si un patient a été ajouté, recharge la liste
-          if (resultat == true) {
-            _chargerPatients();
-          }
-        },
-        backgroundColor: const Color(0xFF0059FF),
-        child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),
     );
   }
 
-  // Carte d'un patient dans la liste
-  Widget _buildCartePatient(Patient patient) {
-    final couleur = _couleurStatut(patient);
-    final label = _labelStatut(patient);
-
+  Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      color: V4.bg,
+      padding: const EdgeInsets.fromLTRB(20, 52, 20, 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Patients',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.6,
+                    color: V4.ink,
+                  ),
+                ),
+                Text(
+                  '${_patients.length} patients au total',
+                  style: V4.monoLabel,
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () async {
+              final ok = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const AddPatientScreen()),
+              );
+              if (ok == true) _load();
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: V4.teal,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: V4.teal.withValues(alpha: 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.add, color: V4.bg, size: 22),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: V4.surface1,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: V4.border),
+        ),
+        child: TextField(
+          controller: _search,
+          onChanged: (_) => _load(),
+          style: const TextStyle(color: V4.ink, fontSize: 14),
+          decoration: const InputDecoration(
+            hintText: 'Rechercher par nom, email…',
+            hintStyle: TextStyle(color: V4.inkMuted),
+            prefixIcon:
+                Icon(Icons.search_rounded, color: V4.inkMuted, size: 20),
+            border: InputBorder.none,
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(Patient p) {
+    final color = _avatarColor(p);
+    final initials = _initials(p);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: V4.border),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         onTap: () async {
-          // Navigue vers le détail du patient
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PatientDetailScreen(
-                patientId: patient.id!,
-              ),
+              builder: (_) =>
+                  PatientDetailScreen(patientId: p.id!),
             ),
           );
-          _chargerPatients(); // Recharge au retour
+          _load();
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Row(
             children: [
               // Avatar
               Container(
-                width: 52,
-                height: 52,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0059FF).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(26),
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: color.withValues(alpha: 0.3)),
                 ),
-                child: const Icon(
-                  Icons.person,
-                  color: Color(0xFF0059FF),
-                  size: 28,
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
-              // Infos patient
+              // Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      patient.nom,
+                      p.nom,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
+                        color: V4.ink,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
-                      '${patient.age} ans • ${patient.genre}',
+                      '${p.age} ans · ${p.genre} · ${p.cin}',
                       style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      patient.email,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                          fontSize: 12, color: V4.inkMuted,
+                          fontFamily: 'monospace'),
                     ),
                   ],
                 ),
               ),
 
-              // Statut + menu
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Badge statut
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: couleur.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: couleur,
+              // Menu
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert,
+                    color: V4.inkMuted, size: 20),
+                onSelected: (v) {
+                  if (v == 'delete') {
+                    _delete(p);
+                  } else if (v == 'edit') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            AddPatientScreen(patientAModifier: p),
                       ),
+                    ).then((_) => _load());
+                  }
+                },
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined,
+                            size: 18, color: V4.blue),
+                        SizedBox(width: 8),
+                        Text('Modifier'),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // Menu actions
-                  PopupMenuButton<String>(
-                    icon: const Icon(
-                      Icons.more_vert,
-                      color: Color(0xFF9CA3AF),
-                      size: 20,
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline_rounded,
+                            size: 18, color: V4.coral),
+                        SizedBox(width: 8),
+                        Text('Supprimer',
+                            style: TextStyle(color: V4.coral)),
+                      ],
                     ),
-                    onSelected: (value) {
-                      if (value == 'supprimer') {
-                        _supprimerPatient(patient);
-                      } else if (value == 'modifier') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddPatientScreen(
-                              patientAModifier: patient,
-                            ),
-                          ),
-                        ).then((_) => _chargerPatients());
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'modifier',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 18, color: Color(0xFF0059FF)),
-                            SizedBox(width: 8),
-                            Text('Modifier'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'supprimer',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 18, color: Color(0xFFD32F2F)),
-                            SizedBox(width: 8),
-                            Text(
-                              'Supprimer',
-                              style: TextStyle(color: Color(0xFFD32F2F)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -421,37 +327,29 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
     );
   }
 
-  // Affiché quand il n'y a aucun patient
-  Widget _buildEtatVide() {
+  Widget _buildEmpty() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.people_outline,
-            size: 80,
-            color: Colors.grey.shade300,
-          ),
-          const SizedBox(height: 16),
+          const ApertureMark(size: 80, active: []),
+          const SizedBox(height: 20),
           Text(
-            _searchController.text.isEmpty
+            _search.text.isEmpty
                 ? 'Aucun patient enregistré'
-                : 'Aucun patient trouvé',
+                : 'Aucun résultat',
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF6B7280),
+              color: V4.inkSoft,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            _searchController.text.isEmpty
+            _search.text.isEmpty
                 ? 'Appuyez sur + pour ajouter un patient'
                 : 'Essayez une autre recherche',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF9CA3AF),
-            ),
+            style: const TextStyle(fontSize: 13, color: V4.inkMuted),
           ),
         ],
       ),
@@ -460,7 +358,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _search.dispose();
     super.dispose();
   }
 }
