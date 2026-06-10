@@ -1,19 +1,15 @@
-// lib/screens/exam_screen.dart
-// Écran pour créer un nouvel examen avec import d'image
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/exam.dart';
 import '../models/patient.dart';
-import '../models/result.dart';
 import '../services/database_service.dart';
 import '../services/ai_service.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
 import 'results_screen.dart';
 
 class ExamScreen extends StatefulWidget {
-  final Patient? patientPreSelectionne; // Patient déjà sélectionné (optionnel)
-
+  final Patient? patientPreSelectionne;
   const ExamScreen({super.key, this.patientPreSelectionne});
 
   @override
@@ -21,126 +17,127 @@ class ExamScreen extends StatefulWidget {
 }
 
 class _ExamScreenState extends State<ExamScreen> {
-  final DatabaseService _db = DatabaseService();
-  final _notesController = TextEditingController();
+  final _notesCtrl = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
   List<Patient> _patients = [];
-  Patient? _patientSelectionne;
-  File? _imageSelectionnee;
-  bool _isLoading = false;
+  Patient? _selected;
+  File? _image;
   bool _isAnalyzing = false;
 
   @override
   void initState() {
     super.initState();
-    _chargerPatients();
-    // Si un patient est pré-sélectionné (depuis détail patient)
-    if (widget.patientPreSelectionne != null) {
-      _patientSelectionne = widget.patientPreSelectionne;
-    }
+    _selected = widget.patientPreSelectionne;
+    _loadPatients();
   }
 
-  Future<void> _chargerPatients() async {
-    final patients = await _db.getTousLesPatients();
-    setState(() => _patients = patients);
+  Future<void> _loadPatients() async {
+    try {
+      final patients = await DatabaseService().getPatients();
+      setState(() => _patients = patients);
+    } catch (_) {}
   }
 
-  // Ouvre la galerie pour choisir une image
-  Future<void> _choisirDepuisGalerie() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (image != null) {
-      setState(() => _imageSelectionnee = File(image.path));
-    }
+  Future<void> _pickGallery() async {
+    final f = await _picker.pickImage(
+        source: ImageSource.gallery, imageQuality: 85);
+    if (f != null) setState(() => _image = File(f.path));
   }
 
-  // Prend une photo avec la caméra
-  Future<void> _prendrePhoto() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-    );
-    if (image != null) {
-      setState(() => _imageSelectionnee = File(image.path));
-    }
+  Future<void> _pickCamera() async {
+    final f = await _picker.pickImage(
+        source: ImageSource.camera, imageQuality: 85);
+    if (f != null) setState(() => _image = File(f.path));
   }
 
-  // Affiche le choix galerie/caméra
-  void _afficherChoixImage() {
+  void _showImagePicker() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: V4.surface2,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: V4.border),
       ),
-      builder: (context) => Padding(
+      builder: (_) => Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: V4.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
             const Text(
-              'Choisir une image',
+              'Choisir une radiographie',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: V4.ink,
               ),
             ),
             const SizedBox(height: 24),
             Row(
               children: [
-                // Galerie
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      _choisirDepuisGalerie();
+                      _pickGallery();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0059FF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        color: V4.blue.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: V4.blue.withValues(alpha: 0.3)),
                       ),
                       child: const Column(
                         children: [
                           Icon(Icons.photo_library_outlined,
-                              size: 40, color: Color(0xFF0059FF)),
+                              size: 36, color: V4.blue),
                           SizedBox(height: 8),
                           Text('Galerie',
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0059FF))),
+                                  color: V4.blue,
+                                  fontSize: 14)),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                // Caméra
+                const SizedBox(width: 14),
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      _prendrePhoto();
+                      _pickCamera();
                     },
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF388E3C).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        color: V4.teal.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: V4.teal.withValues(alpha: 0.3)),
                       ),
                       child: const Column(
                         children: [
                           Icon(Icons.camera_alt_outlined,
-                              size: 40, color: Color(0xFF388E3C)),
+                              size: 36, color: V4.teal),
                           SizedBox(height: 8),
                           Text('Caméra',
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF388E3C))),
+                                  color: V4.teal,
+                                  fontSize: 14)),
                         ],
                       ),
                     ),
@@ -148,75 +145,51 @@ class _ExamScreenState extends State<ExamScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  // Lance l'analyse IA (simulation pour BTS)
-  Future<void> _lancerAnalyse() async {
-    // Règle métier : patient obligatoire
-    if (_patientSelectionne == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez sélectionner un patient'),
-          backgroundColor: Color(0xFFD32F2F),
-        ),
-      );
+  Future<void> _analyse() async {
+    if (_selected == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Veuillez sélectionner un patient')));
       return;
     }
-
-    // Règle métier : image obligatoire
-    if (_imageSelectionnee == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Une image radiologique est obligatoire'),
-          backgroundColor: Color(0xFFD32F2F),
-        ),
-      );
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Une image radiologique est obligatoire')));
       return;
     }
-
     setState(() => _isAnalyzing = true);
-
     try {
-      // Enregistre l'examen dans SQLite
-      final exam = Exam(
-        patientId: _patientSelectionne!.id!,
-        imagePath: _imageSelectionnee!.path,
-        notes: _notesController.text.trim(),
-        dateExamen: DateTime.now(),
-        statut: 'en_attente',
-      );
+      final db = DatabaseService();
+      final examId = await db.createExam({
+        'patient_id': _selected!.id,
+        'image_path': _image!.path,
+        'notes': _notesCtrl.text.trim(),
+      });
 
-      final examId = await _db.ajouterExamen(exam);
-
-      // Run real EfficientNetB1 TFLite inference
-      final aiService = AiService();
-      final resultatIA = await aiService.analyzeImage(_imageSelectionnee!.path);
-
-      final nouveauResultat = Result(
-        examId: examId,
-        diagnostic: resultatIA['diagnostic'] as String,
-        confidence: resultatIA['confidence'] as double,
-        severite: resultatIA['severite'] as String,
-        details: resultatIA['details'] as String,
-        dateAnalyse: DateTime.now(),
-      );
-      await _db.ajouterResultat(nouveauResultat);
+      final prediction = await AiService().analyser(_image!);
+      await db.createResultat({
+        'exam_id': examId,
+        'diagnostic': prediction['diagnostic'],
+        'confidence': prediction['confidence'],
+        'severite': prediction['severite'],
+        'details': prediction['details'] ?? '',
+      });
 
       if (mounted) {
         setState(() => _isAnalyzing = false);
-        // Navigue vers l'écran de résultats
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ResultsScreen(
+            builder: (_) => ResultsScreen(
               examId: examId,
-              patient: _patientSelectionne!,
-              imagePath: _imageSelectionnee!.path,
+              patient: _selected!,
+              imagePath: _image!.path,
             ),
           ),
         );
@@ -224,12 +197,10 @@ class _ExamScreenState extends State<ExamScreen> {
     } catch (e) {
       setState(() => _isAnalyzing = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', '')),
-            backgroundColor: const Color(0xFFD32F2F),
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: V4.coral,
+        ));
       }
     }
   }
@@ -237,77 +208,43 @@ class _ExamScreenState extends State<ExamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: V4.bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: V4.inkSoft, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Nouvel examen',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
-          ),
-        ),
+        title: const Text('Nouvel examen'),
       ),
       body: _isAnalyzing
-          ? _buildEcranAnalyse()
+          ? _buildAnalysing()
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Sélection patient ──
-                  _buildSectionTitre('Sélectionner le patient'),
-                  const SizedBox(height: 12),
-                  _buildDropdownPatient(),
-                  const SizedBox(height: 24),
-
-                  // ── Image radiographie ──
-                  _buildSectionTitre('Image radiologique *'),
-                  const SizedBox(height: 12),
-                  _buildZoneImage(),
-                  const SizedBox(height: 24),
-
-                  // ── Notes cliniques ──
-                  _buildSectionTitre('Notes cliniques'),
-                  const SizedBox(height: 12),
-                  _buildChampNotes(),
+                  _sectionLabel('Patient'),
+                  const SizedBox(height: 8),
+                  _patientDropdown(),
+                  const SizedBox(height: 22),
+                  _sectionLabel('Radiographie *'),
+                  const SizedBox(height: 8),
+                  _imageZone(),
+                  const SizedBox(height: 22),
+                  _sectionLabel('Notes cliniques'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _notesCtrl,
+                    maxLines: 4,
+                    style: const TextStyle(color: V4.ink, fontSize: 14),
+                    decoration: V4.inputDec(
+                        hint: 'Symptômes, observations cliniques…'),
+                  ),
                   const SizedBox(height: 32),
-
-                  // ── Bouton analyser ──
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _lancerAnalyse,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0059FF),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.psychology_outlined, size: 24),
-                          SizedBox(width: 10),
-                          Text(
-                            'Analyser avec l\'IA',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  V4.primaryBtn(
+                    label: 'Analyser avec l\'IA',
+                    onTap: _analyse,
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -316,178 +253,94 @@ class _ExamScreenState extends State<ExamScreen> {
     );
   }
 
-  // Écran de chargement pendant l'analyse IA
-  Widget _buildEcranAnalyse() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0059FF).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(
-                color: Color(0xFF0059FF),
-                strokeWidth: 3,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Analyse IA en cours...',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Les modèles EfficientNet et U-Net\nanalysent la radiographie',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-          ),
-          const SizedBox(height: 32),
-          // Étapes de l'analyse
-          _buildEtapeAnalyse('Prétraitement de l\'image', true),
-          _buildEtapeAnalyse('Classification EfficientNet', true),
-          _buildEtapeAnalyse('Segmentation U-Net', false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEtapeAnalyse(String label, bool termine) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
-      child: Row(
-        children: [
-          Icon(
-            termine ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: termine ? const Color(0xFF388E3C) : const Color(0xFF9CA3AF),
-            size: 20,
-          ),
-          const SizedBox(width: 10),
-          Text(
-            label,
-            style: TextStyle(
-              color: termine ? const Color(0xFF111827) : const Color(0xFF9CA3AF),
-              fontWeight: termine ? FontWeight.w500 : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitre(String titre) {
+  Widget _sectionLabel(String text) {
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 20,
+          width: 3,
+          height: 16,
           decoration: BoxDecoration(
-            color: const Color(0xFF0059FF),
-            borderRadius: BorderRadius.circular(2),
-          ),
+              color: V4.teal, borderRadius: BorderRadius.circular(2)),
         ),
         const SizedBox(width: 8),
-        Text(
-          titre,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
-          ),
-        ),
+        Text(text,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: V4.ink,
+            )),
       ],
     );
   }
 
-  // Dropdown de sélection du patient
-  Widget _buildDropdownPatient() {
+  Widget _patientDropdown() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: V4.surface2,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
+        border: Border.all(color: V4.borderStrong),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Patient>(
           isExpanded: true,
-          hint: const Text(
-            '-- Choisir un patient --',
-            style: TextStyle(color: Color(0xFF9CA3AF)),
-          ),
-          value: _patientSelectionne,
-          items: _patients.map((patient) {
+          dropdownColor: V4.surface2,
+          style: const TextStyle(color: V4.ink, fontSize: 14),
+          hint: const Text('Choisir un patient…',
+              style: TextStyle(color: V4.inkMuted)),
+          value: _patients.contains(_selected) ? _selected : null,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: V4.inkMuted),
+          items: _patients.map((p) {
             return DropdownMenuItem<Patient>(
-              value: patient,
-              child: Text('${patient.nom} (${patient.age} ans)'),
+              value: p,
+              child: Text('${p.nom} · ${p.age} ans'),
             );
           }).toList(),
-          onChanged: (patient) {
-            setState(() => _patientSelectionne = patient);
-          },
+          onChanged: (p) => setState(() => _selected = p),
         ),
       ),
     );
   }
 
-  // Zone d'upload de l'image
-  Widget _buildZoneImage() {
+  Widget _imageZone() {
     return GestureDetector(
-      onTap: _afficherChoixImage,
+      onTap: _showImagePicker,
       child: Container(
         width: double.infinity,
         height: 200,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: V4.surface2,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _imageSelectionnee != null
-                ? const Color(0xFF0059FF)
-                : const Color(0xFFD1D5DB),
-            width: _imageSelectionnee != null ? 2 : 1,
-            style: _imageSelectionnee != null
-                ? BorderStyle.solid
-                : BorderStyle.solid,
+            color: _image != null
+                ? V4.teal
+                : V4.borderStrong,
+            width: _image != null ? 2 : 1,
           ),
         ),
-        child: _imageSelectionnee != null
+        child: _image != null
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(13),
                 child: Stack(
                   children: [
-                    Image.file(
-                      _imageSelectionnee!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    // Bouton changer l'image
+                    Image.file(_image!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover),
                     Positioned(
                       top: 8,
                       right: 8,
                       child: GestureDetector(
-                        onTap: _afficherChoixImage,
+                        onTap: _showImagePicker,
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                          child: const Icon(Icons.edit_rounded,
+                              color: Colors.white, size: 16),
                         ),
                       ),
                     ),
@@ -497,62 +350,219 @@ class _ExamScreenState extends State<ExamScreen> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.cloud_upload_outlined,
-                    size: 52,
-                    color: Colors.grey.shade400,
-                  ),
+                  Icon(Icons.cloud_upload_outlined,
+                      size: 48, color: V4.inkMuted),
                   const SizedBox(height: 12),
                   const Text(
-                    'Appuyer pour ajouter une image',
+                    'Appuyer pour ajouter une radiographie',
                     style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF374151),
-                    ),
+                        fontWeight: FontWeight.w600,
+                        color: V4.inkSoft,
+                        fontSize: 14),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'PNG, JPG jusqu\'à 10MB',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                  ),
+                  const Text('PNG, JPG',
+                      style: TextStyle(
+                          fontSize: 12, color: V4.inkMuted)),
                 ],
               ),
       ),
     );
   }
 
-  // Champ notes cliniques
-  Widget _buildChampNotes() {
-    return TextFormField(
-      controller: _notesController,
-      maxLines: 4,
-      decoration: InputDecoration(
-        hintText: 'Symptômes, observations cliniques...',
-        hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF0059FF), width: 2),
-        ),
-      ),
+  Widget _buildAnalysing() {
+    return const _ScanningView();
+  }
+
+  @override
+  void dispose() {
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+}
+
+// ── Cinematic scanning animation ──────────────────────────────────────────────
+class _ScanningView extends StatefulWidget {
+  const _ScanningView();
+
+  @override
+  State<_ScanningView> createState() => _ScanningViewState();
+}
+
+class _ScanningViewState extends State<_ScanningView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _unet;
+  late final Animation<double> _effnet;
+
+  static const _segOrder = [0, 2, 7, 11, 1, 4, 6, 8, 3, 5, 9, 10, 12, 13];
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    )..forward();
+    _unet = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.0, 0.50, curve: Curves.easeOut),
+    );
+    _effnet = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.05, 0.95, curve: Curves.easeOut),
     );
   }
 
   @override
   void dispose() {
-    _notesController.dispose();
+    _ctrl.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: V4.bg,
+      child: Stack(
+        children: [
+          // Background glow
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -0.2),
+                  radius: 0.7,
+                  colors: [Color(0x1A34E5C5), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  AnimatedApertureMark(
+                    size: 150,
+                    targetActive: _segOrder,
+                    duration: const Duration(milliseconds: 2400),
+                  ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Analyse IA en cours…',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                      color: V4.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'DENSENET121 · 14 PATHOLOGIES',
+                    style: TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.4,
+                      color: V4.inkMuted,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  _ProgressBar(
+                    label: 'U-Net',
+                    sublabel: 'Segmentation',
+                    color: V4.teal,
+                    animation: _unet,
+                  ),
+                  const SizedBox(height: 16),
+                  _ProgressBar(
+                    label: 'DenseNet121',
+                    sublabel: 'Classification · 14 classes',
+                    color: V4.blue,
+                    animation: _effnet,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressBar extends AnimatedWidget {
+  final String label;
+  final String sublabel;
+  final Color color;
+
+  const _ProgressBar({
+    required this.label,
+    required this.sublabel,
+    required this.color,
+    required Animation<double> animation,
+  }) : super(listenable: animation);
+
+  @override
+  Widget build(BuildContext context) {
+    final value = (listenable as Animation<double>).value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$label  ',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: V4.inkSoft,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    TextSpan(
+                      text: sublabel,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: V4.inkMuted,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${(value * 100).toInt()}%',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 6,
+            backgroundColor: V4.surface3,
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+        ),
+      ],
+    );
   }
 }

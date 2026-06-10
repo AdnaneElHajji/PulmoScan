@@ -1,14 +1,10 @@
-// lib/screens/add_patient_screen.dart
-// Écran formulaire pour ajouter OU modifier un patient
-// Si on passe un patientAModifier, le formulaire se remplit automatiquement
-
 import 'package:flutter/material.dart';
 import '../models/patient.dart';
 import '../services/database_service.dart';
+import '../theme/v4_theme.dart';
 
 class AddPatientScreen extends StatefulWidget {
-  final Patient? patientAModifier; // null = mode ajout, sinon = mode modification
-
+  final Patient? patientAModifier;
   const AddPatientScreen({super.key, this.patientAModifier});
 
   @override
@@ -17,99 +13,73 @@ class AddPatientScreen extends StatefulWidget {
 
 class _AddPatientScreenState extends State<AddPatientScreen> {
   final _formKey = GlobalKey<FormState>();
-  final DatabaseService _db = DatabaseService();
   bool _isLoading = false;
 
-  // Contrôleurs pour chaque champ du formulaire
-  final _nomController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _telephoneController = TextEditingController();
-  final _cinController = TextEditingController();
-  final _antecedentsController = TextEditingController();
+  final _nomCtrl = TextEditingController();
+  final _ageCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _telCtrl = TextEditingController();
+  final _cinCtrl = TextEditingController();
+  final _antCtrl = TextEditingController();
+  String _genre = 'Homme';
+  DateTime? _dateNaissance;
 
-  String _genre = 'Homme'; // Valeur par défaut
-
-  // Détermine si on est en mode modification
-  bool get _estModification => widget.patientAModifier != null;
+  bool get _isEdit => widget.patientAModifier != null;
 
   @override
   void initState() {
     super.initState();
-    // Si modification : pré-remplir les champs avec les données existantes
-    if (_estModification) {
+    if (_isEdit) {
       final p = widget.patientAModifier!;
-      _nomController.text = p.nom;
-      _ageController.text = p.age.toString();
-      _emailController.text = p.email;
-      _telephoneController.text = p.telephone;
-      _cinController.text = p.cin;
-      _antecedentsController.text = p.antecedents;
+      _nomCtrl.text = p.nom;
+      _ageCtrl.text = p.age.toString();
+      _emailCtrl.text = p.email;
+      _telCtrl.text = p.telephone;
+      _cinCtrl.text = p.cin;
+      _antCtrl.text = p.antecedents;
       _genre = p.genre;
+      _dateNaissance = p.dateNaissance;
     }
   }
 
-  // Soumet le formulaire (ajout ou modification)
-  Future<void> _soumettre() async {
-    // Vérifie que tous les champs obligatoires sont remplis
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-      if (_estModification) {
-        // MODE MODIFICATION
-        final patientModifie = widget.patientAModifier!.copyWith(
-          nom: _nomController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
-          genre: _genre,
-          email: _emailController.text.trim(),
-          telephone: _telephoneController.text.trim(),
-          cin: _cinController.text.trim(),
-          antecedents: _antecedentsController.text.trim(),
-        );
-        await _db.modifierPatient(patientModifie);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Patient modifié avec succès ✓'),
-              backgroundColor: Color(0xFF388E3C),
-            ),
-          );
-          Navigator.pop(context, true); // Retourne true = succès
-        }
+      final body = {
+        'nom': _nomCtrl.text.trim(),
+        'age': int.parse(_ageCtrl.text.trim()),
+        'genre': _genre,
+        'email': _emailCtrl.text.trim(),
+        'telephone': _telCtrl.text.trim(),
+        'cin': _cinCtrl.text.trim(),
+        'antecedents': _antCtrl.text.trim(),
+        if (_dateNaissance != null)
+          'date_naissance':
+              '${_dateNaissance!.year.toString().padLeft(4, '0')}-'
+              '${_dateNaissance!.month.toString().padLeft(2, '0')}-'
+              '${_dateNaissance!.day.toString().padLeft(2, '0')}',
+      };
+      if (_isEdit) {
+        await DatabaseService()
+            .updatePatient(widget.patientAModifier!.id!, body);
       } else {
-        // MODE AJOUT
-        final nouveauPatient = Patient(
-          nom: _nomController.text.trim(),
-          age: int.parse(_ageController.text.trim()),
-          genre: _genre,
-          email: _emailController.text.trim(),
-          telephone: _telephoneController.text.trim(),
-          cin: _cinController.text.trim(),
-          antecedents: _antecedentsController.text.trim(),
-          dateCreation: DateTime.now(),
-        );
-        await _db.ajouterPatient(nouveauPatient);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Patient ajouté avec succès ✓'),
-              backgroundColor: Color(0xFF388E3C),
-            ),
-          );
-          Navigator.pop(context, true);
-        }
+        await DatabaseService().createPatient(body);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_isEdit
+              ? 'Patient modifié avec succès'
+              : 'Patient ajouté avec succès'),
+        ));
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      // Affiche l'erreur (ex: email déjà existant)
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', '')),
-            backgroundColor: const Color(0xFFD32F2F),
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: V4.coral,
+        ));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -119,212 +89,123 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: V4.bg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: V4.inkSoft, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          _estModification ? 'Modifier le patient' : 'Nouveau patient',
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
-          ),
+          _isEdit ? 'Modifier le patient' : 'Nouveau patient',
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Section Informations personnelles ──
-              _buildSectionTitre('Informations personnelles'),
-              const SizedBox(height: 16),
+              _section('Informations personnelles'),
+              const SizedBox(height: 14),
 
-              // Nom complet
-              _buildChamp(
-                label: 'Nom complet *',
-                controller: _nomController,
-                icone: Icons.person_outline,
-                hint: 'Ex: Mohammed Bennani',
-                validateur: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Le nom est obligatoire';
-                  }
-                  if (val.trim().length < 3) {
-                    return 'Le nom doit contenir au moins 3 caractères';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+              _field('Nom complet *', _nomCtrl,
+                  prefix: Icons.person_outline_rounded,
+                  hint: 'Mohammed Bennani',
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Nom obligatoire';
+                    }
+                    if (v.trim().length < 3) {
+                      return 'Minimum 3 caractères';
+                    }
+                    return null;
+                  }),
+              const SizedBox(height: 14),
 
-              // Âge et Genre sur la même ligne
               Row(
                 children: [
-                  // Âge
                   Expanded(
-                    child: _buildChamp(
-                      label: 'Âge *',
-                      controller: _ageController,
-                      icone: Icons.cake_outlined,
-                      hint: 'Ex: 45',
-                      clavier: TextInputType.number,
-                      validateur: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Âge obligatoire';
-                        }
-                        final age = int.tryParse(val.trim());
-                        if (age == null || age < 0 || age > 120) {
-                          return 'Âge invalide';
-                        }
-                        return null;
-                      },
-                    ),
+                    child: _field('Âge *', _ageCtrl,
+                        prefix: Icons.cake_outlined,
+                        hint: '45',
+                        keyboard: TextInputType.number,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Obligatoire';
+                          }
+                          final a = int.tryParse(v.trim());
+                          if (a == null || a < 0 || a > 120) {
+                            return 'Invalide';
+                          }
+                          return null;
+                        }),
                   ),
                   const SizedBox(width: 12),
-                  // Genre
-                  Expanded(
-                    child: _buildDropdownGenre(),
-                  ),
+                  Expanded(child: _genreDropdown()),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // CIN
-              _buildChamp(
-                label: 'CIN *',
-                controller: _cinController,
-                icone: Icons.badge_outlined,
-                hint: 'Ex: AB123456',
-                validateur: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'La CIN est obligatoire';
-                  }
-                  return null;
-                },
-              ),
+              _field('CIN *', _cinCtrl,
+                  prefix: Icons.badge_outlined,
+                  hint: 'AB123456',
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty)
+                          ? 'CIN obligatoire'
+                          : null),
+              const SizedBox(height: 14),
+
+              _datePicker(),
               const SizedBox(height: 24),
 
-              // ── Section Contact ──
-              _buildSectionTitre('Contact'),
-              const SizedBox(height: 16),
+              _section('Contact'),
+              const SizedBox(height: 14),
 
-              // Email
-              _buildChamp(
-                label: 'Email *',
-                controller: _emailController,
-                icone: Icons.email_outlined,
-                hint: 'Ex: patient@email.ma',
-                clavier: TextInputType.emailAddress,
-                validateur: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'L\'email est obligatoire';
-                  }
-                  if (!val.contains('@') || !val.contains('.')) {
-                    return 'Email invalide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+              _field('Email *', _emailCtrl,
+                  prefix: Icons.email_outlined,
+                  hint: 'patient@email.ma',
+                  keyboard: TextInputType.emailAddress,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Email obligatoire';
+                    }
+                    if (!v.contains('@')) return 'Email invalide';
+                    return null;
+                  }),
+              const SizedBox(height: 14),
 
-              // Téléphone
-              _buildChamp(
-                label: 'Téléphone',
-                controller: _telephoneController,
-                icone: Icons.phone_outlined,
-                hint: 'Ex: +212 6 12 34 56 78',
-                clavier: TextInputType.phone,
-              ),
+              _field('Téléphone', _telCtrl,
+                  prefix: Icons.phone_outlined,
+                  hint: '+212 6 12 34 56 78',
+                  keyboard: TextInputType.phone),
               const SizedBox(height: 24),
 
-              // ── Section Médical ──
-              _buildSectionTitre('Informations médicales'),
-              const SizedBox(height: 16),
+              _section('Informations médicales'),
+              const SizedBox(height: 14),
 
-              // Antécédents médicaux
-              _buildChampMultiLigne(
-                label: 'Antécédents médicaux',
-                controller: _antecedentsController,
-                hint: 'Tabagisme, allergies, maladies chroniques...',
-              ),
+              _multiField('Antécédents médicaux', _antCtrl,
+                  hint: 'Tabagisme, allergies, maladies chroniques…'),
               const SizedBox(height: 32),
 
-              // ── Boutons ──
               Row(
                 children: [
-                  // Bouton Annuler
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFFD1D5DB)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Annuler',
-                        style: TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    child: V4.ghostBtn(
+                      label: 'Annuler',
+                      onTap: () => Navigator.pop(context),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Bouton Enregistrer
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _soumettre,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0059FF),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  _estModification
-                                      ? Icons.save_outlined
-                                      : Icons.person_add_outlined,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _estModification
-                                      ? 'Enregistrer'
-                                      : 'Créer le patient',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    child: V4.primaryBtn(
+                      label: _isEdit
+                          ? 'Enregistrer'
+                          : 'Créer le patient',
+                      onTap: _isLoading ? null : _submit,
+                      loading: _isLoading,
                     ),
                   ),
                 ],
@@ -337,173 +218,170 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
     );
   }
 
-  // ── Widgets réutilisables ──
-
-  // Titre de section
-  Widget _buildSectionTitre(String titre) {
+  Widget _section(String title) {
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 20,
+          width: 3,
+          height: 18,
           decoration: BoxDecoration(
-            color: const Color(0xFF0059FF),
+            color: V4.teal,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         const SizedBox(width: 8),
         Text(
-          titre,
+          title,
           style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: V4.ink,
           ),
         ),
       ],
     );
   }
 
-  // Champ de texte standard
-  Widget _buildChamp({
-    required String label,
-    required TextEditingController controller,
-    required IconData icone,
-    required String hint,
-    TextInputType clavier = TextInputType.text,
-    String? Function(String?)? validateur,
+  Widget _field(
+    String label,
+    TextEditingController ctrl, {
+    IconData? prefix,
+    String? hint,
+    TextInputType keyboard = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
-        ),
-        const SizedBox(height: 8),
+        Text(label,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: V4.inkSoft)),
+        const SizedBox(height: 6),
         TextFormField(
-          controller: controller,
-          keyboardType: clavier,
-          validator: validateur,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            prefixIcon: Icon(icone, color: const Color(0xFF9CA3AF), size: 20),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF0059FF),
-                width: 2,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD32F2F)),
-            ),
-          ),
+          controller: ctrl,
+          keyboardType: keyboard,
+          validator: validator,
+          style: const TextStyle(color: V4.ink, fontSize: 14),
+          decoration: V4.inputDec(hint: hint, prefix: prefix),
         ),
       ],
     );
   }
 
-  // Champ multi-lignes pour les antécédents
-  Widget _buildChampMultiLigne({
-    required String label,
-    required TextEditingController controller,
-    required String hint,
-  }) {
+  Widget _multiField(String label, TextEditingController ctrl,
+      {String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
-        ),
-        const SizedBox(height: 8),
+        Text(label,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: V4.inkSoft)),
+        const SizedBox(height: 6),
         TextFormField(
-          controller: controller,
+          controller: ctrl,
           maxLines: 4,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF0059FF),
-                width: 2,
-              ),
-            ),
-          ),
+          style: const TextStyle(color: V4.ink, fontSize: 14),
+          decoration: V4.inputDec(hint: hint),
         ),
       ],
     );
   }
 
-  // Dropdown pour le genre
-  Widget _buildDropdownGenre() {
+  Widget _genreDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Genre *',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
+        const Text('Genre *',
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: V4.inkSoft)),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          isExpanded: true,
+          initialValue: _genre,
+          dropdownColor: V4.surface2,
+          style: const TextStyle(color: V4.ink, fontSize: 14),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: V4.inkMuted),
+          decoration: V4.inputDec(prefix: Icons.wc_outlined),
+          items: const [
+            DropdownMenuItem(value: 'Homme', child: Text('Homme')),
+            DropdownMenuItem(value: 'Femme', child: Text('Femme')),
+            DropdownMenuItem(value: 'Autre', child: Text('Autre')),
+          ],
+          onChanged: (v) => setState(() => _genre = v!),
         ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD1D5DB)),
-          ),
-          child: DropdownButtonFormField<String>(
-            value: _genre,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(
-                Icons.wc_outlined,
-                color: Color(0xFF9CA3AF),
-                size: 20,
+      ],
+    );
+  }
+
+  Widget _datePicker() {
+    final label = _dateNaissance == null
+        ? 'Non renseignée'
+        : '${_dateNaissance!.day.toString().padLeft(2, '0')}/'
+            '${_dateNaissance!.month.toString().padLeft(2, '0')}/'
+            '${_dateNaissance!.year}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Date de naissance',
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: V4.inkSoft)),
+        const SizedBox(height: 6),
+        GestureDetector(
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: _dateNaissance ??
+                  DateTime.now().subtract(const Duration(days: 365 * 30)),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+              builder: (ctx, child) => Theme(
+                data: Theme.of(ctx).copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: V4.teal,
+                    surface: V4.surface2,
+                  ),
+                ),
+                child: child!,
               ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 4),
+            );
+            if (picked != null) setState(() => _dateNaissance = picked);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: V4.surface2,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: V4.borderStrong),
             ),
-            items: const [
-              DropdownMenuItem(value: 'Homme', child: Text('Homme')),
-              DropdownMenuItem(value: 'Femme', child: Text('Femme')),
-              DropdownMenuItem(value: 'Autre', child: Text('Autre')),
-            ],
-            onChanged: (val) => setState(() => _genre = val!),
+            child: Row(
+              children: [
+                const Icon(Icons.cake_outlined, size: 18, color: V4.inkMuted),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: _dateNaissance == null ? V4.inkMuted : V4.ink,
+                    ),
+                  ),
+                ),
+                if (_dateNaissance != null)
+                  GestureDetector(
+                    onTap: () => setState(() => _dateNaissance = null),
+                    child: const Icon(Icons.close, size: 16, color: V4.inkMuted),
+                  ),
+              ],
+            ),
           ),
         ),
       ],
@@ -512,12 +390,12 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
 
   @override
   void dispose() {
-    _nomController.dispose();
-    _ageController.dispose();
-    _emailController.dispose();
-    _telephoneController.dispose();
-    _cinController.dispose();
-    _antecedentsController.dispose();
+    _nomCtrl.dispose();
+    _ageCtrl.dispose();
+    _emailCtrl.dispose();
+    _telCtrl.dispose();
+    _cinCtrl.dispose();
+    _antCtrl.dispose();
     super.dispose();
   }
 }

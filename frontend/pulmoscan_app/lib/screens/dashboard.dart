@@ -1,533 +1,566 @@
-// lib/screens/dashboard_responsive.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/v4_theme.dart';
+import '../widgets/aperture_mark.dart';
+import '../services/database_service.dart';
+import 'exam_screen.dart';
 
-class DashboardResponsive extends StatelessWidget {
-  DashboardResponsive({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
-  final List<Map<String, dynamic>> _stats = [
-    {
-      'label': 'Examens ce mois',
-      'value': '247',
-      'change': '+12%',
-      'icon': Icons.description_outlined,
-      'color': Colors.blue,
-      'trend': 'up',
-    },
-    {
-      'label': 'Patients actifs',
-      'value': '189',
-      'change': '+5%',
-      'icon': Icons.people_outline,
-      'color': Colors.green,
-      'trend': 'up',
-    },
-    {
-      'label': 'Détections positives',
-      'value': '34',
-      'change': '-8%',
-      'icon': Icons.warning_amber_outlined,
-      'color': Colors.orange,
-      'trend': 'down',
-    },
-    {
-      'label': 'Précision IA',
-      'value': '94.2%',
-      'change': '+2%',
-      'icon': Icons.auto_graph_outlined,
-      'color': Colors.purple,
-      'trend': 'up',
-    },
-  ];
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
 
-  final List<Map<String, dynamic>> _recentScans = [
-    {
-      'patient': 'Mohammed Bennani',
-      'date': '2026-01-11 14:30',
-      'diagnosis': 'Pneumonie détectée',
-      'confidence': '92%',
-      'severity': 'high',
-      'severityColor': Color(0xFFDC2626),
-      'severityBg': Color(0xFFFEE2E2),
-    },
-    {
-      'patient': 'Fatima Alami',
-      'date': '2026-01-11 13:15',
-      'diagnosis': 'Normal',
-      'confidence': '98%',
-      'severity': 'normal',
-      'severityColor': Color(0xFF059669),
-      'severityBg': Color(0xFFD1FAE5),
-    },
-    {
-      'patient': 'Hassan El Idrissi',
-      'date': '2026-01-11 11:45',
-      'diagnosis': 'Tuberculose suspectée',
-      'confidence': '87%',
-      'severity': 'high',
-      'severityColor': Color(0xFFDC2626),
-      'severityBg': Color(0xFFFEE2E2),
-    },
-    {
-      'patient': 'Amina Tazi',
-      'date': '2026-01-11 10:20',
-      'diagnosis': 'Normal',
-      'confidence': '96%',
-      'severity': 'normal',
-      'severityColor': Color(0xFF059669),
-      'severityBg': Color(0xFFD1FAE5),
-    },
-    {
-      'patient': 'Youssef Berrada',
-      'date': '2026-01-10 16:50',
-      'diagnosis': 'Fibrose détectée',
-      'confidence': '89%',
-      'severity': 'medium',
-      'severityColor': Color(0xFFD97706),
-      'severityBg': Color(0xFFFEF3C7),
-    },
-  ];
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _isLoading = true;
+  String? _error;
+  int _totalPatients = 0;
+  int _totalExamens = 0;
+  int _totalResultats = 0;
+  List<Map<String, dynamic>> _topDiagnostics = [];
+  List<Map<String, dynamic>> _examensParStatut = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final data = await DatabaseService().getStats();
+      setState(() {
+        _totalPatients = data['total_patients'] ?? 0;
+        _totalExamens = data['total_examens'] ?? 0;
+        _totalResultats = data['total_resultats'] ?? 0;
+        _topDiagnostics =
+            List<Map<String, dynamic>>.from(data['top_diagnostics'] ?? []);
+        _examensParStatut =
+            List<Map<String, dynamic>>.from(data['examens_par_statut'] ?? []);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tableau de bord',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+      backgroundColor: V4.bg,
+      body: Stack(
+        children: [
+          Positioned.fill(child: CustomPaint(painter: GridBackground())),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 320,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0.6, -0.6),
+                  radius: 1.0,
+                  colors: [Color(0x1E34E5C5), Colors.transparent],
+                ),
               ),
             ),
-            SizedBox(height: 2),
-            Text(
-              'Vue d\'ensemble de vos examens pulmonaires',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined, color: Color(0xFF6B7280)),
-            onPressed: () {},
           ),
-          IconButton(
-            icon: Icon(Icons.search, color: Color(0xFF6B7280)),
-            onPressed: () {},
+          SafeArea(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: V4.teal))
+                : _error != null
+                    ? _buildError()
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        color: V4.teal,
+                        backgroundColor: V4.surface2,
+                        child: _buildContent(),
+                      ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Stats Grid
-            GridView.count(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: _stats.map((stat) => _buildStatCard(stat)).toList(),
+    );
+  }
+
+  Widget _buildContent() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      children: [
+        _buildHeader(),
+        const SizedBox(height: 20),
+        _buildStatsRow(),
+        const SizedBox(height: 16),
+        _buildActionCard(),
+        const SizedBox(height: 16),
+        _buildMarkSection(),
+        const SizedBox(height: 16),
+        if (_examensParStatut.isNotEmpty) _buildStatusCard(),
+        if (_examensParStatut.isNotEmpty) const SizedBox(height: 16),
+        if (_topDiagnostics.isNotEmpty) _buildTopDiagCard(),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tableau de bord',
+                  style: GoogleFonts.inter(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.6,
+                    color: V4.ink,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text('Vue d\'ensemble · PulmoScan AI', style: V4.monoLabel),
+              ],
             ),
-            
-            SizedBox(height: 24),
-            
-            // Recent Exams Card
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
+          ),
+          GestureDetector(
+            onTap: _load,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: V4.surface1,
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Color(0xFFF3F4F6)),
+                border: Border.all(color: V4.border),
               ),
+              child: const Icon(Icons.refresh_rounded,
+                  color: V4.inkMuted, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    final stats = [
+      {'n': '$_totalPatients', 'l': 'Patients', 'c': V4.teal,
+       'icon': Icons.people_outline_rounded},
+      {'n': '$_totalExamens', 'l': 'Examens', 'c': V4.blue,
+       'icon': Icons.document_scanner_outlined},
+      {'n': '$_totalResultats', 'l': 'Résultats', 'c': V4.amber,
+       'icon': Icons.analytics_outlined},
+    ];
+
+    return Row(
+      children: stats.asMap().entries.map((e) {
+        final s = e.value;
+        final color = s['c'] as Color;
+        final icon = s['icon'] as IconData;
+        return Expanded(
+          child: Container(
+            margin: EdgeInsets.only(left: e.key == 0 ? 0 : 10),
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+            decoration: BoxDecoration(
+              color: V4.surface1,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: V4.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 16),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  s['n'] as String,
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    (s['l'] as String).toUpperCase(),
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 9,
+                      letterSpacing: 0.3,
+                      color: V4.inkMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildActionCard() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ExamScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1AAA90), Color(0xFF34E5C5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: V4.teal.withValues(alpha: 0.28),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Examens récents',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Dernières analyses effectuées',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'Nouvelle analyse',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: V4.bg,
+                      letterSpacing: -0.4,
                     ),
                   ),
-                  
-                  // Table
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (constraints.maxWidth < 600) {
-                        return _buildMobileList();
-                      } else {
-                        return _buildDesktopTable();
-                      }
-                    },
+                  const SizedBox(height: 4),
+                  Text(
+                    'DenseNet121 · 14 pathologies détectées',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 10,
+                      color: V4.bg.withValues(alpha: 0.65),
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 16),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: V4.bg.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.document_scanner_rounded,
+                  color: V4.bg, size: 24),
+            ),
           ],
         ),
       ),
-      
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to new exam
-        },
-        backgroundColor: Color(0xFF0059FF),
-        child: Icon(Icons.add, size: 28),
-      ),
     );
   }
 
-  Widget _buildStatCard(Map<String, dynamic> stat) {
+  Widget _buildMarkSection() {
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFFF3F4F6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
       ),
-      padding: EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: stat['color'].withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+          const ApertureMark(size: 80, active: [1, 4, 7, 11]),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '14 pathologies',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color: V4.ink,
+                  ),
                 ),
-                child: Icon(
-                  stat['icon'],
-                  color: stat['color'],
-                  size: 20,
+                const SizedBox(height: 4),
+                Text(
+                  'DenseNet121 · TFLite',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 11,
+                    color: V4.inkMuted,
+                    letterSpacing: 0.8,
+                  ),
                 ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (stat['trend'] == 'up' ? Colors.green : Colors.red)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
-                    Icon(
-                      stat['trend'] == 'up' 
-                          ? Icons.trending_up 
-                          : Icons.trending_down,
-                      size: 12,
-                      color: stat['trend'] == 'up' ? Colors.green : Colors.red,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      stat['change'],
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: stat['trend'] == 'up' ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    _pillStat('AUC', '0.91', V4.teal),
+                    _pillStat('NIH', '112K', V4.blue),
                   ],
                 ),
-              ),
-            ],
-          ),
-          
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                stat['label'],
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                stat['value'],
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMobileList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.all(16),
-      itemCount: _recentScans.length,
-      separatorBuilder: (context, index) => SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final scan = _recentScans[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Color(0xFFF3F4F6)),
+  Widget _pillStat(String label, String val, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        '$label $val',
+        style: GoogleFonts.jetBrainsMono(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Examens par statut',
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: V4.ink,
+            ),
           ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Patient and Status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const SizedBox(height: 16),
+          ..._examensParStatut.map((item) {
+            final statut = item['statut'] as String? ?? '';
+            final total = item['total'].toString();
+            final color = _statutColor(statut);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
                 children: [
-                  Text(
-                    scan['patient'],
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(_statutLabel(statut),
+                        style:
+                            const TextStyle(fontSize: 13, color: V4.inkSoft)),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: scan['severityBg'],
+                      color: color.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          scan['severity'] == 'high'
-                              ? Icons.warning_amber
-                              : Icons.check_circle,
-                          size: 12,
-                          color: scan['severityColor'],
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          scan['severity'] == 'high'
-                              ? 'Urgent'
-                              : scan['severity'] == 'medium'
-                                  ? 'À surveiller'
-                                  : 'Normal',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: scan['severityColor'],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 12),
-              
-              // Date and Diagnosis
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Text(
-                    scan['date'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 8),
-              
-              Row(
-                children: [
-                  Icon(Icons.medical_services, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Expanded(
                     child: Text(
-                      scan['diagnosis'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(height: 8),
-              
-              // Confidence
-              Row(
-                children: [
-                  Icon(Icons.percent, size: 14, color: Color(0xFF9CA3AF)),
-                  SizedBox(width: 8),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getConfidenceColor(scan['confidence']),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      scan['confidence'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                      total,
+                      style: GoogleFonts.jetBrainsMono(
                         fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: color,
                       ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDesktopTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowHeight: 56,
-        dataRowHeight: 64,
-        horizontalMargin: 24,
-        columnSpacing: 32,
-        columns: [
-          DataColumn(
-            label: Text('Patient',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Date & Heure',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Diagnostic IA',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Confiance',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          DataColumn(
-            label: Text('Statut',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
+            );
+          }),
         ],
-        rows: _recentScans.map((scan) {
-          return DataRow(
-            cells: [
-              DataCell(
-                Text(scan['patient'],
-                    style: TextStyle(fontWeight: FontWeight.w500)),
-              ),
-              DataCell(Text(scan['date'])),
-              DataCell(Text(scan['diagnosis'])),
-              DataCell(
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getConfidenceColor(scan['confidence']),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    scan['confidence'],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: scan['severityBg'],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        scan['severity'] == 'high'
-                            ? Icons.warning_amber
-                            : Icons.check_circle,
-                        size: 14,
-                        color: scan['severityColor'],
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        scan['severity'] == 'high'
-                            ? 'Urgent'
-                            : scan['severity'] == 'medium'
-                                ? 'À surveiller'
-                                : 'Normal',
-                        style: TextStyle(
-                          color: scan['severityColor'],
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
       ),
     );
   }
 
-  Color _getConfidenceColor(String confidence) {
-    final percent = int.tryParse(confidence.replaceAll('%', '')) ?? 0;
-    if (percent >= 90) return Colors.green;
-    if (percent >= 80) return Colors.orange;
-    return Colors.red;
+  Widget _buildTopDiagCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: V4.surface1,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: V4.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Top diagnostics IA',
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: V4.ink,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Pathologies les plus détectées',
+            style: TextStyle(fontSize: 12, color: V4.inkMuted),
+          ),
+          const SizedBox(height: 16),
+          ..._topDiagnostics.asMap().entries.map((entry) {
+            final i = entry.key;
+            final item = entry.value;
+            final diag = item['diagnostic'] as String? ?? '';
+            final total = item['total'].toString();
+            final pathIdx = V4.pathNames.indexOf(diag);
+            final color = (pathIdx >= 0 && pathIdx < V4.pathColors.length)
+                ? V4.pathColors[pathIdx]
+                : (i < V4.pathColors.length ? V4.pathColors[i] : V4.teal);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${i + 1}',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(diag,
+                        style:
+                            const TextStyle(fontSize: 14, color: V4.inkSoft)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$total cas',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off_rounded, size: 60, color: V4.inkMuted),
+            const SizedBox(height: 16),
+            Text(
+              _error!,
+              style: const TextStyle(color: V4.inkSoft, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            V4.primaryBtn(label: 'Réessayer', onTap: _load, fullWidth: false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _statutColor(String s) {
+    switch (s) {
+      case 'termine':
+        return V4.teal;
+      case 'analyse':
+        return V4.blue;
+      case 'en_cours':
+        return V4.blue;
+      case 'en_attente':
+        return V4.amber;
+      default:
+        return V4.inkMuted;
+    }
+  }
+
+  String _statutLabel(String s) {
+    switch (s) {
+      case 'termine':
+        return 'Terminé';
+      case 'analyse':
+        return 'En analyse';
+      case 'en_cours':
+        return 'En cours';
+      case 'en_attente':
+        return 'En attente';
+      default:
+        return s;
+    }
   }
 }
