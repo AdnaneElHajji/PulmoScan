@@ -9,7 +9,7 @@ import 'l10n/locale_provider.dart';
 import 'l10n/strings.dart';
 import 'services/ai_service.dart';
 import 'services/auth_service.dart';
-import 'screens/login.dart';
+import 'screens/landing_screen.dart';
 import 'screens/onboarding.dart';
 import 'screens/dashboard.dart';
 import 'screens/patients_list_screen.dart';
@@ -80,6 +80,9 @@ class _PulmoAppState extends State<PulmoApp> with WidgetsBindingObserver {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: const SplashScreen(),
+      routes: {
+        '/app': (_) => const MainNavigation(),
+      },
     );
   }
 }
@@ -119,12 +122,12 @@ class _SplashScreenState extends State<SplashScreen>
     if (!onboardingDone) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OnboardingScreen(onDone: _goToLogin)),
+        MaterialPageRoute(builder: (_) => OnboardingScreen(onDone: _goToLanding)),
       );
       return;
     }
 
-    // Auto-login: skip login screen if user is already logged in (SQLite-based)
+    // Auto-login: go straight to app if already logged in
     final loggedIn = await AuthService().isLoggedIn();
     if (!mounted) return;
     if (loggedIn) {
@@ -135,20 +138,14 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    _goToLogin(context);
+    // Not logged in → show public landing page
+    _goToLanding(context);
   }
 
-  void _goToLogin(BuildContext ctx) {
+  void _goToLanding(BuildContext ctx) {
     Navigator.pushReplacement(
       ctx,
-      MaterialPageRoute(
-        builder: (_) => LoginPageExact(
-          onLogin: (loginCtx) => Navigator.pushReplacement(
-            loginCtx,
-            MaterialPageRoute(builder: (_) => const MainNavigation()),
-          ),
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => const LandingScreen()),
     );
   }
 
@@ -283,14 +280,7 @@ class _MainNavigationState extends State<MainNavigation> {
   void _logout() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (_) => LoginPageExact(
-          onLogin: (ctx) => Navigator.pushReplacement(
-            ctx,
-            MaterialPageRoute(builder: (_) => const MainNavigation()),
-          ),
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => const LandingScreen()),
       (_) => false,
     );
   }
