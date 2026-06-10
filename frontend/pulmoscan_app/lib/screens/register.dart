@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:pulmoscan_app/services/auth_service.dart';
 
+typedef RegisterScreen = RegisterScreenComplete;
+
 class RegisterScreenComplete extends StatefulWidget {
   final Function(bool success) onRegisterComplete;
 
