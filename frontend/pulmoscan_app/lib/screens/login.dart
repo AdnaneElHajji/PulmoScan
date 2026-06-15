@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/database_service.dart';
 import '../theme/v4_theme.dart';
 import '../widgets/aperture_mark.dart';
 import '../l10n/strings.dart';
@@ -304,153 +305,295 @@ class _LoginPageExactState extends State<LoginPageExact> {
 
   void _showForgotPasswordDialog() {
     final emailCtrl = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    final newPwCtrl = TextEditingController();
+    final confirmPwCtrl = TextEditingController();
+    final formKey1 = GlobalKey<FormState>();
+    final formKey2 = GlobalKey<FormState>();
+    int step = 1; // 1 = email, 2 = new password, 3 = success
     bool loading = false;
-    String? message;
-    bool isSuccess = false;
+    String? error;
+    bool obscure1 = true;
+    bool obscure2 = true;
 
     showDialog(
       context: context,
+      barrierDismissible: !loading,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: V4.surface2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: V4.borderStrong),
-          ),
-          title: Text(
-            S.forgotPasswordTitle,
-            style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: V4.ink),
-          ),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  S.forgotPasswordBody,
-                  style: GoogleFonts.inter(
-                      fontSize: 13, color: V4.inkSoft),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.inter(fontSize: 14, color: V4.ink),
-                  decoration: V4.inputDec(
-                    label: 'EMAIL',
-                    prefix: Icons.email_outlined,
-                  ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Email obligatoire';
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(val)) {
-                      return 'Format email invalide';
-                    }
-                    return null;
-                  },
-                ),
-                if (message != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isSuccess
-                          ? V4.teal.withValues(alpha: 0.10)
-                          : V4.coral.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSuccess
-                            ? V4.teal.withValues(alpha: 0.35)
-                            : V4.coral.withValues(alpha: 0.35),
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            backgroundColor: V4.surface2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: V4.borderStrong),
+            ),
+            title: Text(
+              step == 1
+                  ? 'Mot de passe oublié'
+                  : step == 2
+                      ? 'Nouveau mot de passe'
+                      : 'Mot de passe modifié',
+              style: GoogleFonts.inter(
+                  fontSize: 18, fontWeight: FontWeight.w700, color: V4.ink),
+            ),
+            content: step == 3
+                // ── Success ───────────────────────────────────────────
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          color: V4.teal, size: 48),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Mot de passe réinitialisé avec succès.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                            fontSize: 14, color: V4.inkSoft),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isSuccess
-                              ? Icons.check_circle_outline
-                              : Icons.error_outline,
-                          color: isSuccess ? V4.teal : V4.coral,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            message!,
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        step == 1
+                            ? 'Entrez votre adresse email pour réinitialiser votre mot de passe.'
+                            : 'Choisissez un nouveau mot de passe pour ${emailCtrl.text.trim()}.',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: V4.inkSoft),
+                      ),
+                      const SizedBox(height: 16),
+                      if (step == 1)
+                        Form(
+                          key: formKey1,
+                          child: TextFormField(
+                            controller: emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            autofocus: true,
                             style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: isSuccess ? V4.teal : V4.coral,
+                                fontSize: 14, color: V4.ink),
+                            decoration: V4.inputDec(
+                              label: 'EMAIL',
+                              prefix: Icons.email_outlined,
                             ),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Email obligatoire';
+                              }
+                              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                  .hasMatch(v)) {
+                                return 'Format invalide';
+                              }
+                              return null;
+                            },
+                          ),
+                        )
+                      else
+                        Form(
+                          key: formKey2,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: newPwCtrl,
+                                obscureText: obscure1,
+                                autofocus: true,
+                                style: GoogleFonts.inter(
+                                    fontSize: 14, color: V4.ink),
+                                decoration: V4.inputDec(
+                                  label: 'NOUVEAU MOT DE PASSE',
+                                  prefix: Icons.lock_outline,
+                                  suffix: IconButton(
+                                    icon: Icon(
+                                      obscure1
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      size: 18,
+                                      color: V4.inkMuted,
+                                    ),
+                                    onPressed: () => setDialogState(
+                                        () => obscure1 = !obscure1),
+                                  ),
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) {
+                                    return 'Mot de passe obligatoire';
+                                  }
+                                  if (v.length < 6) {
+                                    return 'Minimum 6 caractères';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: confirmPwCtrl,
+                                obscureText: obscure2,
+                                style: GoogleFonts.inter(
+                                    fontSize: 14, color: V4.ink),
+                                decoration: V4.inputDec(
+                                  label: 'CONFIRMER',
+                                  prefix: Icons.lock_outline,
+                                  suffix: IconButton(
+                                    icon: Icon(
+                                      obscure2
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      size: 18,
+                                      color: V4.inkMuted,
+                                    ),
+                                    onPressed: () => setDialogState(
+                                        () => obscure2 = !obscure2),
+                                  ),
+                                ),
+                                validator: (v) {
+                                  if (v != newPwCtrl.text) {
+                                    return 'Les mots de passe ne correspondent pas';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (error != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: V4.coral.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: V4.coral.withValues(alpha: 0.35)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  color: V4.coral, size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(error!,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 13, color: V4.coral)),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: loading ? null : () => Navigator.pop(dialogContext),
-              style: TextButton.styleFrom(foregroundColor: V4.inkSoft),
-              child: Text(S.cancel,
-                  style: GoogleFonts.inter(fontSize: 14, color: V4.inkSoft)),
-            ),
-            ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-                      setDialogState(() {
-                        loading = true;
-                        message = null;
-                      });
-                      try {
-                        await AuthService()
-                            .forgotPassword(emailCtrl.text.trim());
-                        setDialogState(() {
-                          loading = false;
-                          isSuccess = true;
-                          message = S.emailSentGeneric;
-                        });
-                      } catch (e) {
-                        setDialogState(() {
-                          loading = false;
-                          isSuccess = false;
-                          message =
-                              e.toString().replaceFirst('Exception: ', '');
-                        });
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: V4.teal,
-                foregroundColor: V4.bg,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              child: loading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: V4.bg),
-                    )
-                  : Text(S.send,
-                      style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: V4.bg)),
-            ),
-          ],
-        ),
+            actions: step == 3
+                ? [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: V4.teal,
+                        foregroundColor: V4.bg,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text('Se connecter',
+                          style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: V4.bg)),
+                    ),
+                  ]
+                : [
+                    TextButton(
+                      onPressed:
+                          loading ? null : () => Navigator.pop(dialogContext),
+                      style:
+                          TextButton.styleFrom(foregroundColor: V4.inkSoft),
+                      child: Text('Annuler',
+                          style: GoogleFonts.inter(
+                              fontSize: 14, color: V4.inkSoft)),
+                    ),
+                    ElevatedButton(
+                      onPressed: loading
+                          ? null
+                          : () async {
+                              setDialogState(() {
+                                error = null;
+                                loading = true;
+                              });
+                              try {
+                                if (step == 1) {
+                                  // Step 1 — verify email exists in SQLite
+                                  if (!formKey1.currentState!.validate()) {
+                                    setDialogState(() => loading = false);
+                                    return;
+                                  }
+                                  final d = await DatabaseService().db;
+                                  final rows = await d.query('users',
+                                      where: 'email = ?',
+                                      whereArgs: [emailCtrl.text.trim()]);
+                                  if (rows.isEmpty) {
+                                    throw Exception(
+                                        'Aucun compte trouvé pour cet email');
+                                  }
+                                  setDialogState(() {
+                                    step = 2;
+                                    loading = false;
+                                  });
+                                } else {
+                                  // Step 2 — update password in SQLite
+                                  if (!formKey2.currentState!.validate()) {
+                                    setDialogState(() => loading = false);
+                                    return;
+                                  }
+                                  final d = await DatabaseService().db;
+                                  final hash = DatabaseService.hashPassword(
+                                      newPwCtrl.text);
+                                  await d.update(
+                                    'users',
+                                    {'password': hash},
+                                    where: 'email = ?',
+                                    whereArgs: [emailCtrl.text.trim()],
+                                  );
+                                  setDialogState(() {
+                                    step = 3;
+                                    loading = false;
+                                  });
+                                }
+                              } catch (e) {
+                                setDialogState(() {
+                                  error = e
+                                      .toString()
+                                      .replaceFirst('Exception: ', '');
+                                  loading = false;
+                                });
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: V4.teal,
+                        foregroundColor: V4.bg,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: loading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: V4.bg),
+                            )
+                          : Text(step == 1 ? 'Continuer' : 'Réinitialiser',
+                              style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: V4.bg)),
+                    ),
+                  ],
+          );
+        },
       ),
-    ).then((_) => emailCtrl.dispose());
+    ).then((_) {
+      emailCtrl.dispose();
+      newPwCtrl.dispose();
+      confirmPwCtrl.dispose();
+    });
   }
 
   @override
