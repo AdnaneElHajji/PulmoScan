@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../theme/v4_theme.dart';
@@ -23,6 +24,24 @@ class _LoginPageExactState extends State<LoginPageExact> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('saved_email');
+    if (saved != null && saved.isNotEmpty) {
+      setState(() {
+        _emailController.text = saved;
+        _rememberMe = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,11 +108,18 @@ class _LoginPageExactState extends State<LoginPageExact> {
 
                       // Card
                       Container(
-                        padding: const EdgeInsets.all(28),
+                        padding: const EdgeInsets.fromLTRB(28, 32, 28, 32),
                         decoration: BoxDecoration(
                           color: V4.surface1,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: V4.borderStrong),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 32,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,8 +213,57 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                     },
                                   ),
 
-                                  const SizedBox(height: 14),
+                                  const SizedBox(height: 16),
 
+                                  // ── Se souvenir de moi ──────────
+                                  GestureDetector(
+                                    onTap: () => setState(
+                                        () => _rememberMe = !_rememberMe),
+                                    child: Row(
+                                      children: [
+                                        AnimatedContainer(
+                                          duration: const Duration(
+                                              milliseconds: 200),
+                                          width: 22,
+                                          height: 22,
+                                          decoration: BoxDecoration(
+                                            color: _rememberMe
+                                                ? V4.teal
+                                                : Colors.transparent,
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: _rememberMe
+                                                  ? V4.teal
+                                                  : V4.borderStrong,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: _rememberMe
+                                              ? const Icon(Icons.check_rounded,
+                                                  color: V4.bg, size: 14)
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          S.rememberMe,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: _rememberMe
+                                                ? V4.ink
+                                                : V4.inkSoft,
+                                            fontWeight: _rememberMe
+                                                ? FontWeight.w500
+                                                : FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  // ── Mot de passe oublié ? ────────
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
@@ -197,7 +272,8 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                         foregroundColor: V4.teal,
                                         padding: EdgeInsets.zero,
                                         minimumSize: Size.zero,
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
                                       ),
                                       child: Text(
                                         S.forgotPassword,
@@ -209,7 +285,7 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                     ),
                                   ),
 
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: 24),
 
                                   V4.primaryBtn(
                                     label: S.signIn,
@@ -292,6 +368,13 @@ class _LoginPageExactState extends State<LoginPageExact> {
         _emailController.text.trim(),
         _passwordController.text,
       );
+      // Save or clear email based on "Se souvenir de moi"
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setString('saved_email', _emailController.text.trim());
+      } else {
+        await prefs.remove('saved_email');
+      }
       if (!mounted) return;
       widget.onLogin(context);
     } catch (e) {
