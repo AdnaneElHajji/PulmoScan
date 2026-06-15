@@ -70,22 +70,18 @@ class AiService {
     }
   }
 
-  /// Simulation fallback when model is missing.
+  /// Simulation fallback when model is missing — all scores below threshold → Normal.
   Map<String, dynamic> _simulate() {
-    final idx = DateTime.now().millisecondsSinceEpoch % labels.length;
-    final label = labels[idx];
-    final thresh = classThresh[label] ?? 0.20;
-    final score = thresh * 1.4;
-    final ratio = score / thresh;
-    final confidence = (0.50 + 0.20 * (ratio - 1.0)).clamp(0.50, 0.95);
+    // All scores at 30% of their threshold so every ratio < 1.0 → Normal
     final allScores = <String, double>{
-      for (int i = 0; i < labels.length; i++)
-        labels[i]: i == idx ? score : (classThresh[labels[i]]! * 0.3),
+      for (final label in labels)
+        label: (classThresh[label]! * 0.30),
     };
+    final bestScore = allScores.values.reduce((a, b) => a > b ? a : b);
     return {
-      'diagnostic': label,
-      'confidence': confidence,
-      'severite': 'faible',
+      'diagnostic': 'Normal',
+      'confidence': bestScore, // raw score, stored 0-1, displayed ×100
+      'severite': 'normal',
       'details': jsonEncode(allScores),
     };
   }
@@ -169,19 +165,17 @@ class AiService {
 
     if (bestIdx < 0 || bestRatio < 1.0) {
       // Nothing exceeds threshold → Normal
+      // confidence = raw best score (honest representation, e.g. 1.8%)
       diagnostic = 'Normal';
       severite = 'normal';
-      confidence = (1.0 - bestScore).clamp(0.0, 1.0);
+      confidence = bestScore.clamp(0.0, 1.0);
     } else {
       diagnostic = labels[bestIdx];
-      final c = 0.50 + 0.20 * (bestRatio - 1.0);
-      confidence = c.clamp(0.50, 0.95);
-      if (bestRatio >= 3.0) {
-        severite = 'severe';
-      } else if (bestRatio >= 1.8) {
-        severite = 'modere';
+      confidence = bestScore.clamp(0.0, 1.0); // raw score, e.g. 0.35 → 35%
+      if (bestRatio >= 2.0) {
+        severite = 'urgent';
       } else {
-        severite = 'faible';
+        severite = 'moyen';
       }
     }
 

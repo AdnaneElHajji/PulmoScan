@@ -446,7 +446,6 @@ class _ResultsTabState extends State<_ResultsTab>
   }
 
   Widget _buildXRay() {
-    final topScores = widget.scores.where((e) => e.value > 0.08).take(5).toList();
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -464,55 +463,7 @@ class _ResultsTabState extends State<_ResultsTab>
               )
             else
               const _XRayPlaceholder(),
-            // Coloured bounding-box overlays per top pathology
-            ...topScores.asMap().entries.map((entry) {
-              final e = entry.value;
-              final c = _color(e.key);
-              final seed = e.key.codeUnits.fold(0, (a, b) => (a + b) % 997);
-              final lf = (seed % 55) / 100.0;
-              final tf = ((seed * 3) % 45) / 100.0;
-              final wf = (18 + seed % 28) / 100.0;
-              final hf = (14 + (seed * 7) % 22) / 100.0;
-              return Positioned.fill(
-                child: LayoutBuilder(builder: (_, box) {
-                  final pw = box.maxWidth;
-                  final ph = box.maxHeight;
-                  final left = (lf * pw).clamp(0.0, pw * 0.62);
-                  final top = (tf * ph).clamp(0.0, ph * 0.60);
-                  final w = (wf * pw).clamp(40.0, pw * 0.42);
-                  final h = (hf * ph).clamp(30.0, ph * 0.40);
-                  return Stack(children: [
-                    Positioned(
-                      left: left,
-                      top: top,
-                      width: w,
-                      height: h,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: c.withValues(alpha: 0.75), width: 1.5),
-                          borderRadius: BorderRadius.circular(4),
-                          color: c.withValues(alpha: 0.06),
-                        ),
-                        padding: const EdgeInsets.all(3),
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          e.key
-                              .substring(0, math.min(4, e.key.length))
-                              .toUpperCase(),
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: 7,
-                            fontWeight: FontWeight.w700,
-                            color: c,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]);
-                }),
-              );
-            }),
-            // Bottom label strip
+            // Bottom label strip only — no fake bounding boxes
             Positioned(
               left: 0,
               right: 0,
