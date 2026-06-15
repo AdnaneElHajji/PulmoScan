@@ -19,7 +19,6 @@ class _LoginPageExactState extends State<LoginPageExact> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = false;
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = '';
@@ -189,49 +188,24 @@ class _LoginPageExactState extends State<LoginPageExact> {
 
                                   const SizedBox(height: 14),
 
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Left: checkbox + label
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(
-                                            width: 24,
-                                            height: 24,
-                                            child: Checkbox(
-                                              value: _rememberMe,
-                                              onChanged: (val) => setState(
-                                                  () => _rememberMe = val!),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            S.rememberMe,
-                                            style: GoogleFonts.inter(
-                                                fontSize: 13,
-                                                color: V4.inkSoft),
-                                          ),
-                                        ],
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: _showForgotPasswordDialog,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: V4.teal,
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       ),
-                                      // Right: forgot password
-                                      TextButton(
-                                        onPressed: _showForgotPasswordDialog,
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: V4.teal,
-                                          padding: EdgeInsets.zero,
-                                          minimumSize: Size.zero,
-                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        ),
-                                        child: Text(
-                                          S.forgotPassword,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              color: V4.teal,
-                                              fontWeight: FontWeight.w500),
-                                        ),
+                                      child: Text(
+                                        S.forgotPassword,
+                                        style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: V4.teal,
+                                            fontWeight: FontWeight.w500),
                                       ),
-                                    ],
+                                    ),
                                   ),
 
                                   const SizedBox(height: 20),
@@ -316,7 +290,6 @@ class _LoginPageExactState extends State<LoginPageExact> {
       await AuthService().login(
         _emailController.text.trim(),
         _passwordController.text,
-        rememberMe: _rememberMe,
       );
       if (!mounted) return;
       widget.onLogin(context);
