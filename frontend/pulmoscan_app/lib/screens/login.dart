@@ -190,28 +190,31 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                   const SizedBox(height: 14),
 
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: Checkbox(
-                                          value: _rememberMe,
-                                          onChanged: (val) => setState(
-                                              () => _rememberMe = val!),
-                                        ),
+                                      // Left: checkbox + label
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: Checkbox(
+                                              value: _rememberMe,
+                                              onChanged: (val) => setState(
+                                                  () => _rememberMe = val!),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            S.rememberMe,
+                                            style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                color: V4.inkSoft),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 6),
-                                      Flexible(
-                                        child: Text(
-                                          S.rememberMe,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              color: V4.inkSoft),
-                                        ),
-                                      ),
-                                      const Spacer(),
+                                      // Right: forgot password
                                       TextButton(
                                         onPressed: _showForgotPasswordDialog,
                                         style: TextButton.styleFrom(
