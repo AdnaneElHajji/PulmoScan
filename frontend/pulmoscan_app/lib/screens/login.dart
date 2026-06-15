@@ -261,38 +261,35 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                     ),
                                   ),
 
-                                  const SizedBox(height: 8),
-
-                                  // ── Mot de passe oublié ? ────────
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        onPressed: _showForgotPasswordDialog,
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: V4.teal,
-                                          padding: EdgeInsets.zero,
-                                          minimumSize: Size.zero,
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
-                                        child: Text(
-                                          S.forgotPassword,
-                                          style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              color: V4.teal,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
                                   const SizedBox(height: 24),
 
                                   V4.primaryBtn(
                                     label: S.signIn,
                                     onTap: _isLoading ? null : _handleSubmit,
                                     loading: _isLoading,
+                                  ),
+
+                                  const SizedBox(height: 14),
+
+                                  // ── Mot de passe oublié ? ────────
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: _showForgotPasswordDialog,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: V4.teal,
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        S.forgotPassword,
+                                        style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: V4.teal,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
