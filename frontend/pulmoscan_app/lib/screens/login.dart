@@ -261,28 +261,30 @@ class _LoginPageExactState extends State<LoginPageExact> {
                                     ),
                                   ),
 
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 8),
 
                                   // ── Mot de passe oublié ? ────────
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton(
-                                      onPressed: _showForgotPasswordDialog,
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: V4.teal,
-                                        padding: EdgeInsets.zero,
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: _showForgotPasswordDialog,
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: V4.teal,
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          S.forgotPassword,
+                                          style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              color: V4.teal,
+                                              fontWeight: FontWeight.w500),
+                                        ),
                                       ),
-                                      child: Text(
-                                        S.forgotPassword,
-                                        style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            color: V4.teal,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
+                                    ],
                                   ),
 
                                   const SizedBox(height: 24),

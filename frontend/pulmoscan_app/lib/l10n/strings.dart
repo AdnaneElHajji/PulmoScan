@@ -42,7 +42,7 @@ class S {
   static String get password =>
       _t('Mot de passe', 'Password', 'كلمة المرور');
   static String get rememberMe =>
-      _t('Se souvenir', 'Remember me', 'تذكرني');
+      _t('Se souvenir de moi', 'Remember me', 'تذكرني');
   static String get forgotPassword =>
       _t('Mot de passe oublié ?', 'Forgot password?', 'نسيت كلمة المرور؟');
   static String get signIn =>
