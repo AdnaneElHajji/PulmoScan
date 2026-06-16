@@ -29,7 +29,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Deux modèles IA\nen parallèle.',
       titleAccent: 'en parallèle.',
       body:
-          "EfficientNetB1 classe 14 pathologies — directement sur l'appareil, sans cloud.",
+          "DenseNet121 classe 14 pathologies et U-Net segmente les poumons — directement sur l'appareil, sans cloud.",
       active: [0, 1, 2, 4, 6, 7, 8, 11],
     ),
     _Slide(
