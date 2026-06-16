@@ -232,6 +232,8 @@ class V4 {
             )
           : Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -249,25 +251,24 @@ class V4 {
     required VoidCallback onTap,
     Color? color,
   }) =>
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: onTap,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: color ?? ink,
-            side: BorderSide(
-                color: color?.withValues(alpha: 0.45) ?? borderStrong),
-            minimumSize: const Size(0, 48),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-          ),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+      OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: color ?? ink,
+          side: BorderSide(
+              color: color?.withValues(alpha: 0.45) ?? borderStrong),
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
       );

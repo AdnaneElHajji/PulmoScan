@@ -301,20 +301,30 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 fontWeight: FontWeight.w600,
                 color: V4.inkSoft)),
         const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          isExpanded: true,
-          initialValue: _genre,
-          dropdownColor: V4.surface2,
-          style: const TextStyle(color: V4.ink, fontSize: 14),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: V4.inkMuted),
-          decoration: V4.inputDec(prefix: Icons.wc_outlined),
-          items: const [
-            DropdownMenuItem(value: 'Homme', child: Text('Homme')),
-            DropdownMenuItem(value: 'Femme', child: Text('Femme')),
-            DropdownMenuItem(value: 'Autre', child: Text('Autre')),
-          ],
-          onChanged: (v) => setState(() => _genre = v!),
+        Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: V4.surface2,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: V4.borderStrong),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _genre,
+              dropdownColor: V4.surface2,
+              style: const TextStyle(color: V4.ink, fontSize: 14),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                  color: V4.inkMuted, size: 18),
+              items: const [
+                DropdownMenuItem(value: 'Homme', child: Text('Homme')),
+                DropdownMenuItem(value: 'Femme', child: Text('Femme')),
+                DropdownMenuItem(value: 'Autre', child: Text('Autre')),
+              ],
+              onChanged: (v) => setState(() => _genre = v!),
+            ),
+          ),
         ),
       ],
     );
@@ -353,7 +363,19 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 child: child!,
               ),
             );
-            if (picked != null) setState(() => _dateNaissance = picked);
+            if (picked != null) {
+              setState(() {
+                _dateNaissance = picked;
+                // Auto-calcul de l'âge
+                final today = DateTime.now();
+                int age = today.year - picked.year;
+                if (today.month < picked.month ||
+                    (today.month == picked.month && today.day < picked.day)) {
+                  age--;
+                }
+                _ageCtrl.text = age.toString();
+              });
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
