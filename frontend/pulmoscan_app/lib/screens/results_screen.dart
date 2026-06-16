@@ -8,6 +8,7 @@ import '../models/patient.dart';
 import '../models/result.dart';
 import '../services/ai_service.dart';
 import '../services/database_service.dart';
+import '../services/segmentation_service.dart';
 import '../theme/v4_theme.dart';
 import '../services/pdf_service.dart';
 
@@ -414,6 +415,9 @@ class _ResultsTab extends StatefulWidget {
 class _ResultsTabState extends State<_ResultsTab>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
+  SegmentationResult? _segResult;
+  bool _segLoading = true;
+  bool _showOverlay = true;
 
   @override
   void initState() {
@@ -422,12 +426,31 @@ class _ResultsTabState extends State<_ResultsTab>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     )..forward();
+    _runSegmentation();
   }
 
   @override
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _runSegmentation() async {
+    if (widget.imagePath.isEmpty) {
+      if (mounted) setState(() => _segLoading = false);
+      return;
+    }
+    try {
+      final r = await SegmentationService().segment(widget.imagePath);
+      if (mounted) {
+        setState(() {
+          _segResult = r;
+          _segLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _segLoading = false);
+    }
   }
 
   Color _color(String name) {
@@ -446,6 +469,9 @@ class _ResultsTabState extends State<_ResultsTab>
   }
 
   Widget _buildXRay() {
+    final hasSeg = _segResult != null;
+    final showingOverlay = hasSeg && _showOverlay;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -454,8 +480,14 @@ class _ResultsTabState extends State<_ResultsTab>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // X-ray image or dark placeholder
-            if (widget.imagePath.isNotEmpty)
+            // Image : overlay U-Net si dispo et activé, sinon radio brute
+            if (showingOverlay)
+              Image.memory(
+                _segResult!.overlayBytes,
+                fit: BoxFit.cover,
+                gaplessPlayback: true,
+              )
+            else if (widget.imagePath.isNotEmpty)
               Image.file(
                 File(widget.imagePath),
                 fit: BoxFit.cover,
@@ -463,14 +495,97 @@ class _ResultsTabState extends State<_ResultsTab>
               )
             else
               const _XRayPlaceholder(),
-            // Bottom label strip only — no fake bounding boxes
+
+            // Indicateur de chargement de la segmentation
+            if (_segLoading)
+              const Positioned(
+                top: 10,
+                left: 10,
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: V4.teal,
+                  ),
+                ),
+              ),
+
+            // Badge couverture pulmonaire (haut droite)
+            if (hasSeg)
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: V4.teal.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'POUMONS ${_segResult!.lungCoveragePercent.toStringAsFixed(1)}%',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Bouton bascule overlay (bas droite)
+            if (hasSeg)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () =>
+                      setState(() => _showOverlay = !_showOverlay),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: V4.teal.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          showingOverlay
+                              ? Icons.layers
+                              : Icons.layers_outlined,
+                          size: 13,
+                          color: V4.teal,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          showingOverlay
+                              ? 'Segmentation'
+                              : 'Radio brute',
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 9,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Bandeau bas
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -482,7 +597,9 @@ class _ResultsTabState extends State<_ResultsTab>
                   ),
                 ),
                 child: Text(
-                  'RADIOGRAPHIE · DENSENET121 · NIH CHESTX-RAY14',
+                  showingOverlay
+                      ? 'SEGMENTATION U-NET · POUMONS DÉTECTÉS'
+                      : 'RADIOGRAPHIE · DENSENET121 · NIH CHESTX-RAY14',
                   style: GoogleFonts.jetBrainsMono(
                     fontSize: 8,
                     letterSpacing: 1.0,
