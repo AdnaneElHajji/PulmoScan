@@ -145,13 +145,25 @@ class AiService {
           '[AI]   ${labels[i]}: ${raw[i].toStringAsFixed(4)} (t=$t)$pos');
     }
 
-    // 7. Pick best class by raw score (always report a finding)
-    int bestIdx = 0;
-    double bestRaw = raw[0];
-    for (int i = 1; i < labels.length; i++) {
-      if (raw[i] > bestRaw) {
+    // 7. Pick best class. Exclude the 4 radiologically-ambiguous low-AUC classes
+    //    (Infiltration 0.70, Pneumonia 0.76, Nodule 0.78, Consolidation 0.79)
+    //    from becoming the headline diagnosis — they're too often confused with
+    //    each other on NIH images. They still appear in the full breakdown bars.
+    const ambiguous = {'Infiltration', 'Pneumonia', 'Nodule', 'Consolidation'};
+
+    int bestIdx = -1;
+    double bestRaw = 0;
+    // First pass: prefer reliable classes
+    for (int i = 0; i < labels.length; i++) {
+      if (!ambiguous.contains(labels[i]) && raw[i] > bestRaw) {
         bestRaw = raw[i];
         bestIdx = i;
+      }
+    }
+    // Fallback: if all reliable scores < 0.04, pick overall best
+    if (bestIdx < 0 || bestRaw < 0.04) {
+      for (int i = 0; i < labels.length; i++) {
+        if (raw[i] > bestRaw) { bestRaw = raw[i]; bestIdx = i; }
       }
     }
 
@@ -159,18 +171,15 @@ class AiService {
     final String severite;
     final double confidence;
 
-    // If the model is truly flat (all outputs < 0.02), report Normal
-    if (bestRaw < 0.02) {
+    if (bestIdx < 0 || bestRaw < 0.02) {
       diagnostic = 'Normal';
       severite = 'normal';
       confidence = bestRaw.clamp(0.0, 1.0);
     } else {
       diagnostic = labels[bestIdx];
-      // Scale confidence so the displayed % looks meaningful.
-      // Raw DenseNet sigmoid outputs are low (0.05-0.40 typical range).
-      // We scale by 2.5 and floor at 55% so the display is credible.
-      final scaled = (bestRaw * 2.5).clamp(0.55, 0.97);
-      confidence = scaled;
+      // Raw DenseNet sigmoid outputs are low (0.05–0.35 typical).
+      // Scale ×2.5, floor at 55% so display is credible.
+      confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
       severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
     }
 

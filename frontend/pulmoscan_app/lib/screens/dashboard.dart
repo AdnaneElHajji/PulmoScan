@@ -332,23 +332,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          _modelRow(
+          _modelRowTappable(
             icon: Icons.biotech_rounded,
             color: V4.teal,
             name: 'DenseNet121',
             desc: '14 pathologies · NIH ChestX-ray14',
             pills: [_pillStat('AUC', '0.91', V4.teal)],
+            details: 'Architecture DenseNet-121 pré-entraînée sur le dataset NIH ChestX-ray14 '
+                '(112 120 radiographies, 30 805 patients).\n\n'
+                'Détecte 14 pathologies pulmonaires par classification multi-label '
+                'avec sorties sigmoid indépendantes.\n\n'
+                'Performance : AUC moyen 0.91 sur les classes principales — '
+                'Emphysème 0.91 · Cardiomégalie 0.90 · Œdème 0.89 · Épanchement 0.88.\n\n'
+                'Inférence locale TFLite · aucune donnée transmise au cloud.',
           ),
           const SizedBox(height: 12),
-          _modelRow(
+          _modelRowTappable(
             icon: Icons.blur_on_rounded,
             color: V4.blue,
             name: 'U-Net',
             desc: 'Segmentation pulmonaire',
             pills: [_pillStat('DICE', '0.93', V4.blue)],
+            details: 'Architecture U-Net entraînée sur le dataset Montgomery & Shenzhen '
+                '(radiographies annotées avec masques pulmonaires).\n\n'
+                'Produit un masque de segmentation pixel-par-pixel des poumons, '
+                'superposé en transparence sur la radiographie.\n\n'
+                'Performance : coefficient DICE 0.93 sur le jeu de test.\n\n'
+                'Modèle float32 non quantisé (30 MB) pour éviter les erreurs '
+                'TRANSPOSE_CONV avec tflite_flutter.',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _modelRowTappable({
+    required IconData icon,
+    required Color color,
+    required String name,
+    required String desc,
+    required List<Widget> pills,
+    required String details,
+  }) {
+    return GestureDetector(
+      onTap: () => showModalBottomSheet(
+        context: context,
+        backgroundColor: V4.surface1,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (_) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 38, height: 38,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(name,
+                      style: GoogleFonts.inter(
+                        fontSize: 18, fontWeight: FontWeight.w700, color: V4.ink,
+                      )),
+                  ),
+                  ...pills,
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(height: 1, color: V4.border),
+              const SizedBox(height: 16),
+              Text(details,
+                style: const TextStyle(
+                  fontSize: 13, color: V4.inkSoft, height: 1.6,
+                )),
+            ],
+          ),
+        ),
+      ),
+      child: _modelRow(icon: icon, color: color, name: name, desc: desc, pills: pills),
     );
   }
 

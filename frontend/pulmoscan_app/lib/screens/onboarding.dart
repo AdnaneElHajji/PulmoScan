@@ -131,8 +131,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                 // Dots + button
                 Padding(
-                  padding:
-                      const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                  padding: EdgeInsets.fromLTRB(
+                    24, 12, 24,
+                    24 + MediaQuery.of(context).padding.bottom,
+                  ),
                   child: Column(
                     children: [
                       // Dots

@@ -738,7 +738,8 @@ class _ResultsTabState extends State<_ResultsTab>
                       final i = entry.key;
                       final e = entry.value;
                       final c = _color(e.key);
-                      final isAlert = e.value > (AiService.classThresh[e.key] ?? 0.20);
+                      // Only highlight if score is meaningfully elevated (>15%)
+                      final isAlert = e.value > 0.15;
                       final v = _barVal(i, t);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
