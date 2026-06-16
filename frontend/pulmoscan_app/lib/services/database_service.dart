@@ -28,11 +28,11 @@ class DatabaseService {
     final path = join(dbPath, 'pulmoscan.db');
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createTables,
       onUpgrade: (db, oldVersion, newVersion) async {
-        // Always seed demo patients on upgrade (ignore if already exist)
         await _seedDemoPatients(db);
+        await _seedDemoExams(db);
       },
     );
   }
@@ -121,8 +121,61 @@ class DatabaseService {
       'created_at': DateTime.now().toIso8601String(),
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
-    // Demo patients
+    // Demo patients + exams + results
     await _seedDemoPatients(db);
+    await _seedDemoExams(db);
+  }
+
+  Future<void> _seedDemoExams(Database db) async {
+    final emails = [
+      'ahmed.benali@demo.ma',
+      'fatima.zahra@demo.ma',
+      'youssef.alaoui@demo.ma',
+    ];
+    final notes = [
+      'Toux chronique et essoufflement à l\'effort',
+      'Douleur thoracique droite, fièvre 38.5°C',
+      'Contrôle de routine, surveillance BPCO',
+    ];
+    final diagnostics = ['Emphysema', 'Pneumonia', 'Effusion'];
+    final confidences = [0.87, 0.92, 0.78];
+    final severites = ['Modérée', 'Sévère', 'Légère'];
+    final details = [
+      'Hyperinflation pulmonaire bilatérale, compatible avec un emphysème centro-lobulaire. Suivi pneumologique recommandé.',
+      'Opacité alvéolaire lobaire inférieure droite évocatrice de pneumonie bactérienne. Antibiothérapie urgente recommandée.',
+      'Petit épanchement pleural droit de faible abondance. Surveillance clinique et radiologique à 4 semaines.',
+    ];
+    final daysAgo = [28, 12, 5];
+
+    for (int i = 0; i < emails.length; i++) {
+      final rows = await db.query('patients',
+          where: 'email = ?', whereArgs: [emails[i]], columns: ['id']);
+      if (rows.isEmpty) continue;
+      final patientId = rows.first['id'] as int;
+
+      final existingExams = await db.query('examens',
+          where: 'patient_id = ?', whereArgs: [patientId], limit: 1);
+      if (existingExams.isNotEmpty) continue;
+
+      final examDate = DateTime.now()
+          .subtract(Duration(days: daysAgo[i]))
+          .toIso8601String();
+      final examId = await db.insert('examens', {
+        'patient_id': patientId,
+        'image_path': '',
+        'notes': notes[i],
+        'date_examen': examDate,
+        'statut': 'termine',
+      });
+      await db.insert('resultats', {
+        'exam_id': examId,
+        'diagnostic': diagnostics[i],
+        'confidence': confidences[i],
+        'severite': severites[i],
+        'details': details[i],
+        'date_analyse': examDate,
+      });
+    }
   }
 
   // ── AUTH ───────────────────────────────────────────────────────────────────
