@@ -28,9 +28,40 @@ class DatabaseService {
     final path = join(dbPath, 'pulmoscan.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _createTables,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Always seed demo patients on upgrade (ignore if already exist)
+        await _seedDemoPatients(db);
+      },
     );
+  }
+
+  Future<void> _seedDemoPatients(Database db) async {
+    final now = DateTime.now().toIso8601String();
+    for (final p in [
+      {
+        'nom': 'Ahmed Benali', 'age': 58, 'genre': 'Homme',
+        'email': 'ahmed.benali@demo.ma', 'telephone': '+212611223344',
+        'cin': 'AB100001', 'antecedents': 'Tabagisme chronique (30 PA)',
+        'date_naissance': '1967-03-12', 'date_creation': now,
+      },
+      {
+        'nom': 'Fatima Zahra', 'age': 45, 'genre': 'Femme',
+        'email': 'fatima.zahra@demo.ma', 'telephone': '+212655667788',
+        'cin': 'AB100002', 'antecedents': 'Asthme',
+        'date_naissance': '1980-07-25', 'date_creation': now,
+      },
+      {
+        'nom': 'Youssef Alaoui', 'age': 63, 'genre': 'Homme',
+        'email': 'youssef.alaoui@demo.ma', 'telephone': '+212699887766',
+        'cin': 'AB100003', 'antecedents': 'BPCO, hypertension',
+        'date_naissance': '1962-11-03', 'date_creation': now,
+      },
+    ]) {
+      await db.insert('patients', p,
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 
   Future<void> _createTables(Database db, int version) async {
@@ -89,6 +120,9 @@ class DatabaseService {
       'role': 'medecin',
       'created_at': DateTime.now().toIso8601String(),
     }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+    // Demo patients
+    await _seedDemoPatients(db);
   }
 
   // ── AUTH ───────────────────────────────────────────────────────────────────

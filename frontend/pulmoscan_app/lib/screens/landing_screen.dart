@@ -5,8 +5,24 @@ import '../theme/v4_theme.dart';
 import '../widgets/aperture_mark.dart';
 import 'login.dart';
 
-class LandingScreen extends StatelessWidget {
+class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
+
+  @override
+  State<LandingScreen> createState() => _LandingScreenState();
+}
+
+class _LandingScreenState extends State<LandingScreen> {
+  final GlobalKey _formSectionKey = GlobalKey();
+
+  void _scrollToForm() {
+    final ctx = _formSectionKey.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut);
+    }
+  }
 
   void _goToLogin(BuildContext context) {
     Navigator.push(
@@ -54,7 +70,7 @@ class LandingScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   _buildDoctors(),
                   const SizedBox(height: 32),
-                  _AppointmentForm(),
+                  _AppointmentForm(key: _formSectionKey),
                   const SizedBox(height: 32),
                   _buildFooter(),
                 ],
@@ -170,7 +186,7 @@ class LandingScreen extends StatelessWidget {
             Expanded(
               child: V4.primaryBtn(
                 label: 'Prendre rendez-vous',
-                onTap: () {},
+                onTap: _scrollToForm,
               ),
             ),
             const SizedBox(width: 12),
@@ -469,6 +485,7 @@ class LandingScreen extends StatelessWidget {
 
 // ── Appointment form (stateful) ────────────────────────────────────────────────
 class _AppointmentForm extends StatefulWidget {
+  const _AppointmentForm({super.key});
   @override
   State<_AppointmentForm> createState() => _AppointmentFormState();
 }
