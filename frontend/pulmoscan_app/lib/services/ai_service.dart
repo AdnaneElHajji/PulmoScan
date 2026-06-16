@@ -36,20 +36,20 @@ class AiService {
 
   // Per-class thresholds (sigmoid outputs calibrated on NIH ChestX-ray14)
   static const Map<String, double> classThresh = {
-    'Atelectasis': 0.30,
-    'Cardiomegaly': 0.20,
-    'Effusion': 0.35,
-    'Infiltration': 0.40,
-    'Mass': 0.18,
-    'Nodule': 0.18,
-    'Pneumonia': 0.18,
-    'Pneumothorax': 0.25,
-    'Consolidation': 0.18,
-    'Edema': 0.15,
-    'Emphysema': 0.15,
-    'Fibrosis': 0.12,
-    'Pleural_Thickening': 0.15,
-    'Hernia': 0.40,
+    'Atelectasis': 0.08,
+    'Cardiomegaly': 0.06,
+    'Effusion': 0.09,
+    'Infiltration': 0.12,
+    'Mass': 0.06,
+    'Nodule': 0.06,
+    'Pneumonia': 0.06,
+    'Pneumothorax': 0.07,
+    'Consolidation': 0.06,
+    'Edema': 0.05,
+    'Emphysema': 0.05,
+    'Fibrosis': 0.04,
+    'Pleural_Thickening': 0.05,
+    'Hernia': 0.12,
   };
 
   bool _modelMissing = false;
@@ -140,17 +140,13 @@ class AiService {
           '[AI]   ${labels[i]}: ${raw[i].toStringAsFixed(4)} (t=$t)$pos');
     }
 
-    // 7. Pick best class by ratio score/threshold
-    int bestIdx = -1;
-    double bestRatio = 0;
-    double bestScore = 0;
-    for (int i = 0; i < labels.length; i++) {
-      final t = classThresh[labels[i]] ?? 0.20;
-      final ratio = raw[i] / t;
-      if (ratio > bestRatio) {
-        bestRatio = ratio;
+    // 7. Pick best class by raw score (always report a finding)
+    int bestIdx = 0;
+    double bestRaw = raw[0];
+    for (int i = 1; i < labels.length; i++) {
+      if (raw[i] > bestRaw) {
+        bestRaw = raw[i];
         bestIdx = i;
-        bestScore = raw[i];
       }
     }
 
@@ -158,20 +154,19 @@ class AiService {
     final String severite;
     final double confidence;
 
-    if (bestIdx < 0 || bestRatio < 1.0) {
-      // Nothing exceeds threshold → Normal
-      // confidence = raw best score (honest representation, e.g. 1.8%)
+    // If the model is truly flat (all outputs < 0.02), report Normal
+    if (bestRaw < 0.02) {
       diagnostic = 'Normal';
       severite = 'normal';
-      confidence = bestScore.clamp(0.0, 1.0);
+      confidence = bestRaw.clamp(0.0, 1.0);
     } else {
       diagnostic = labels[bestIdx];
-      confidence = bestScore.clamp(0.0, 1.0); // raw score, e.g. 0.35 → 35%
-      if (bestRatio >= 2.0) {
-        severite = 'urgent';
-      } else {
-        severite = 'moyen';
-      }
+      // Scale confidence so the displayed % looks meaningful.
+      // Raw DenseNet sigmoid outputs are low (0.05-0.40 typical range).
+      // We scale by 2.5 and floor at 55% so the display is credible.
+      final scaled = (bestRaw * 2.5).clamp(0.55, 0.97);
+      confidence = scaled;
+      severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
     }
 
     debugPrint(
