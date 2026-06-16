@@ -139,7 +139,7 @@ class DatabaseService {
     ];
     final diagnostics = ['Emphysema', 'Pneumonia', 'Effusion'];
     final confidences = [0.87, 0.92, 0.78];
-    final severites = ['Modérée', 'Sévère', 'Légère'];
+    final severites = ['modere', 'severe', 'faible']; // V4 theme tokens
     final details = [
       'Hyperinflation pulmonaire bilatérale, compatible avec un emphysème centro-lobulaire. Suivi pneumologique recommandé.',
       'Opacité alvéolaire lobaire inférieure droite évocatrice de pneumonie bactérienne. Antibiothérapie urgente recommandée.',
