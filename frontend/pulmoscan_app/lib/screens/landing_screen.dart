@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/database_service.dart';
 import '../theme/v4_theme.dart';
 import '../widgets/aperture_mark.dart';
 import 'login.dart';
@@ -475,19 +476,27 @@ class _AppointmentForm extends StatefulWidget {
 class _AppointmentFormState extends State<_AppointmentForm> {
   final _formKey = GlobalKey<FormState>();
   final _nomCtrl = TextEditingController();
+  final _cinCtrl = TextEditingController();
+  final _ageCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _telCtrl = TextEditingController();
+  String _genre = 'Homme';
   String _specialite = 'Pneumologie';
   DateTime? _date;
   bool _loading = false;
 
+  // "Urgences" retiré volontairement
   static const _specialites = [
     'Pneumologie', 'Radiologie', 'Cardiologie',
-    'Médecine générale', 'Urgences', 'Biologie',
+    'Médecine générale', 'Biologie',
   ];
 
   @override
   void dispose() {
     _nomCtrl.dispose();
+    _cinCtrl.dispose();
+    _ageCtrl.dispose();
+    _emailCtrl.dispose();
     _telCtrl.dispose();
     super.dispose();
   }
@@ -520,37 +529,72 @@ class _AppointmentFormState extends State<_AppointmentForm> {
       return;
     }
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 700));
-    if (!mounted) return;
-    setState(() => _loading = false);
+
     final d = _date!;
     final dateStr =
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: V4.teal, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'RDV confirmé pour ${_nomCtrl.text.trim()} le $dateStr',
-                style: const TextStyle(color: V4.ink),
+
+    try {
+      await DatabaseService().createPatient({
+        'nom': _nomCtrl.text.trim(),
+        'age': int.tryParse(_ageCtrl.text.trim()) ?? 0,
+        'genre': _genre,
+        'email': _emailCtrl.text.trim(),
+        'telephone': _telCtrl.text.trim(),
+        'cin': _cinCtrl.text.trim(),
+        'antecedents':
+            'Demande de RDV : $_specialite — souhaité le $dateStr (via site web)',
+        'date_naissance': '',
+      });
+
+      if (!mounted) return;
+      setState(() => _loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: V4.teal, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Demande enregistrée pour ${_nomCtrl.text.trim()} le $dateStr',
+                  style: const TextStyle(color: V4.ink),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: V4.surface2,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        backgroundColor: V4.surface2,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-    _nomCtrl.clear();
-    _telCtrl.clear();
-    setState(() {
-      _specialite = 'Pneumologie';
-      _date = null;
-    });
+      );
+
+      _formKey.currentState!.reset();
+      _nomCtrl.clear();
+      _cinCtrl.clear();
+      _ageCtrl.clear();
+      _emailCtrl.clear();
+      _telCtrl.clear();
+      setState(() {
+        _genre = 'Homme';
+        _specialite = 'Pneumologie';
+        _date = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg.contains('existe déjà')
+              ? 'Un patient avec cet email existe déjà.'
+              : 'Erreur : $msg'),
+          backgroundColor: V4.coral,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -584,7 +628,7 @@ class _AppointmentFormState extends State<_AppointmentForm> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Confirmation sous 24h par notre équipe.',
+            'Vos informations sont transmises à notre équipe médicale.',
             style: TextStyle(fontSize: 13, color: V4.inkSoft),
           ),
           const SizedBox(height: 20),
@@ -600,8 +644,88 @@ class _AppointmentFormState extends State<_AppointmentForm> {
                     label: 'NOM COMPLET',
                     prefix: Icons.person_outline_rounded,
                   ),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Nom obligatoire' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Nom obligatoire' : null,
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _cinCtrl,
+                  textCapitalization: TextCapitalization.characters,
+                  style: const TextStyle(color: V4.ink, fontSize: 14),
+                  decoration: V4.inputDec(
+                    hint: 'AB123456',
+                    label: 'CIN',
+                    prefix: Icons.badge_outlined,
+                  ),
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'CIN obligatoire' : null,
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _ageCtrl,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: V4.ink, fontSize: 14),
+                        decoration: V4.inputDec(
+                          hint: '45',
+                          label: 'ÂGE',
+                          prefix: Icons.cake_outlined,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Requis';
+                          final n = int.tryParse(v.trim());
+                          if (n == null || n <= 0 || n > 120) return 'Invalide';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: V4.surface1,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: V4.borderStrong),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            dropdownColor: V4.surface2,
+                            value: _genre,
+                            style: const TextStyle(color: V4.ink, fontSize: 14),
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                color: V4.inkMuted),
+                            items: const [
+                              DropdownMenuItem(
+                                  value: 'Homme', child: Text('Homme')),
+                              DropdownMenuItem(
+                                  value: 'Femme', child: Text('Femme')),
+                            ],
+                            onChanged: (v) => setState(() => _genre = v!),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: V4.ink, fontSize: 14),
+                  decoration: V4.inputDec(
+                    hint: 'patient@email.com',
+                    label: 'EMAIL',
+                    prefix: Icons.mail_outline_rounded,
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Email obligatoire';
+                    if (!v.contains('@')) return 'Email invalide';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
@@ -614,11 +738,9 @@ class _AppointmentFormState extends State<_AppointmentForm> {
                     prefix: Icons.phone_outlined,
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Téléphone obligatoire'
-                      : null,
+                      ? 'Téléphone obligatoire' : null,
                 ),
                 const SizedBox(height: 14),
-                // Specialty dropdown
                 Container(
                   decoration: BoxDecoration(
                     color: V4.surface1,
@@ -642,7 +764,6 @@ class _AppointmentFormState extends State<_AppointmentForm> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Date picker
                 GestureDetector(
                   onTap: _pickDate,
                   child: Container(
