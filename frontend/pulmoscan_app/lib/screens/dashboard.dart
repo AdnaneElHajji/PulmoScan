@@ -297,44 +297,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: V4.border),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const ApertureMark(size: 56, active: [1, 4, 7, 11]),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Moteur IA · 2 modèles',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                        color: V4.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Classification + Segmentation · TFLite',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        color: V4.inkMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _modelRow(
+            icon: Icons.biotech_rounded,
+            color: V4.teal,
+            name: 'DenseNet121',
+            desc: '14 pathologies · NIH ChestX-ray14',
+            pills: [_pillStat('AUC', '0.91', V4.teal)],
+          ),
+          const SizedBox(height: 12),
+          _modelRow(
+            icon: Icons.blur_on_rounded,
+            color: V4.blue,
+            name: 'U-Net',
+            desc: 'Segmentation pulmonaire',
+            pills: [_pillStat('DICE', '0.93', V4.blue)],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _modelRow({
+    required IconData icon,
+    required Color color,
+    required String name,
+    required String desc,
+    required List<Widget> pills,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: V4.bg.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: V4.border),
+      ),
       child: Row(
         children: [
-          const ApertureMark(size: 80, active: [1, 4, 7, 11]),
-          const SizedBox(width: 18),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '14 pathologies',
+                  name,
                   style: GoogleFonts.inter(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
                     color: V4.ink,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  'DenseNet121 · TFLite',
+                  desc,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.jetBrainsMono(
-                    fontSize: 11,
+                    fontSize: 10,
                     color: V4.inkMuted,
-                    letterSpacing: 0.8,
+                    letterSpacing: 0.3,
                   ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    _pillStat('AUC', '0.91', V4.teal),
-                    _pillStat('NIH', '112K', V4.blue),
-                  ],
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          ...pills,
         ],
       ),
     );

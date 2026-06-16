@@ -352,12 +352,17 @@ class _BottomBar extends StatelessWidget {
               Icon(on ? activeIcon : icon,
                   color: on ? V4.teal : V4.inkMuted, size: 20),
               const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: on ? FontWeight.w700 : FontWeight.w400,
-                  color: on ? V4.teal : V4.inkMuted,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: on ? FontWeight.w700 : FontWeight.w400,
+                    color: on ? V4.teal : V4.inkMuted,
+                  ),
                 ),
               ),
             ],

@@ -87,7 +87,7 @@ class AiService {
   }
 
   /// Main entry point — analyses a chest X-ray and returns diagnosis.
-  /// Input: [1, 224, 224, 3] float32 RGB normalised [0, 1]
+  /// Input: [1, 224, 224, 1] float32 GRAYSCALE normalised [0, 1]
   /// Output: [1, 18] float32 sigmoid, first 14 used
   Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     await _loadModel();
@@ -97,39 +97,34 @@ class AiService {
     final img.Image? decoded = img.decodeImage(bytes);
     if (decoded == null) throw Exception('Image illisible');
 
-    // 1. Convert to RGB (ensure 3 channels)
-    final rgb = decoded.numChannels >= 3
-        ? decoded
-        : img.remapColors(decoded, red: img.Channel.red, green: img.Channel.red, blue: img.Channel.red);
-
-    // 2. Center-crop to square
-    final w = rgb.width, h = rgb.height;
+    // 1. Center-crop to square
+    final w = decoded.width, h = decoded.height;
     final side = w < h ? w : h;
     final cropped = img.copyCrop(
-      rgb,
+      decoded,
       x: (w - side) ~/ 2,
       y: (h - side) ~/ 2,
       width: side,
       height: side,
     );
 
-    // 3. Resize to 224×224
+    // 2. Resize to 224×224
     final resized =
         img.copyResize(cropped, width: imageSize, height: imageSize);
 
-    // 4. Build float32 input [1, 224, 224, 3] normalised [0, 1]
-    final inputData =
-        Float32List(1 * imageSize * imageSize * 3);
+    // 3. Build float32 input [1, 224, 224, 1] GRAYSCALE, normalised [0, 1]
+    //    Model expects a single channel — feeding RGB gives garbage results.
+    final inputData = Float32List(1 * imageSize * imageSize * 1);
     int idx = 0;
     for (int y = 0; y < imageSize; y++) {
       for (int x = 0; x < imageSize; x++) {
         final pixel = resized.getPixel(x, y);
-        inputData[idx++] = pixel.r.toDouble() / 255.0;
-        inputData[idx++] = pixel.g.toDouble() / 255.0;
-        inputData[idx++] = pixel.b.toDouble() / 255.0;
+        // Luminance (Rec. 601) — NIH X-rays are already gray, this is robust.
+        final lum = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
+        inputData[idx++] = lum / 255.0;
       }
     }
-    final input = inputData.reshape([1, imageSize, imageSize, 3]);
+    final input = inputData.reshape([1, imageSize, imageSize, 1]);
 
     // 5. Run inference — model outputs [1,18]; take first 14
     final out = List.generate(1, (_) => List.filled(_outputSize, 0.0));
