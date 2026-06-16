@@ -12,21 +12,26 @@ class AiService {
 
   Interpreter? _interpreter;
 
-  // DenseNet121 labels — 14 classes, model output shape [1, 18] (indices 14-17 unused)
+  // TorchXRayVision DenseNet121 labels — model output shape [1, 18].
+  // CRITICAL: this exact order matches xrv.datasets.default_pathologies.
+  // The first 14 are the NIH ChestX-ray14 classes (the model was trained on
+  // NIH, so indices 14-17 — Lung Lesion, Fracture, Lung Opacity, Enlarged
+  // Cardiomediastinum — are untrained and return a constant 0.5).
+  // Using any other order silently mislabels every prediction.
   static const List<String> labels = [
     'Atelectasis',
-    'Cardiomegaly',
-    'Effusion',
-    'Infiltration',
-    'Mass',
-    'Nodule',
-    'Pneumonia',
-    'Pneumothorax',
     'Consolidation',
+    'Infiltration',
+    'Pneumothorax',
     'Edema',
     'Emphysema',
     'Fibrosis',
+    'Effusion',
+    'Pneumonia',
     'Pleural_Thickening',
+    'Cardiomegaly',
+    'Nodule',
+    'Mass',
     'Hernia',
   ];
 
@@ -171,7 +176,7 @@ class AiService {
 
     debugPrint(
         '[AI] -> $diagnostic ($severite, ${(confidence * 100).toStringAsFixed(0)}%) '
-        'bestRatio=${bestRatio.toStringAsFixed(2)}');
+        'rawScore=${bestRaw.toStringAsFixed(3)}');
 
     final allScores = <String, double>{
       for (int i = 0; i < labels.length; i++)
