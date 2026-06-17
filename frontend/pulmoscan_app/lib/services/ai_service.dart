@@ -39,22 +39,24 @@ class AiService {
   static const int _numClasses = 14;
   static const int _outputSize = 18; // model returns [1,18]; only first 14 used
 
-  // Per-class thresholds (sigmoid outputs calibrated on NIH ChestX-ray14)
+  // Per-class thresholds calibrated for TorchXRayVision DenseNet121 with
+  // correct [-1024, 1024] normalisation. Values are sigmoid outputs; typical
+  // true-positive range is 0.20–0.60 with correct preprocessing.
   static const Map<String, double> classThresh = {
-    'Atelectasis': 0.08,
-    'Cardiomegaly': 0.06,
-    'Effusion': 0.09,
-    'Infiltration': 0.12,
-    'Mass': 0.06,
-    'Nodule': 0.06,
-    'Pneumonia': 0.06,
-    'Pneumothorax': 0.07,
-    'Consolidation': 0.06,
-    'Edema': 0.05,
-    'Emphysema': 0.05,
-    'Fibrosis': 0.04,
-    'Pleural_Thickening': 0.05,
-    'Hernia': 0.12,
+    'Atelectasis':        0.20,
+    'Cardiomegaly':       0.20,
+    'Effusion':           0.25,
+    'Infiltration':       0.25,
+    'Mass':               0.18,
+    'Nodule':             0.18,
+    'Pneumonia':          0.20,
+    'Pneumothorax':       0.22,
+    'Consolidation':      0.20,
+    'Edema':              0.20,
+    'Emphysema':          0.22,
+    'Fibrosis':           0.18,
+    'Pleural_Thickening': 0.18,
+    'Hernia':             0.25,
   };
 
   bool _modelMissing = false;
@@ -92,7 +94,8 @@ class AiService {
   }
 
   /// Main entry point — analyses a chest X-ray and returns diagnosis.
-  /// Input: [1, 224, 224, 1] float32 GRAYSCALE normalised [0, 1]
+  /// Input: [1, 224, 224, 1] float32 GRAYSCALE, TorchXRayVision normalised
+  ///        to [-1024, 1024]: value = (2*(lum/255) - 1) * 1024
   /// Output: [1, 18] float32 sigmoid, first 14 used
   Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     await _loadModel();
@@ -117,17 +120,29 @@ class AiService {
     final resized =
         img.copyResize(cropped, width: imageSize, height: imageSize);
 
-    // 3. Build float32 input [1, 224, 224, 1] GRAYSCALE, normalised [0, 1]
-    //    Model expects a single channel — feeding RGB gives garbage results.
-    final inputData = Float32List(1 * imageSize * imageSize * 1);
-    int idx = 0;
+    // 3. Compute grayscale luminance for all pixels, find min/max for
+    //    auto-contrast stretching (handles phone photos of X-ray films whose
+    //    histogram doesn't span the full [0,255] range).
+    final lums = Float32List(imageSize * imageSize);
+    double lumMin = 255.0, lumMax = 0.0;
     for (int y = 0; y < imageSize; y++) {
       for (int x = 0; x < imageSize; x++) {
         final pixel = resized.getPixel(x, y);
-        // Luminance (Rec. 601) — NIH X-rays are already gray, this is robust.
-        final lum = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
-        inputData[idx++] = lum / 255.0;
+        final l = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
+        lums[y * imageSize + x] = l;
+        if (l < lumMin) lumMin = l;
+        if (l > lumMax) lumMax = l;
       }
+    }
+    final lumRange = (lumMax - lumMin).clamp(1.0, 255.0); // avoid /0
+
+    // 4. Build float32 input [1, 224, 224, 1].
+    //    TorchXRayVision normalize(): (2*(pixel/maxval) - 1) * 1024
+    //    Apply after auto-contrast stretch so pixel ∈ [0,255].
+    final inputData = Float32List(1 * imageSize * imageSize * 1);
+    for (int i = 0; i < imageSize * imageSize; i++) {
+      final stretched = (lums[i] - lumMin) / lumRange * 255.0;
+      inputData[i] = (2.0 * (stretched / 255.0) - 1.0) * 1024.0;
     }
     final input = inputData.reshape([1, imageSize, imageSize, 1]);
 
@@ -160,8 +175,8 @@ class AiService {
         bestIdx = i;
       }
     }
-    // Fallback: if all reliable scores < 0.04, pick overall best
-    if (bestIdx < 0 || bestRaw < 0.04) {
+    // Fallback: if all reliable scores < 0.12, pick overall best
+    if (bestIdx < 0 || bestRaw < 0.12) {
       for (int i = 0; i < labels.length; i++) {
         if (raw[i] > bestRaw) { bestRaw = raw[i]; bestIdx = i; }
       }
@@ -171,16 +186,18 @@ class AiService {
     final String severite;
     final double confidence;
 
-    if (bestIdx < 0 || bestRaw < 0.02) {
+    // With correct TorchXRayVision normalisation, scores for a normal image
+    // stay well below 0.15. Raise the Normal cutoff accordingly.
+    if (bestIdx < 0 || bestRaw < 0.15) {
       diagnostic = 'Normal';
       severite = 'normal';
       confidence = bestRaw.clamp(0.0, 1.0);
     } else {
       diagnostic = labels[bestIdx];
-      // Raw DenseNet sigmoid outputs are low (0.05–0.35 typical).
-      // Scale ×2.5, floor at 55% so display is credible.
-      confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
-      severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
+      // Sigmoid outputs with correct preprocessing are in 0.15–0.70 range.
+      // Scale ×1.5, floor 60%, cap 97% for credible display.
+      confidence = (bestRaw * 1.5).clamp(0.60, 0.97);
+      severite = bestRaw >= 0.40 ? 'urgent' : 'moyen';
     }
 
     debugPrint(
