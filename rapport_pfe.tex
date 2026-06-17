@@ -28,6 +28,7 @@
 
 %==================== GRAPHIQUES & TABLEAUX ====================
 \usepackage{graphicx}
+\graphicspath{{rapport_assets/screenshots/}}
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{booktabs}
@@ -166,28 +167,61 @@
 \thispagestyle{empty}
 
 {\large\bfseries ROYAUME DU MAROC}\\[2pt]
-{\normalsize Office de la Formation Professionnelle et de la Promotion du Travail}\\[14pt]
+{\normalsize Office de la Formation Professionnelle et de la Promotion du Travail}\\[10pt]
 
-{\large\bfseries Centre de Formation Al Kendi --- Casablanca}\\[6pt]
-{\normalsize Brevet de Technicien Superieur (BTS)}\\[2pt]
-{\normalsize Filiere : Developpement des Applications Informatiques}\\[18pt]
-
-% Logo placeholder
+% ── Trois logos en haut ──────────────────────────────────────────────
+\noindent\begin{minipage}[c]{0.28\textwidth}
+\centering
+% Remplacer par : \includegraphics[height=2.6cm]{logo_ofppt.png}
 \begin{tikzpicture}
-  \draw[dashed, psInkMuted, line width=0.8pt] (0,0) rectangle (3.2,3.2);
-  \node[psInkMuted, align=center, text width=3cm] at (1.6,1.6) {\small Logo\\ Etablissement};
-\end{tikzpicture}\\[20pt]
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (2.8,2.6);
+  \node[psInkMuted, align=center, font=\footnotesize] at (1.4,1.3) {Logo\\OFPPT};
+\end{tikzpicture}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.28\textwidth}
+\centering
+% Remplacer par : \includegraphics[height=2.6cm]{logo_centre.png}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (2.8,2.6);
+  \node[psInkMuted, align=center, font=\footnotesize] at (1.4,1.3) {Logo\\Centre\\Al Kendi};
+\end{tikzpicture}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.28\textwidth}
+\centering
+% Remplacer par : \includegraphics[height=2.6cm]{logo_filiere.png}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (2.8,2.6);
+  \node[psInkMuted, align=center, font=\footnotesize] at (1.4,1.3) {Logo\\Filière\\DAI};
+\end{tikzpicture}
+\end{minipage}\\[14pt]
+% ─────────────────────────────────────────────────────────────────────
 
-{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[14pt]
-{\Large\bfseries Projet de Fin d'Etudes}\\[10pt]
-{\fontsize{42}{46}\selectfont\bfseries\color{psTeal} PulmoScan AI}\\[10pt]
-{\large\itshape Application mobile de pre-diagnostic des pathologies pulmonaires\\
-par intelligence artificielle embarquee}\\[8pt]
-{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[26pt]
+{\large\bfseries Centre de Formation Al Kendi}\\[3pt]
+{\normalsize Brevet de Technicien Supérieur (BTS)}\\[2pt]
+{\normalsize Filière : Développement des Applications Informatiques}\\[10pt]
+
+{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[10pt]
+{\Large\bfseries Projet de Fin d'Études}\\[8pt]
+
+% ── Logo de l'application au centre ──────────────────────────────────
+% Remplacer par : \includegraphics[height=3.5cm]{logo_app.png}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (3.6,3.2);
+  \node[psTeal, font=\bfseries\large] at (1.8,2.2) {PulmoScan AI};
+  \node[psInkMuted, font=\footnotesize, align=center] at (1.8,1.2) {Logo application\\(remplacer ici)};
+\end{tikzpicture}\\[8pt]
+% ─────────────────────────────────────────────────────────────────────
+
+{\fontsize{36}{40}\selectfont\bfseries\color{psTeal} PulmoScan AI}\\[6pt]
+{\large\itshape Application mobile de pré-diagnostic des pathologies pulmonaires\\
+par intelligence artificielle embarquée}\\[8pt]
+{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[20pt]
 
 \begin{minipage}{0.46\textwidth}
 \begin{flushleft}
-\textbf{Realise par :}\\[4pt]
+\textbf{Réalisé par :}\\[4pt]
 Foudali Kenza\\
 El Hajji Adnane
 \end{flushleft}
@@ -195,13 +229,13 @@ El Hajji Adnane
 \hfill
 \begin{minipage}{0.46\textwidth}
 \begin{flushright}
-\textbf{Encadre par :}\\[4pt]
+\textbf{Encadré par :}\\[4pt]
 Mme. Amina Aboulmira
 \end{flushright}
-\end{minipage}\\[40pt]
+\end{minipage}\\[30pt]
 
 \vfill
-{\large\bfseries Annee universitaire 2025/2026}
+{\large\bfseries Année universitaire 2025/2026}
 
 \end{titlepage}
 
@@ -436,6 +470,24 @@ La \textbf{deuxième approche} repose sur une architecture hybride, où une part
 La \textbf{troisième approche}, que nous avons retenue, est une architecture entièrement embarquée (\textit{on-device}). Les modèles d'intelligence artificielle sont convertis au format TensorFlow Lite, optimisés pour les contraintes des appareils mobiles, puis exécutés localement. Cette approche maximise la confidentialité et la disponibilité, au prix d'un travail d'optimisation des modèles pour les faire tenir dans une empreinte mémoire raisonnable.
 
 \section{Notre Solution Développée}
+
+\begin{figure}[H]
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (6,3.8);
+  \node[psTeal, font=\bfseries\huge] at (3,2.6) {PulmoScan AI};
+  \node[psInkMuted, font=\normalsize\itshape, align=center] at (3,1.7)
+    {Application mobile de pré-diagnostic};
+  \node[psInkMuted, font=\normalsize\itshape, align=center] at (3,1.2)
+    {des pathologies pulmonaires par IA};
+  \node[psTeal] at (0.4,3.4) {\Large$\diamond$};
+  \node[psTeal] at (5.6,0.4) {\Large$\diamond$};
+\end{tikzpicture}
+\end{center}
+\caption{Logo de l'application PulmoScan AI}
+\label{fig:logo}
+\end{figure}
+
 PulmoScan AI est une application mobile développée avec le framework \textbf{Flutter} (langage Dart), permettant un déploiement multiplateforme à partir d'une base de code unique. L'application s'articule autour de deux modèles d'intelligence artificielle embarqués via \textbf{TensorFlow Lite} :
 \begin{itemize}
   \item un modèle de \textbf{classification DenseNet121} (13,4 Mo) issu de la bibliothèque TorchXRayVision, qui produit des scores pour 14 pathologies pulmonaires ;
@@ -709,7 +761,8 @@ Ce chapitre a formalisé la conception de PulmoScan AI : méthodologie agile, ar
 Ce troisième chapitre décrit la réalisation technique de PulmoScan AI. Nous présentons d'abord l'ensemble des outils et technologies mobilisés, puis la structure du projet Flutter. Nous détaillons ensuite le pipeline complet d'inférence de l'intelligence artificielle --- du prétraitement de l'image à la segmentation U-Net --- en nous appuyant sur des extraits de code commentés. Le chapitre se conclut par les mesures de sécurité et de confidentialité mises en œuvre.
 
 \section{Outils et Technologies Utilisés}
-Le tableau~\ref{tab:stack} synthétise la pile technologique du projet.
+
+Dans le cadre de la mise en œuvre de PulmoScan AI, nous avons opté pour une architecture moderne et modulaire, fondée sur des technologies robustes et largement reconnues. La sélection des outils s'est basée sur plusieurs critères : la performance, la compatibilité hors connexion, la facilité d'intégration et la maturité de l'écosystème. Le tableau~\ref{tab:stack} donne une vue synthétique avant la présentation détaillée de chaque composant.
 
 \begin{table}[H]
 \centering
@@ -719,30 +772,491 @@ Le tableau~\ref{tab:stack} synthétise la pile technologique du projet.
 \toprule
 \textbf{Couche} & \textbf{Technologie} & \textbf{Rôle} \\
 \midrule
-Frontend mobile & Flutter / Dart & Interface et logique applicative multiplateforme. \\
+Frontend mobile & Flutter / Dart 3.4 & Interface et logique applicative multiplateforme. \\
 Intelligence artificielle & TensorFlow Lite (\texttt{tflite\_flutter} 0.12.0) & Inférence embarquée des modèles. \\
+Modèles IA & TorchXRayVision DenseNet121 + U-Net & Classification 14 pathologies + segmentation. \\
 Traitement d'image & \texttt{image} 4.1.7 & Recadrage, redimensionnement, conversion. \\
 Base de données & SQLite (\texttt{sqflite} 2.3.0) & Persistance locale des données. \\
 Authentification & \texttt{crypto} 3.0.3 (SHA-256) & Hachage des mots de passe. \\
 Session & \texttt{shared\_preferences} 2.3.0 & Stockage de la session utilisateur. \\
 Acquisition image & \texttt{image\_picker} 1.0.7 & Galerie / appareil photo. \\
 Rapports & \texttt{pdf} 3.11.0 + \texttt{printing} 5.13.0 & Génération et impression de PDF. \\
-Typographie & \texttt{google\_fonts} 6.2.1 & Polices de l'interface. \\
-Internationalisation & \texttt{intl} 0.20.0 & Formatage des dates et nombres. \\
-Réseau (optionnel) & \texttt{http} 1.2.0 & Client REST vers le backend. \\
 Backend optionnel & Node.js / Express / Railway & API REST et JWT. \\
+Développement & VS Code, Git, GitHub & Éditeur, versioning, hébergement. \\
+Entraînement IA & Google Colab & Notebooks Python, GPU, conversion TFLite. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
+%------------------------------------------------------------
 \subsection{Frontend Mobile --- Flutter \& Dart}
-Flutter est un framework open-source développé par Google permettant de créer des applications natives compilées pour mobile, web et bureau à partir d'une base de code unique écrite en Dart. Son moteur de rendu propre garantit une interface fluide et cohérente sur toutes les plateformes. Nous avons retenu Flutter pour sa productivité, son écosystème de packages riche et la qualité de son intégration avec TensorFlow Lite. Le projet exploite par ailleurs \texttt{flutter\_localizations} pour la prise en charge de la langue française et \texttt{cupertino\_icons} pour les icônes.
+%------------------------------------------------------------
 
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Flutter est un framework open-source développé par Google permettant de créer des applications natives compilées pour mobile (Android et iOS), web et bureau à partir d'une base de code unique écrite en Dart. Son moteur graphique propre (Skia / Impeller) garantit une interface pixel-perfect et fluide sur toutes les plateformes.
+
+Dart est le langage orienté objet, fortement typé et compilé nativement en code machine ARM (compilation AOT en production). Il combine la lisibilité d'un langage de haut niveau avec des performances proches du natif, ce qui en fait un choix idéal pour embarquer des traitements intensifs d'IA.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\Large, align=center] at (1.7,1.9) {Flutter};
+  \node[psTeal, font=\bfseries, align=center] at (1.7,1.2) {\& Dart};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v3.22 / SDK 3.4};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Déploiement multiplateforme (Android et iOS) depuis une base de code unique.
+  \item Intégration native des modèles TFLite via \texttt{tflite\_flutter} (liaisons Dart $\leftrightarrow$ C++).
+  \item Design system V4 entièrement personnalisé : thème sombre, couleurs médicales, widget \texttt{ApertureMark} animé.
+  \item Génération de fichiers PDF directement sur l'appareil (\texttt{pdf} + \texttt{printing}).
+  \item Hot reload pour un cycle de développement rapide, sans redémarrage de l'application.
+  \item Gestion de 13 écrans et 7 services (singletons) selon le paradigme MVVM.
+\end{itemize}
+
+\subsubsection*{Lien officiel de téléchargement}
+\url{https://flutter.dev/docs/get-started/install}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
 \subsection{Intelligence Artificielle --- TensorFlow Lite}
-TensorFlow Lite est la déclinaison légère de TensorFlow, conçue pour l'inférence sur appareils mobiles et embarqués. Les modèles entraînés sont convertis au format \texttt{.tflite}, optimisé pour une empreinte mémoire et une latence réduites. Le package \texttt{tflite\_flutter} expose l'interpréteur natif à Dart, permettant de charger les modèles et d'exécuter l'inférence directement sur l'appareil.
+%------------------------------------------------------------
 
-\subsection{Base de Données --- SQLite}
-SQLite est un moteur de base de données relationnelle léger, sans serveur, intégré à l'application. Via le package \texttt{sqflite} (et \texttt{path} pour la localisation du fichier), PulmoScan AI gère une base locale (version 4 du schéma) comportant quatre tables. Le schéma complet est présenté dans le listing~\ref{lst:schema}.
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+TensorFlow Lite (TFLite) est la déclinaison légère et embarquable du framework TensorFlow de Google. Il permet d'exécuter des modèles de deep learning directement sur des appareils mobiles ou embarqués, sans accès à Internet ni serveur distant.
+
+Les modèles sont d'abord entraînés sur GPU en Python (PyTorch ou TensorFlow), puis convertis au format \texttt{.tflite} optimisé pour une empreinte mémoire et une latence réduites. Le package Dart \texttt{tflite\_flutter} (\texttt{\^{}0.12.0}) expose l'interpréteur natif TFLite à l'application Flutter.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries, align=center] at (1.7,2.1) {TensorFlow};
+  \node[psTeal, font=\bfseries, align=center] at (1.7,1.4) {Lite};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {tflite\_flutter 0.12};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Exécution du modèle DenseNet121 (13,4~Mo, FP32) pour la classification de 14 pathologies pulmonaires.
+  \item Exécution du modèle U-Net (29,6~Mo) pour la segmentation des champs pulmonaires.
+  \item Inférence entièrement embarquée : aucune connexion réseau requise à aucune étape.
+  \item Chargement des modèles depuis les assets Flutter (\texttt{rootBundle.load}).
+  \item Compatibilité Android et iOS via les bibliothèques natives TFLite.
+\end{itemize}
+
+\subsubsection*{Lien officiel de téléchargement}
+\url{https://www.tensorflow.org/lite/guide}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Modèles IA --- TorchXRayVision}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+TorchXRayVision est une bibliothèque Python open-source dédiée aux modèles de deep learning pour l'imagerie thoracique, développée par Joseph Paul Cohen et collaborateurs (Mila / Université de Montréal). Elle fournit des modèles pré-entraînés sur de grands jeux de données de radiographies (NIH ChestX-ray14, CheXpert, MIMIC-CXR...) ainsi que des outils de prétraitement standardisés.
+
+Le modèle DenseNet121 de TorchXRayVision, entraîné sur 112\,120 radiographies NIH annotées, constitue le moteur de classification de PulmoScan AI.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,2.1) {TorchXRay\\Vision};
+  \node[psTeal, font=\small] at (1.7,1.3) {DenseNet121};
+  \node[psInkMuted, font=\footnotesize, align=center] at (1.7,0.5) {NIH ChestX-ray14};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Modèle DenseNet121 pré-entraîné, converti PyTorch $\rightarrow$ ONNX $\rightarrow$ TFLite pour l'embarquement mobile.
+  \item Ordre exact des 14 étiquettes de pathologies (indispensable pour l'interprétation correcte des sorties).
+  \item Normalisation interne \textit{baked-in} : le modèle attend des images div255 $\in [0,1]$.
+  \item Métriques AUC publiées par classe pour la validation des performances du pipeline.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://github.com/mlmed/torchxrayvision}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Base de Données Locale --- SQLite}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+SQLite est un moteur de base de données relationnelle léger, sans serveur, entièrement embarqué dans l'application. Contrairement aux SGBD classiques (MySQL, PostgreSQL), SQLite ne nécessite aucun processus serveur séparé : les données sont stockées dans un fichier unique sur l'appareil.
+
+Le package Dart \texttt{sqflite} (\texttt{\^{}2.3.0}) expose les fonctionnalités SQLite à Flutter, permettant des opérations CRUD complètes et des migrations de schéma versionnées (callback \texttt{onUpgrade}).
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\Large] at (1.7,1.9) {SQLite};
+  \node[psTeal, font=\bfseries\small] at (1.7,1.2) {sqflite};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v2.3.0};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Persistance locale des 4 tables : \texttt{users}, \texttt{patients}, \texttt{examens}, \texttt{resultats}.
+  \item Gestion des migrations de schéma de la version 1 à la version 4 (\texttt{onUpgrade}).
+  \item Données médicales conservées exclusivement sur l'appareil : aucun transfert réseau lors du fonctionnement nominal.
+  \item Requêtes CRUD performantes et sécurisées contre les injections SQL (paramètres préparés).
+  \item Données de démonstration pré-chargées (3 patients, 3 examens avec diagnostics réels).
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/sqflite}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Traitement d'Image --- package \texttt{image}}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Le package Dart \texttt{image} (\texttt{\^{}4.1.7}) est une bibliothèque de traitement d'image pure Dart, ne dépendant d'aucune bibliothèque native externe. Elle supporte la lecture de nombreux formats (JPEG, PNG, BMP...) et propose des opérations de transformation pixel-level.
+
+Sa pureté Dart garantit une compatibilité totale avec toutes les plateformes Flutter sans configuration native supplémentaire, tout en offrant des performances suffisantes pour préparer les tenseurs d'entrée des modèles TFLite.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\Large] at (1.7,1.9) {image};
+  \node[psInkMuted, font=\small] at (1.7,1.2) {Dart package};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v4.1.7};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Décodage des images JPEG/PNG issues de la galerie ou de l'appareil photo.
+  \item Recadrage carré centré (\texttt{copyCrop}) pour alimenter les modèles avec des proportions carrées.
+  \item Redimensionnement à 224$\times$224 (DenseNet121) et 256$\times$256 (U-Net) via \texttt{copyResize}.
+  \item Accès pixel-level (R, G, B) pour la conversion en luminance Rec.~601 et la normalisation div255.
+  \item Construction du tenseur float32 $[1,H,W,1]$ transmis à l'interpréteur TFLite.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/image}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Acquisition d'Image --- \texttt{image\_picker}}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Le package \texttt{image\_picker} (\texttt{\^{}1.0.7}) fournit un pont entre Flutter et le sélecteur d'images natif de l'OS (galerie de photos ou appareil photo). Il gère les permissions requises et retourne un objet \texttt{XFile} contenant le chemin local de l'image sélectionnée, prête à être analysée.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,1.8) {image\_picker};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v1.0.7};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Sélection de la radiographie depuis la galerie de l'appareil.
+  \item Capture directe d'une radiographie via l'appareil photo de l'appareil.
+  \item Intégration dans l'assistant de création d'examen (étape~2 : acquisition de l'image).
+  \item Gestion transparente des permissions \texttt{READ\_EXTERNAL\_STORAGE} / \texttt{CAMERA}.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/image_picker}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Génération de Rapports PDF}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+La génération de rapports PDF est assurée par deux packages complémentaires :
+\begin{itemize}
+  \item \textbf{pdf} (\texttt{\^{}3.11.0}) : bibliothèque pure Dart pour créer des documents PDF programmatiquement — mise en page, textes, tableaux, images embarquées.
+  \item \textbf{printing} (\texttt{\^{}5.13.0}) : interface avec les services d'impression et de partage natifs de l'OS. Permet la prévisualisation du PDF et son partage via le menu natif Android/iOS (e-mail, WhatsApp, enregistrement local...).
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\Large] at (1.7,2.0) {pdf};
+  \node[psTeal, font=\bfseries\small] at (1.7,1.3) {+ printing};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v3.11 / v5.13};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Génération du rapport médical PDF : en-tête PulmoScan AI, informations patient, diagnostic, confiance, sévérité et masque de segmentation.
+  \item Composition dynamique par le \texttt{PdfService} (682 lignes) en fonction des données de chaque examen.
+  \item Partage immédiat via le menu de partage natif Android (e-mail, messagerie, enregistrement).
+  \item Fonctionnement entièrement hors ligne, sans serveur de rendu.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/pdf}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Sécurité --- SHA-256 via \texttt{crypto}}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Le package \texttt{crypto} (\texttt{\^{}3.0.3}) est une bibliothèque Dart offrant des implémentations d'algorithmes de hachage cryptographiques : SHA-256, SHA-512, SHA-1, HMAC et MD5.
+
+SHA-256 est un algorithme de hachage à sens unique produisant une empreinte de 256~bits (64~caractères hexadécimaux). Il est utilisé en standard industriel pour le stockage sécurisé des mots de passe : il est impossible de retrouver le mot de passe original à partir de l'empreinte.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries] at (1.7,2.0) {crypto};
+  \node[psTeal, font=\bfseries\small] at (1.7,1.3) {SHA-256};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v3.0.3};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Hachage du mot de passe lors de l'inscription : seule l'empreinte SHA-256 est conservée en base SQLite.
+  \item Vérification lors de la connexion : le mot de passe saisi est haché et comparé à l'empreinte stockée.
+  \item Aucun mot de passe en clair n'est jamais stocké ni transmis.
+  \item Implémentation concise : \texttt{sha256.convert(utf8.encode(pwd)).toString()}.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/crypto}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Gestion de Session --- SharedPreferences}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Le package \texttt{shared\_preferences} (\texttt{\^{}2.3.0}) fournit un stockage persistant de paires clé-valeur simples sur l'appareil (\texttt{NSUserDefaults} sur iOS, \texttt{SharedPreferences} sur Android). Il est idéal pour les données légères de configuration et de session, qui doivent survivre aux redémarrages de l'application.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,1.8) {Shared\\Preferences};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {v2.3.0};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Persistance de la session utilisateur : \texttt{user\_name}, \texttt{user\_email}, \texttt{is\_logged\_in}.
+  \item Maintien de la connexion entre les lancements de l'application (pas de connexion requise à chaque ouverture).
+  \item Effacement de la session lors de la déconnexion (\texttt{prefs.clear()}).
+  \item Stockage optionnel du jeton JWT du backend distant.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://pub.dev/packages/shared_preferences}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Backend Optionnel --- Node.js \& Express.js}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+\textbf{Node.js} est un environnement d'exécution JavaScript côté serveur, reposant sur le moteur V8 de Chrome. Il propose un modèle d'E/S événementiel et non bloquant, adapté à des API REST performantes et légères.
+
+\textbf{Express.js} est le framework web minimaliste de référence pour Node.js. Il fournit un système de routage HTTP et une chaîne de middlewares extensible, idéal pour la création rapide d'API REST sécurisées (JWT, CORS, validation).
+
+Dans PulmoScan AI, ce backend est \textbf{entièrement optionnel} : toutes les fonctionnalités essentielles opèrent sans lui.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries] at (1.7,2.0) {Node.js};
+  \node[psTeal, font=\bfseries\small] at (1.7,1.3) {+ Express.js};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {Backend optionnel};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item API REST pour la synchronisation optionnelle des données entre plusieurs appareils ou praticiens.
+  \item Routes : authentification JWT (\texttt{POST /auth/login}), patients (\texttt{GET/POST/PUT/DELETE /patients}), analyse (\texttt{POST /examens/:id/analyse}).
+  \item Déployable sur Railway ou accessible en local via \texttt{adb reverse tcp:3000 tcp:3000}.
+  \item Perspective d'évolution vers un partage sécurisé multi-praticiens.
+\end{itemize}
+
+\subsubsection*{Liens officiels}
+\url{https://nodejs.org/} --- \url{https://expressjs.com/}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Environnement de Développement --- Visual Studio Code}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Visual Studio Code est un éditeur de code source léger, multiplateforme et hautement extensible, développé par Microsoft. Son vaste écosystème d'extensions le rend polyvalent pour tous les langages modernes. Les extensions officielles Flutter et Dart fournissent l'autocomplétion intelligente (IntelliSense), le débogage intégré, l'analyse statique du code et le hot reload directement dans l'éditeur.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,1.9) {VS Code};
+  \node[psInkMuted, font=\footnotesize, align=center] at (1.7,0.9) {+ Flutter ext.};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {Microsoft};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Éditeur principal pour le développement Flutter/Dart (frontend) et Node.js (backend).
+  \item Débogage intégré avec inspection des variables, breakpoints et DevTools Flutter.
+  \item Terminal intégré pour les commandes \texttt{flutter run}, \texttt{flutter build apk}, \texttt{adb} et \texttt{npm}.
+  \item Intégration Git native pour le contrôle de version en temps réel.
+  \item Extension GitHub Copilot pour l'assistance à la complétion de code.
+\end{itemize}
+
+\subsubsection*{Lien officiel de téléchargement}
+\url{https://code.visualstudio.com/}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Contrôle de Version --- Git \& GitHub}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+\textbf{Git} est un système de contrôle de version distribué, open-source, créé par Linus Torvalds. Il permet de suivre l'historique complet des modifications du code source, de travailler en parallèle sur des branches et de fusionner les contributions de manière contrôlée.
+
+\textbf{GitHub} est la plateforme d'hébergement de dépôts Git la plus utilisée au monde. Elle ajoute une couche de collaboration (pull requests, issues, code reviews) et d'automatisation (GitHub Actions). Le code source de PulmoScan AI y est hébergé dans le dépôt \texttt{adnaneelhajji/pulmoscan}.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\Large] at (1.7,2.0) {Git};
+  \node[psTeal, font=\bfseries\small] at (1.7,1.3) {+ GitHub};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {Contrôle de version};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Suivi de l'historique de toutes les modifications du code source.
+  \item Travail collaboratif sur des branches séparées (fonctionnalité, correctif, rapport).
+  \item Hébergement sécurisé sur GitHub (\texttt{adnaneelhajji/pulmoscan}).
+  \item Gestion des releases et des versions livrables de l'APK.
+  \item Intégration avec les outils de CI/CD pour la validation automatique du code.
+\end{itemize}
+
+\subsubsection*{Lien officiel de téléchargement}
+\url{https://git-scm.com/} \quad --- \quad \url{https://github.com/}
+
+\medskip\hrule\medskip
+
+%------------------------------------------------------------
+\subsection{Entraînement et Conversion des Modèles --- Google Colab}
+%------------------------------------------------------------
+
+\noindent\begin{minipage}[t]{0.66\textwidth}
+\subsubsection*{Définition}
+Google Colab (Colaboratory) est une plateforme cloud gratuite de notebooks Jupyter proposée par Google. Elle offre un accès à des ressources GPU (T4, A100) pour l'entraînement et le test de modèles de deep learning, sans installation locale. L'environnement Python préinstallé inclut PyTorch, TorchXRayVision, TensorFlow, ONNX et les outils de conversion de modèles.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.30\textwidth}
+\vspace{0pt}
+\begin{center}
+\begin{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
+    (0,0) rectangle (3.4,3.0);
+  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,1.9) {Google\\Colab};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.8) {GPU T4 / A100};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {Jupyter};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\subsubsection*{Utilités dans le projet}
+\begin{itemize}
+  \item Chargement et test du modèle DenseNet121 TorchXRayVision en Python avant l'intégration mobile.
+  \item Validation de la stratégie de normalisation (test div255 vs TXV $[-1024,1024]$) sur GPU.
+  \item Conversion PyTorch $\rightarrow$ ONNX $\rightarrow$ TFLite (\texttt{tf.lite.TFLiteConverter.from\_saved\_model}).
+  \item Tests des valeurs de sortie sur images synthétiques pour vérifier l'ordre des étiquettes.
+  \item Environnement de référence scientifique pour valider les paramètres du pipeline.
+\end{itemize}
+
+\subsubsection*{Lien officiel}
+\url{https://colab.research.google.com/}
+
+Le schéma SQL complet de la base de données est présenté dans le listing~\ref{lst:schema}.
 
 \begin{lstlisting}[language=SQL, caption={Schéma SQL de la base SQLite (version 4)}, label={lst:schema}]
 CREATE TABLE users (
@@ -944,48 +1458,82 @@ Ce chapitre a détaillé la réalisation technique de PulmoScan AI : la pile tec
 \addcontentsline{toc}{section}{Introduction}
 Ce chapitre présente les interfaces utilisateur de PulmoScan AI, conçues selon le design system V4. Ce système repose sur un fond sombre (\texttt{\#0A0F1A}), des surfaces de cartes (\texttt{\#131B2E}), un accent principal turquoise (\texttt{\#34E5C5}) et une hiérarchie de teintes de texte. Trois couleurs sémantiques signalent la sévérité : rouge pour l'urgence, ambre pour les cas modérés et turquoise pour les cas normaux. Le widget animé \texttt{ApertureMark} incarne l'identité visuelle de l'application. Nous parcourons ci-après les principaux écrans.
 
-\section{Écrans d'Onboarding (3 slides)}
-Le parcours d'introduction se compose de trois écrans successifs présentant les trois piliers de PulmoScan AI : la \textbf{Capture} de la radiographie, l'\textbf{Analyse par IA} et la production du \textbf{Rapport}. Chaque slide associe une illustration animée par le widget \texttt{ApertureMark} à un texte concis. Un indicateur de progression et un bouton de navigation permettent à l'utilisateur de parcourir ou de passer cette introduction. Une attention particulière a été portée à l'adaptation à la barre de navigation gestuelle d'Android.
+\section{Écrans d'Onboarding}
+Lors de la première utilisation, un parcours d'introduction composé de trois écrans successifs familiarise l'utilisateur avec les trois piliers de PulmoScan AI. Chaque slide associe une illustration animée par le widget \texttt{ApertureMark} à un titre et un sous-titre concis. Un indicateur de progression et un bouton de navigation permettent de parcourir ou de passer cette introduction. Une attention particulière a été portée à l'adaptation à la barre de navigation gestuelle d'Android (prise en compte de \texttt{MediaQuery.of(context).padding.bottom}).
 
 \begin{figure}[H]
-\placeholderfig[8]{Écrans d'onboarding (Capture / IA / Rapport)}
-\caption{Écrans d'onboarding}
-\label{fig:onboarding}
+\placeholderfig[8]{Onboarding --- Slide 1 : Capture de la radiographie}
+\caption{Onboarding (1/3) --- Capture}
+\label{fig:onboarding1}
 \end{figure}
 
-\section{Landing Page \& Connexion}
-La page d'accueil met en scène l'identité de PulmoScan AI à travers une section \textit{hero} et un défilement animé qui conduit naturellement l'utilisateur vers le formulaire de connexion. Ce dernier propose la saisie de l'e-mail et du mot de passe, avec vérification locale via SHA-256 et ouverture de session.
+\begin{figure}[H]
+\placeholderfig[8]{Onboarding --- Slide 2 : Analyse par Intelligence Artificielle}
+\caption{Onboarding (2/3) --- Analyse IA}
+\label{fig:onboarding2}
+\end{figure}
 
 \begin{figure}[H]
-\placeholderfig[8]{Landing page et écran de connexion}
-\caption{Landing page et connexion}
+\placeholderfig[8]{Onboarding --- Slide 3 : Génération du Rapport PDF}
+\caption{Onboarding (3/3) --- Rapport}
+\label{fig:onboarding3}
+\end{figure}
+
+\section{Landing Page}
+La page d'accueil (\textit{landing}) met en scène l'identité de PulmoScan AI à travers une section \textit{hero} animée par le widget \texttt{ApertureMark}. Elle présente les fonctionnalités clés et conduit naturellement l'utilisateur vers le formulaire de connexion via un bouton d'appel à l'action (\textit{call-to-action}).
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.45\textwidth]{landing.jpg}
+\end{center}
+\caption{Landing page --- Section hero du Centre Al Kendi}
 \label{fig:landing}
 \end{figure}
 
-\section{Inscription \& Vérification}
-L'écran d'inscription recueille le nom, l'e-mail et le mot de passe du médecin, avec validation des champs. Il est suivi, le cas échéant, d'un écran de vérification par code à six chiffres.
+\section{Connexion \& Inscription}
+L'écran de connexion propose la saisie de l'e-mail et du mot de passe, avec vérification locale SHA-256 et ouverture de session. Un lien \textit{Mot de passe oublié ?} oriente l'utilisateur vers la récupération. Un compte de démonstration (\texttt{demo@pulmoscan.ma / Demo1234}) permet d'explorer l'application sans inscription préalable.
+
+L'écran d'inscription recueille le nom, l'e-mail et le mot de passe du nouveau médecin, avec validation de chaque champ et vérification de la robustesse du mot de passe. Il est suivi d'un écran de vérification par code à six chiffres.
 
 \begin{figure}[H]
-\placeholderfig[8]{Inscription et vérification par code}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{login.jpg}
+\end{center}
+\caption{Écran de connexion avec formulaire e-mail/mot de passe}
+\label{fig:login}
+\end{figure}
+
+\begin{figure}[H]
+\placeholderfig[9]{Formulaire d'inscription et vérification par code}
 \caption{Inscription et vérification}
 \label{fig:register}
 \end{figure}
 
 \section{Dashboard \& Statistiques}
-Le tableau de bord offre une vue d'ensemble de l'activité. Des cartes statistiques présentent le nombre de patients, le nombre d'examens et la répartition par sévérité. Une liste des examens récents permet un accès rapide, et des fiches d'information détaillent les deux modèles d'IA embarqués.
+Le tableau de bord offre une vue d'ensemble de l'activité du médecin. Des cartes statistiques synthétisent le nombre de patients enregistrés, le nombre d'examens réalisés et la répartition par sévérité (urgent / modéré / normal). Une liste des examens récents permet un accès rapide aux derniers résultats, et des fiches d'information détaillent les deux modèles d'IA embarqués (DenseNet121 et U-Net) avec leurs métriques.
 
 \begin{figure}[H]
-\placeholderfig[8]{Tableau de bord et statistiques}
-\caption{Dashboard et statistiques}
-\label{fig:dashboard}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{dashboard1.jpg}
+\end{center}
+\caption{Dashboard --- Cartes statistiques : 3 patients, 17 examens, 17 résultats}
+\label{fig:dashboard1}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.45\textwidth]{dashboard2.jpg}
+\end{center}
+\caption{Dashboard --- Top diagnostics IA et répartition par statut}
+\label{fig:dashboard2}
 \end{figure}
 
 \section{Liste des Patients}
-L'écran de liste des patients affiche l'ensemble des dossiers sous forme de cartes, avec une barre de recherche et des badges de statut. Le tableau~\ref{tab:demo} présente les patients de démonstration intégrés à l'application.
+L'écran de liste des patients affiche l'ensemble des dossiers sous forme de cartes, avec une barre de recherche en temps réel et des badges de statut. Le tableau~\ref{tab:demo} présente les trois patients de démonstration intégrés à l'application.
 
 \begin{table}[H]
 \centering
-\caption{Patients de démonstration}
+\caption{Patients de démonstration pré-chargés}
 \label{tab:demo}
 \begin{tabularx}{\textwidth}{l c c X l}
 \toprule
@@ -999,44 +1547,87 @@ Youssef Alaoui & 63 & Homme & BPCO, hypertension & Effusion 78\% (faible) \\
 \end{table}
 
 \begin{figure}[H]
-\placeholderfig[8]{Liste des patients}
-\caption{Liste des patients}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{patients.jpg}
+\end{center}
+\caption{Liste des patients --- Ahmed Benali, Fatima Zahra, Youssef Alaoui}
 \label{fig:patients}
 \end{figure}
 
-\section{Détails Patient \& Historique}
-L'écran de détail d'un patient présente l'intégralité de son dossier --- informations administratives, antécédents --- ainsi que l'historique chronologique de ses examens, chacun étant cliquable pour accéder aux résultats correspondants.
+\section{Détails Patient \& Historique des Examens}
+L'écran de détail présente l'intégralité du dossier patient en deux volets : les informations administratives (nom, âge, genre, CIN, e-mail, téléphone) et les antécédents médicaux en haut, puis l'historique chronologique de ses examens en bas. Chaque examen listé est cliquable pour accéder aux résultats correspondants.
 
 \begin{figure}[H]
-\placeholderfig[8]{Détails du patient et historique}
-\caption{Détails patient et historique}
-\label{fig:patientdetail}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{patientinfo.jpg}
+\end{center}
+\caption{Fiche patient Ahmed Benali --- Onglet Informations}
+\label{fig:patientinfo}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.45\textwidth]{patienthistory.jpg}
+\end{center}
+\caption{Fiche patient Ahmed Benali --- Onglet Historique (3 examens)}
+\label{fig:patienthistory}
 \end{figure}
 
 \section{Création d'Examen}
-L'écran de création d'examen guide le médecin à travers un assistant en plusieurs étapes : choix du patient, acquisition de l'image radiographique (galerie ou appareil photo), puis déclenchement de l'analyse par IA.
+L'assistant de création d'examen guide le médecin en trois étapes successives. La première étape consiste à sélectionner le patient concerné depuis la liste. La deuxième étape permet d'acquérir l'image radiographique (depuis la galerie ou l'appareil photo). La troisième étape déclenche l'analyse par les deux modèles d'IA et affiche une barre de progression pendant l'inférence.
 
 \begin{figure}[H]
-\placeholderfig[8]{Assistant de création d'examen}
-\caption{Création d'examen}
-\label{fig:exam}
+\placeholderfig[9]{Assistant --- Étape 1 : sélection du patient}
+\caption{Création d'examen --- Sélection du patient}
+\label{fig:exam1}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.45\textwidth]{exam2.jpg}
+\end{center}
+\caption{Création d'examen --- Image radiographique chargée, prête pour l'analyse IA}
+\label{fig:exam2}
 \end{figure}
 
 \section{Résultats de l'Analyse IA}
-L'écran de résultats est l'élément le plus riche de l'application. Il présente le diagnostic principal avec son indice de confiance et son niveau de sévérité (codé par couleur), un histogramme des scores des 14 pathologies, et la superposition du masque de segmentation U-Net sur l'image. Le médecin peut y ajouter des notes cliniques et générer le rapport PDF.
+L'écran de résultats est l'élément central de l'application. Il présente le diagnostic principal avec son indice de confiance (en pourcentage) et son niveau de sévérité signalé par un code couleur (rouge pour \textit{urgent}, ambre pour \textit{modéré}, turquoise pour \textit{normal}). Un histogramme horizontal affiche les scores des 14 pathologies, permettant au médecin de visualiser la distribution complète des prédictions. Le masque de segmentation U-Net est superposé à l'image originale, délimitant les champs pulmonaires analysés.
 
 \begin{figure}[H]
-\placeholderfig[9]{Écran des résultats de l'analyse IA}
-\caption{Résultats de l'analyse IA}
-\label{fig:results}
+\begin{center}
+% Insérer ici : \includegraphics[width=0.45\textwidth]{results_main.jpg}
+\placeholderfig[9]{Résultats IA --- Masque U-Net + Diagnostic principal (ex. Mass 97\% URGENT)}
+\end{center}
+\caption{Résultats IA --- Segmentation U-Net et diagnostic principal}
+\label{fig:results1}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+% Insérer ici : \includegraphics[width=0.45\textwidth]{results_histogram.jpg}
+\placeholderfig[9]{Résultats IA --- Histogramme des probabilités des 14 pathologies}
+\end{center}
+\caption{Résultats IA --- Histogramme des 14 pathologies (PROBABILITÉS)}
+\label{fig:results2}
+\end{figure}
+
+\section{Génération du Rapport PDF}
+À partir de l'écran de résultats, le médecin peut saisir des notes cliniques complémentaires et générer le rapport PDF en un seul appui. Le rapport, composé par le \texttt{PdfService}, intègre l'en-tête PulmoScan AI, les informations du patient, les résultats de l'analyse et le masque de segmentation. Il peut ensuite être partagé via le menu de partage natif Android.
+
+\begin{figure}[H]
+\placeholderfig[9]{Rapport PDF généré --- En-tête, résultats et masque de segmentation}
+\caption{Rapport PDF généré}
+\label{fig:pdf}
 \end{figure}
 
 \section{Profil Médecin}
-L'écran de profil regroupe les informations du médecin, les réglages de l'application et la possibilité de modifier le mot de passe. Il assure également la déconnexion et la gestion de la session.
+L'écran de profil regroupe les informations du médecin, les réglages de l'application (langue, thème) et la possibilité de modifier le mot de passe. Il assure également la déconnexion et l'effacement de la session utilisateur.
 
 \begin{figure}[H]
-\placeholderfig[8]{Profil du médecin}
-\caption{Profil médecin}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{profile.jpg}
+\end{center}
+\caption{Profil médecin --- Dr. Kenza Foudali, réglages et déconnexion}
 \label{fig:profile}
 \end{figure}
 
@@ -1121,6 +1712,117 @@ Déconnexion & Session effacée. & Réussi \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\section{Tests d'Inférence sur Images Réelles NIH}
+
+\subsection{Jeu de Données de Test}
+Les tests d'inférence ont été conduits sur des radiographies thoraciques réelles issues du jeu de données \textbf{NIH ChestX-ray14}, organisé en 14 dossiers correspondant aux 14 pathologies du modèle, accompagné d'un fichier \texttt{test\_index.csv} référençant les images et leurs labels. Ce jeu de données, partagé en accès collaboratif sur Google Drive, a servi de référence pour valider le comportement du modèle DenseNet121 en conditions réelles.
+
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=0.85\textwidth]{nih_drive.png}
+\placeholderfig[5]{Jeu de données NIH ChestX-ray14 sur Google Drive (14 dossiers + test\_index.csv)}
+\end{center}
+\caption{Jeu de données NIH ChestX-ray14 --- 14 classes sur Google Drive}
+\label{fig:nih_drive}
+\end{figure}
+
+\subsection{Résultats d'Inférence sur l'Application}
+Les captures suivantes montrent des exemples de résultats produits par le pipeline DenseNet121 + U-Net sur des radiographies réelles, directement dans l'application PulmoScan AI. Chaque écran présente : le masque de segmentation U-Net superposé à l'image (avec le pourcentage de surface pulmonaire détectée), la carte de diagnostic principal avec l'indice de confiance, et l'histogramme complet des 14 pathologies.
+
+Le tableau~\ref{tab:testresults} résume les résultats obtenus sur un échantillon de six examens réels.
+
+\begin{table}[H]
+\centering
+\caption{Résultats d'inférence sur radiographies réelles NIH}
+\label{tab:testresults}
+\begin{tabularx}{\textwidth}{c l c c c c}
+\toprule
+\textbf{Examen} & \textbf{Diagnostic} & \textbf{Confiance} & \textbf{Sévérité} & \textbf{Poumons} & \textbf{Top 2} \\
+\midrule
+EX-00004 & Atelectasis & 55\% & À surveiller & 26,8\% & Infiltration 13,4\% \\
+EX-00005 & Atelectasis & 77\% & Urgent & 18,8\% & Nodule 24,2\% \\
+EX-00007 & Cardiomegaly & 97\% & Urgent & 33,0\% & Nodule 5,9\% \\
+EX-00023 & Emphysema & 97\% & Urgent & 21,1\% & Pneumothorax 36,1\% \\
+EX-00041 & Mass & 97\% & Urgent & 20,5\% & Nodule 56,2\% \\
+EX-00045 & Mass & 61\% & Urgent & 15,4\% & Effusion 18,3\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\begin{minipage}[t]{0.48\textwidth}
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=\textwidth]{results_mass97.jpg}
+\placeholderfig[11]{Résultats IA --- Mass 97\% URGENT (EX-00041)}
+\end{center}
+\caption{Résultat IA : Mass 97\%, URGENT}
+\label{fig:test_mass}
+\end{figure}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=\textwidth]{results_atelectasis77.jpg}
+\placeholderfig[11]{Résultats IA --- Atelectasis 77\% URGENT (EX-00005)}
+\end{center}
+\caption{Résultat IA : Atelectasis 77\%, URGENT}
+\label{fig:test_atelectasis}
+\end{figure}
+\end{minipage}
+
+\noindent\begin{minipage}[t]{0.48\textwidth}
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=\textwidth]{results_cardiomegaly97.jpg}
+\placeholderfig[11]{Résultats IA --- Cardiomegaly 97\% URGENT (EX-00007)}
+\end{center}
+\caption{Résultat IA : Cardiomegaly 97\%, URGENT}
+\label{fig:test_cardio}
+\end{figure}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=\textwidth]{results_emphysema97.jpg}
+\placeholderfig[11]{Résultats IA --- Emphysema 97\% URGENT (EX-00023)}
+\end{center}
+\caption{Résultat IA : Emphysema 97\%, URGENT}
+\label{fig:test_emphysema}
+\end{figure}
+\end{minipage}
+
+Ces résultats valident le bon fonctionnement du pipeline d'inférence sur des cas réels. Le masque U-Net délimite correctement les champs pulmonaires (surface entre 15\% et 33\% selon les images), et les diagnostics produits correspondent aux labels NIH attendus.
+
+\section{Tests de l'API Backend (Postman)}
+Des tests de l'API REST (Node.js/Express) ont été réalisés avec l'outil Postman afin de valider les routes d'authentification et de gestion des patients. Les figures suivantes montrent les captures des tests effectués sur les principales routes.
+
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=0.85\textwidth]{postman_auth.png}
+\placeholderfig[6]{Test Postman --- Route d'authentification POST /api/auth/login}
+\end{center}
+\caption{Test Postman --- Authentification (POST /api/auth/login)}
+\label{fig:postman_auth}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=0.85\textwidth]{postman_patients.png}
+\placeholderfig[6]{Test Postman --- Route patients GET /api/patients}
+\end{center}
+\caption{Test Postman --- Récupération des patients (GET /api/patients)}
+\label{fig:postman_patients}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+% Remplacer par : \includegraphics[width=0.85\textwidth]{postman_examens.png}
+\placeholderfig[6]{Test Postman --- Route examens POST /api/examens}
+\end{center}
+\caption{Test Postman --- Création d'examen (POST /api/examens)}
+\label{fig:postman_examens}
+\end{figure}
 
 \section{Tests d'Interface et Ergonomie}
 Les tests d'interface ont porté sur la cohérence visuelle (respect du design system V4), la lisibilité, la réactivité de la navigation et l'adaptation aux différentes tailles d'écran. Une attention particulière a été portée à la gestion de la barre de navigation gestuelle d'Android, source d'un débordement initialement constaté sur l'onboarding. L'ensemble des écrans a été vérifié sur appareil physique afin de garantir une expérience fluide et sans débordement de mise en page.
