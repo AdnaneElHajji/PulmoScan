@@ -1,0 +1,1129 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ============================================================
+%  RAPPORT DE PROJET DE FIN D'ÉTUDES (PFE)
+%  BTS - Développement des Applications Informatiques
+%  Projet : PulmoScan AI
+% ============================================================
+
+% ---------- Encodage et langue ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ---------- Mise en page ----------
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage{emptypage}
+
+% ---------- Graphisme et couleurs ----------
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc,backgrounds,fit}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable,listings}
+
+% ---------- Tableaux ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+% ---------- Listings (code) ----------
+\usepackage{listings}
+
+% ---------- Divers ----------
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{lastpage}
+\usepackage{hyperref}
+
+% ============================================================
+%  COULEURS - DESIGN SYSTEM V4
+% ============================================================
+\definecolor{V4bg}{HTML}{0A0F1A}
+\definecolor{V4teal}{HTML}{34E5C5}
+\definecolor{V4surface}{HTML}{131B2E}
+\definecolor{V4ink}{HTML}{E8EDF6}
+\definecolor{V4urgent}{HTML}{FF5A5F}
+\definecolor{V4moyen}{HTML}{FFB547}
+\definecolor{V4normal}{HTML}{34E5C5}
+\definecolor{V4dark}{HTML}{0F2A3F}
+\definecolor{tealdark}{HTML}{0B7A6B}
+\definecolor{codebg}{HTML}{F5F8FA}
+\definecolor{codeframe}{HTML}{1A2A3A}
+\definecolor{tablehdr}{HTML}{0F2A3F}
+\definecolor{tablerow}{HTML}{EAF7F4}
+
+% ============================================================
+%  HYPERREF
+% ============================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=tealdark,
+    citecolor=tealdark,
+    urlcolor=tealdark,
+    pdftitle={Rapport PFE - PulmoScan AI},
+    pdfauthor={Foudali Kenza - El Hajji Adnane}
+}
+
+% ============================================================
+%  EN-TÊTES ET PIEDS DE PAGE
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{15pt}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small PulmoScan AI}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{V4teal}\leaders\hrule height \headrulewidth\hfill}}
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\thepage}
+    \renewcommand{\headrulewidth}{0pt}
+}
+
+% ============================================================
+%  STYLE DES TITRES DE CHAPITRE
+% ============================================================
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{tablehdr}}
+  {\filright\Large\color{V4teal}\MakeUppercase{\chaptertitlename} \thechapter}
+  {1ex}
+  {\titlerule[1.5pt]\vspace{1ex}\filright}
+  [\vspace{0.5ex}{\color{V4teal}\titlerule[1.5pt]}]
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{tablehdr}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{tealdark}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{tealdark}}{\thesubsubsection}{1em}{}
+
+% ============================================================
+%  STYLE DES LISTINGS
+% ============================================================
+\lstdefinestyle{dartstyle}{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize\color{codeframe},
+    keywordstyle=\color{tealdark}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{V4urgent},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{V4teal},
+    framesep=6pt,
+    captionpos=b,
+    keywords={class,void,final,if,else,return,for,await,async,Future,List,int,double,String,bool,var,this,new,import,static,const,null,true,false,override}
+}
+\lstset{style=dartstyle}
+\renewcommand{\lstlistingname}{Listing}
+
+% ============================================================
+%  COMMANDES PERSONNALISÉES
+% ============================================================
+
+% Boîte d'information
+\newtcolorbox{infobox}[1][Information]{
+    enhanced, breakable,
+    colback=tablerow, colframe=V4teal,
+    coltitle=white, colbacktitle=tealdark,
+    fonttitle=\bfseries, title=#1,
+    boxrule=1pt, arc=3pt, left=8pt, right=8pt
+}
+
+% Boîte de remarque importante
+\newtcolorbox{remarkbox}[1][Remarque]{
+    enhanced, breakable,
+    colback=white, colframe=V4moyen,
+    coltitle=white, colbacktitle=V4moyen!90!black,
+    fonttitle=\bfseries, title=#1,
+    boxrule=1pt, arc=3pt, left=8pt, right=8pt
+}
+
+% Placeholder pour figures / diagrammes / captures
+\newcommand{\placeholder}[2][8cm]{%
+\begin{center}
+\begin{tikzpicture}
+\draw[dashed, line width=1pt, color=tealdark, fill=tablerow]
+  (0,0) rectangle (\linewidth,#1);
+\node[align=center, text width=0.85\linewidth, color=tablehdr] at (0.5\linewidth,0.5*#1)
+  {\large\textbf{[ FIGURE ]}\\[4pt]\normalsize #2};
+\end{tikzpicture}
+\end{center}
+}
+
+% En-têtes de tableau colorés
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcommand{\thead}[1]{\textcolor{white}{\textbf{#1}}}
+
+% ============================================================
+\begin{document}
+
+% ============================================================
+%  PAGE DE GARDE
+% ============================================================
+\begin{titlepage}
+\begin{center}
+\thispagestyle{empty}
+
+\begin{tikzpicture}[remember picture, overlay]
+  \draw[line width=2pt, color=V4teal] ($(current page.north west)+(1.2cm,-1.2cm)$) rectangle ($(current page.south east)+(-1.2cm,1.2cm)$);
+  \draw[line width=0.8pt, color=tealdark] ($(current page.north west)+(1.4cm,-1.4cm)$) rectangle ($(current page.south east)+(-1.4cm,1.4cm)$);
+\end{tikzpicture}
+
+\vspace*{0.5cm}
+
+{\large\textbf{ROYAUME DU MAROC}}\\[2pt]
+{\normalsize Ministère de l'Éducation Nationale, du Préscolaire et des Sports}\\[10pt]
+
+{\large\textbf{Centre de Formation Al Kendi -- Casablanca}}\\[4pt]
+{\normalsize Brevet de Technicien Supérieur (BTS)}\\[4pt]
+{\normalsize Filière : Développement des Applications Informatiques}\\[16pt]
+
+{\color{V4teal}\rule{0.7\linewidth}{1.5pt}}\\[10pt]
+
+\vspace{0.6cm}
+
+% Logo placeholder
+\begin{tikzpicture}
+\node[circle, draw=V4teal, line width=2pt, minimum size=2.6cm, fill=tablerow] (a) {};
+\node[circle, draw=tealdark, line width=1pt, minimum size=1.6cm] at (a) {};
+\node at (a) {\Large\bfseries\color{tealdark} PS};
+\end{tikzpicture}
+
+\vspace{0.6cm}
+
+{\Huge\bfseries\color{tablehdr} RAPPORT DE PROJET}\\[6pt]
+{\Huge\bfseries\color{tablehdr} DE FIN D'ÉTUDES}\\[20pt]
+
+{\color{V4teal}\rule{0.5\linewidth}{1pt}}\\[16pt]
+
+{\LARGE\bfseries\color{tealdark} PulmoScan AI}\\[10pt]
+{\large\itshape Application mobile d'aide au diagnostic des pathologies}\\
+{\large\itshape pulmonaires par intelligence artificielle embarquée}\\[6pt]
+{\normalsize sur radiographies thoraciques}\\[28pt]
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\textbf{\large Réalisé par :}\\[4pt]
+\large Foudali Kenza\\
+\large El Hajji Adnane
+\end{flushleft}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\textbf{\large Encadré par :}\\[4pt]
+\large Mme. Amina Aboulmira
+\end{flushright}
+\end{minipage}
+
+\vfill
+
+{\color{V4teal}\rule{\linewidth}{1pt}}\\[6pt]
+{\large\textbf{Année universitaire : 2025 / 2026}}\\[2pt]
+{\normalsize Soutenu en Juin 2026}
+
+\vspace{0.5cm}
+\end{center}
+\end{titlepage}
+
+% ============================================================
+%  PAGES PRÉLIMINAIRES
+% ============================================================
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% ---------- DÉDICACES ----------
+\chapter*{Dédicaces}
+\addcontentsline{toc}{chapter}{Dédicaces}
+\markboth{Dédicaces}{Dédicaces}
+
+\vspace{1cm}
+\begin{flushright}
+\itshape
+\large
+
+À nos chers parents,\\
+qui n'ont jamais cessé de nous soutenir, de nous encourager\\
+et de croire en nous tout au long de ce parcours.\\[1.2cm]
+
+À nos frères et s\oe urs,\\
+pour leur présence, leur patience et leur affection.\\[1.2cm]
+
+À nos enseignants et formateurs,\\
+qui ont semé en nous le goût du savoir et de l'effort.\\[1.2cm]
+
+À tous nos amis et camarades de promotion,\\
+avec qui nous avons partagé les meilleurs moments\\
+de notre formation.\\[1.2cm]
+
+À toutes les personnes qui, de près ou de loin,\\
+ont contribué à la réussite de ce travail.\\[2cm]
+
+\textbf{Nous dédions ce modeste travail.}\\[0.6cm]
+\normalsize
+\textemdash{} Kenza \& Adnane
+\end{flushright}
+
+% ---------- REMERCIEMENTS ----------
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+\markboth{Remerciements}{Remerciements}
+
+\vspace{0.5cm}
+Au terme de ce projet de fin d'études, nous tenons à exprimer notre profonde gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la réalisation de ce travail.
+
+Nous adressons nos remerciements les plus sincères à notre encadrante, \textbf{Mme. Amina Aboulmira}, pour la qualité de son encadrement, sa disponibilité constante, ses conseils avisés et ses encouragements tout au long de ce projet. Son expertise et sa rigueur scientifique ont été déterminantes pour mener à bien ce travail.
+
+Nous remercions également l'ensemble du corps enseignant et administratif du \textbf{Centre de Formation Al Kendi} de Casablanca, qui nous a accompagnés durant ces deux années de formation au sein de la filière BTS Développement des Applications Informatiques. La solidité des connaissances que nous avons acquises constitue le socle sur lequel repose ce projet.
+
+Nos remerciements vont aussi aux membres du jury qui nous font l'honneur d'évaluer et de juger ce modeste travail. Nous espérons qu'il sera à la hauteur de leurs attentes.
+
+Enfin, nous exprimons toute notre reconnaissance à nos familles et à nos proches pour leur soutien indéfectible, leur patience et leurs encouragements qui nous ont permis de surmonter les moments les plus difficiles.
+
+À tous, nous disons sincèrement \textbf{merci}.
+
+% ---------- RÉSUMÉ FR ----------
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+\markboth{Résumé}{Résumé}
+
+\vspace{0.3cm}
+Le présent projet de fin d'études porte sur la conception et la réalisation de \textbf{PulmoScan AI}, une application mobile multiplateforme d'aide au diagnostic des pathologies pulmonaires à partir de radiographies thoraciques. Dans un contexte marqué par une prévalence élevée des maladies respiratoires au Maroc et par une pénurie de radiologues, en particulier dans les zones périphériques, les délais de diagnostic peuvent atteindre plusieurs jours. PulmoScan AI propose une réponse à cette problématique en mettant à disposition du personnel médical un outil d'assistance fonctionnant entièrement \textbf{hors connexion} (\textit{offline-first}).
+
+L'application, développée avec le framework \textbf{Flutter 3.22} et le langage \textbf{Dart 3.4}, embarque deux modèles d'intelligence artificielle exécutés localement grâce à \textbf{TensorFlow Lite}. Le premier, un réseau \textbf{DenseNet121} issu de la bibliothèque TorchXRayVision et entraîné sur le jeu de données NIH ChestX-ray14 (112\,120 images), réalise la classification de 14 pathologies thoraciques. Le second, un réseau \textbf{U-Net}, assure la segmentation des champs pulmonaires. Les données patients et les examens sont stockés localement dans une base \textbf{SQLite}, garantissant la confidentialité et l'indépendance vis-à-vis d'un serveur distant.
+
+Ce rapport décrit l'ensemble du cycle de développement, depuis l'analyse du contexte et l'expression des besoins jusqu'à la conception architecturale (UML) et la réalisation technique, en passant par les difficultés rencontrées et les solutions apportées.
+
+\vspace{0.4cm}
+\noindent\textbf{Mots-clés :} Intelligence artificielle, apprentissage profond, radiographie thoracique, DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite, aide au diagnostic, santé mobile.
+
+% ---------- RÉSUMÉ EN ----------
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{Abstract}
+
+\vspace{0.3cm}
+This graduation project deals with the design and implementation of \textbf{PulmoScan AI}, a cross-platform mobile application that assists in the diagnosis of pulmonary pathologies from chest X-rays. In a context characterized by a high prevalence of respiratory diseases in Morocco and a shortage of radiologists, especially in peripheral facilities, diagnostic delays can reach several days. PulmoScan AI addresses this issue by providing medical staff with an assistance tool that runs entirely \textbf{offline} (\textit{offline-first}).
+
+The application, built with the \textbf{Flutter 3.22} framework and the \textbf{Dart 3.4} language, embeds two artificial intelligence models that run locally thanks to \textbf{TensorFlow Lite}. The first one, a \textbf{DenseNet121} network from the TorchXRayVision library, trained on the NIH ChestX-ray14 dataset (112,120 images), performs the classification of 14 thoracic pathologies. The second one, a \textbf{U-Net} network, handles the segmentation of lung fields. Patient data and examinations are stored locally in an \textbf{SQLite} database, ensuring confidentiality and independence from any remote server.
+
+This report describes the entire development cycle, from context analysis and requirements specification to architectural design (UML) and technical implementation, including the difficulties encountered and the solutions adopted.
+
+\vspace{0.4cm}
+\noindent\textbf{Keywords:} Artificial intelligence, deep learning, chest X-ray, DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite, computer-aided diagnosis, mobile health.
+
+% ---------- TABLES ----------
+\renewcommand{\contentsname}{Table des matières}
+\tableofcontents
+
+\cleardoublepage
+\addcontentsline{toc}{chapter}{Liste des figures}
+\renewcommand{\listfigurename}{Liste des figures}
+\listoffigures
+
+\cleardoublepage
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+\renewcommand{\listtablename}{Liste des tableaux}
+\listoftables
+
+% ---------- ABRÉVIATIONS ----------
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+\markboth{Liste des abréviations}{Liste des abréviations}
+
+\vspace{0.3cm}
+\begin{longtable}{>{\bfseries}p{3.2cm} p{11cm}}
+\toprule
+\rowcolor{tablehdr}
+\thead{Abréviation} & \thead{Signification} \\
+\midrule
+\endhead
+AI / IA & Artificial Intelligence / Intelligence Artificielle \\
+\rowcolor{tablerow}
+API & Application Programming Interface \\
+AUC & Area Under the Curve (aire sous la courbe ROC) \\
+\rowcolor{tablerow}
+BTS & Brevet de Technicien Supérieur \\
+CNN & Convolutional Neural Network (réseau de neurones convolutif) \\
+\rowcolor{tablerow}
+CRUD & Create, Read, Update, Delete \\
+DICOM & Digital Imaging and Communications in Medicine \\
+\rowcolor{tablerow}
+IDE & Integrated Development Environment \\
+ML & Machine Learning (apprentissage automatique) \\
+\rowcolor{tablerow}
+NIH & National Institutes of Health \\
+PFE & Projet de Fin d'Études \\
+\rowcolor{tablerow}
+ROC & Receiver Operating Characteristic \\
+SDK & Software Development Kit \\
+\rowcolor{tablerow}
+SGBD & Système de Gestion de Base de Données \\
+SQL & Structured Query Language \\
+\rowcolor{tablerow}
+TFLite & TensorFlow Lite \\
+UI / UX & User Interface / User Experience \\
+\rowcolor{tablerow}
+UML & Unified Modeling Language \\
+\bottomrule
+\end{longtable}
+
+% ============================================================
+%  CORPS DU RAPPORT
+% ============================================================
+\cleardoublepage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ---------- INTRODUCTION GÉNÉRALE ----------
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+\markboth{Introduction générale}{Introduction générale}
+
+L'intelligence artificielle (IA) connaît aujourd'hui un essor considérable dans le domaine de la santé. Parmi ses applications les plus prometteuses figure l'analyse automatisée des images médicales, qui ouvre la voie à des outils d'aide au diagnostic capables d'assister les professionnels de santé dans leurs décisions cliniques. L'imagerie thoracique, et plus particulièrement la radiographie pulmonaire, constitue un terrain privilégié pour ces technologies en raison de la grande disponibilité des appareils de radiographie et du volume important d'examens réalisés quotidiennement.
+
+Au Maroc, les maladies respiratoires représentent une charge sanitaire majeure. Pourtant, le nombre de radiologues qualifiés demeure insuffisant, et leur répartition géographique est très inégale : les grandes villes concentrent l'essentiel des spécialistes, tandis que les zones rurales et périphériques en sont largement dépourvues. Cette situation engendre des délais de diagnostic qui peuvent atteindre plusieurs jours, au détriment de la prise en charge des patients. Par ailleurs, la connectivité internet limitée dans ces régions constitue un obstacle supplémentaire à l'adoption de solutions reposant sur le \textit{cloud}.
+
+C'est dans ce contexte que s'inscrit notre projet de fin d'études : la conception et la réalisation de \textbf{PulmoScan AI}, une application mobile d'aide au diagnostic des pathologies pulmonaires. L'originalité de notre approche réside dans son caractère \textit{offline-first} : l'ensemble des traitements, y compris l'inférence des modèles d'intelligence artificielle, s'effectue directement sur l'appareil mobile, sans nécessiter de connexion à un serveur distant. Cette architecture garantit à la fois la confidentialité des données patients et l'utilisabilité de l'outil dans les environnements à faible connectivité.
+
+L'application repose sur deux modèles de réseaux de neurones profonds. Un modèle \textbf{DenseNet121}, entraîné sur le jeu de données de référence NIH ChestX-ray14, classe 14 pathologies thoraciques. Un modèle \textbf{U-Net} segmente les champs pulmonaires afin de produire une visualisation explicative. Ces modèles, convertis au format TensorFlow Lite, sont embarqués dans une application développée avec Flutter, ce qui assure une compatibilité multiplateforme entre les systèmes Android et iOS.
+
+Le présent rapport rend compte de la démarche suivie pour mener à bien ce projet. Il s'articule autour de quatre chapitres. Le \textbf{premier chapitre} présente le contexte général, la problématique et les objectifs du projet. Le \textbf{deuxième chapitre} est consacré à l'analyse des besoins fonctionnels et non fonctionnels, ainsi qu'à la spécification des acteurs et des cas d'utilisation. Le \textbf{troisième chapitre} détaille la conception du système, à travers la modélisation UML, l'architecture logicielle et le schéma de la base de données. Enfin, le \textbf{quatrième chapitre} décrit la réalisation technique, les outils employés, les principaux écrans de l'application et les difficultés rencontrées. Une conclusion générale dresse le bilan du travail accompli et ouvre des perspectives d'évolution.
+
+% ============================================================
+%  CHAPITRE 1 : CONTEXTE ET PROBLÉMATIQUE
+% ============================================================
+\chapter{Contexte et Problématique}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce premier chapitre pose les fondements du projet. Il décrit le contexte sanitaire et technologique dans lequel s'inscrit PulmoScan AI, formule la problématique à laquelle l'application entend répondre, présente une étude des solutions existantes, puis énonce les objectifs et le cadre méthodologique du projet.
+
+\section{Contexte général}
+
+\subsection{Les maladies respiratoires au Maroc}
+Les affections de l'appareil respiratoire constituent l'une des principales causes de consultation et d'hospitalisation au Maroc. Pneumonies, épanchements pleuraux, \oe dèmes pulmonaires, emphysèmes ou encore tuberculose figurent parmi les pathologies fréquemment rencontrées. Le diagnostic de ces affections repose en grande partie sur l'examen radiographique du thorax, qui demeure l'examen d'imagerie de première intention en raison de son faible coût, de sa rapidité d'exécution et de sa large disponibilité.
+
+Toutefois, l'interprétation d'une radiographie thoracique est un acte médical complexe qui requiert une expertise spécialisée. Or, le système de santé marocain souffre d'un déficit chronique de radiologues. Ce déficit est particulièrement marqué dans les provinces éloignées des grands centres urbains, où les structures de soins de proximité ne disposent pas toujours d'un radiologue résident.
+
+\subsection{La place de l'intelligence artificielle en imagerie médicale}
+L'apprentissage profond (\textit{deep learning}) a révolutionné le domaine de la vision par ordinateur au cours de la dernière décennie. Les réseaux de neurones convolutifs (CNN) ont démontré des performances remarquables dans les tâches de classification et de détection d'images, atteignant parfois des niveaux comparables à ceux d'experts humains pour certaines pathologies.
+
+En imagerie thoracique, la mise à disposition publique de grands jeux de données annotés, tels que NIH ChestX-ray14, a stimulé le développement de modèles capables de détecter automatiquement plusieurs pathologies. Ces modèles ne se substituent pas au médecin, mais constituent une aide à la décision susceptible de réduire les délais, de prioriser les cas urgents et d'apporter un second avis dans les contextes de pénurie d'expertise.
+
+\begin{infobox}[Le jeu de données NIH ChestX-ray14]
+Publié par le National Institutes of Health (NIH) en 2017, le jeu de données ChestX-ray14 regroupe \textbf{112\,120 radiographies thoraciques} provenant de 30\,805 patients, annotées pour \textbf{14 pathologies} distinctes. Il constitue aujourd'hui une référence pour l'entraînement et l'évaluation des modèles de classification d'images thoraciques.
+\end{infobox}
+
+\section{Problématique}
+La problématique centrale de ce projet peut être formulée ainsi :
+
+\begin{remarkbox}[Problématique]
+Comment concevoir un outil d'aide au diagnostic des pathologies pulmonaires qui soit \textbf{accessible}, \textbf{rapide}, \textbf{respectueux de la confidentialité} des données patients et \textbf{utilisable dans les zones à faible connectivité}, afin de réduire les délais de diagnostic et de pallier la pénurie de radiologues ?
+\end{remarkbox}
+
+De cette problématique découlent plusieurs sous-questions :
+\begin{itemize}[leftmargin=2em]
+  \item Comment exécuter des modèles d'intelligence artificielle directement sur un appareil mobile, sans serveur distant ?
+  \item Comment garantir la confidentialité des données médicales sensibles ?
+  \item Comment offrir une interface ergonomique et intuitive au personnel médical, y compris non spécialiste de l'informatique ?
+  \item Comment assurer la fiabilité des résultats produits tout en signalant clairement leurs limites ?
+\end{itemize}
+
+\section{Étude de l'existant}
+Plusieurs solutions d'aide au diagnostic par imagerie existent sur le marché ou dans la littérature scientifique. On peut les regrouper en trois catégories.
+
+\subsection{Solutions cloud}
+La majorité des plateformes commerciales reposent sur une architecture \textit{cloud} : l'image est transmise à un serveur distant qui exécute l'inférence et renvoie le résultat. Si cette approche offre une grande puissance de calcul, elle présente des inconvénients majeurs dans notre contexte : dépendance à une connexion internet stable, latence réseau, et surtout transfert de données médicales sensibles vers des serveurs tiers, ce qui pose des problèmes de confidentialité.
+
+\subsection{Solutions logicielles de poste fixe}
+D'autres solutions s'intègrent aux stations de travail des services de radiologie (PACS). Elles sont performantes mais coûteuses, lourdes à déployer et inadaptées aux structures de soins de proximité dépourvues d'infrastructure dédiée.
+
+\subsection{Positionnement de PulmoScan AI}
+Le tableau suivant synthétise le positionnement de notre solution par rapport aux approches existantes.
+
+\begin{table}[h]
+\centering
+\caption{Comparaison de PulmoScan AI avec les solutions existantes}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{3.5cm} C{2.5cm} C{2.5cm} C{3.5cm}}
+\toprule
+\rowcolor{tablehdr}
+\thead{Critère} & \thead{Solution cloud} & \thead{Poste fixe} & \thead{PulmoScan AI} \\
+\midrule
+Fonctionnement hors ligne & Non & Oui & \textbf{Oui} \\
+\rowcolor{tablerow}
+Confidentialité (données locales) & Faible & Élevée & \textbf{Élevée} \\
+Mobilité & Élevée & Faible & \textbf{Élevée} \\
+\rowcolor{tablerow}
+Coût de déploiement & Variable & Élevé & \textbf{Faible} \\
+Connexion requise & Oui & Non & \textbf{Non} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+PulmoScan AI se distingue par son architecture \textit{offline-first} qui combine les avantages de la mobilité et de la confidentialité, tout en restant accessible et peu coûteuse.
+
+\section{Objectifs du projet}
+Le projet poursuit les objectifs suivants :
+\begin{itemize}[leftmargin=2em]
+  \item Concevoir une application mobile multiplateforme (Android / iOS) d'aide au diagnostic des pathologies pulmonaires ;
+  \item Embarquer des modèles d'IA s'exécutant localement sur l'appareil, sans serveur distant ;
+  \item Classifier automatiquement 14 pathologies thoraciques à partir d'une radiographie ;
+  \item Fournir une segmentation des champs pulmonaires comme support explicatif ;
+  \item Assurer la gestion des patients et des examens dans une base de données locale ;
+  \item Proposer une interface ergonomique adaptée au personnel médical.
+\end{itemize}
+
+\section{Méthodologie et planification}
+Le développement a été conduit selon une démarche \textbf{itérative et incrémentale} inspirée des méthodes agiles. Le travail a été organisé en phases successives : étude et cadrage, analyse des besoins, conception, préparation et conversion des modèles d'IA, développement de l'application, intégration, puis tests et validation. Un diagramme de Gantt a permis de planifier et de suivre l'avancement.
+
+\placeholder[6cm]{Diagramme de Gantt présentant la planification temporelle du projet (phases d'analyse, conception, développement des modèles, développement applicatif, intégration et tests).}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a mis en évidence le besoin d'un outil d'aide au diagnostic pulmonaire adapté au contexte marocain. La problématique de l'accessibilité, de la confidentialité et de la connectivité justifie le choix d'une architecture \textit{offline-first}. Le chapitre suivant approfondit l'analyse des besoins du système.
+
+% ============================================================
+%  CHAPITRE 2 : ANALYSE DES BESOINS
+% ============================================================
+\chapter{Analyse des Besoins}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce chapitre identifie les acteurs du système, recense les besoins fonctionnels et non fonctionnels, modélise les cas d'utilisation et organise les fonctionnalités sous forme d'un \textit{product backlog}.
+
+\section{Identification des acteurs}
+Trois acteurs principaux interagissent avec le système :
+
+\begin{description}[leftmargin=1em, style=nextline]
+  \item[Le Médecin] Acteur central, il lance les analyses, consulte les résultats produits par l'IA, génère les rapports et consulte l'historique des examens.
+  \item[L'Assistant Médical] Il assure la gestion administrative des dossiers : il crée et modifie les patients, capture les images radiographiques et consulte les dossiers patients.
+  \item[L'Administrateur] Il gère le système et les comptes utilisateurs.
+\end{description}
+
+\section{Besoins fonctionnels}
+Les besoins fonctionnels décrivent les services que le système doit rendre :
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Authentification :} connexion et déconnexion sécurisées, option « se souvenir de moi ».
+  \item \textbf{Gestion des patients :} création, consultation, modification, recherche et filtrage des dossiers patients.
+  \item \textbf{Gestion des examens :} création d'un examen par import d'une image (galerie ou appareil photo).
+  \item \textbf{Analyse par IA :} exécution des modèles DenseNet121 (classification) et U-Net (segmentation).
+  \item \textbf{Affichage des résultats :} diagnostic principal, scores de confiance des 14 pathologies, badge de sévérité et superposition du masque de segmentation.
+  \item \textbf{Tableau de bord :} affichage de statistiques et des examens récents.
+  \item \textbf{Profil :} consultation du profil du médecin et des paramètres.
+\end{itemize}
+
+\section{Besoins non fonctionnels}
+\begin{table}[h]
+\centering
+\caption{Besoins non fonctionnels du système}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{3.5cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Critère} & \thead{Description} \\
+\midrule
+Performance & Inférence des modèles en quelques secondes sur un appareil mobile standard. \\
+\rowcolor{tablerow}
+Disponibilité & Fonctionnement intégral hors connexion (\textit{offline-first}). \\
+Confidentialité & Stockage local des données médicales, aucun transfert vers un serveur tiers. \\
+\rowcolor{tablerow}
+Portabilité & Compatibilité multiplateforme Android et iOS via Flutter. \\
+Ergonomie & Interface intuitive, claire et adaptée au personnel médical. \\
+\rowcolor{tablerow}
+Fiabilité & Affichage transparent des scores de confiance et des limites des modèles. \\
+Maintenabilité & Architecture modulaire, code organisé en services réutilisables. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Diagramme de cas d'utilisation}
+Le diagramme de cas d'utilisation ci-dessous synthétise les interactions entre les acteurs et le système.
+
+\placeholder[8cm]{Diagramme de cas d'utilisation global. Acteurs : Médecin, Assistant Médical, Administrateur. Cas d'utilisation du Médecin : lancerAnalyse, consulterResultat, genererRapport, consulterHistorique. Cas d'utilisation de l'Assistant : creerPatient, modifierPatient, capturerImage, consulterPatient.}
+
+\subsection{Description textuelle d'un cas d'utilisation}
+\begin{infobox}[Cas d'utilisation : Lancer une analyse IA]
+\textbf{Acteur principal :} Médecin\\
+\textbf{Précondition :} L'utilisateur est authentifié et un patient est sélectionné.\\
+\textbf{Scénario nominal :}
+\begin{enumerate}[leftmargin=2em, nosep]
+  \item Le médecin sélectionne un patient.
+  \item Il importe une radiographie depuis la galerie ou l'appareil photo.
+  \item Le système prétraite l'image (recadrage, redimensionnement, normalisation).
+  \item Les modèles DenseNet121 et U-Net sont exécutés localement.
+  \item Le système affiche le diagnostic principal, les scores de confiance et le masque de segmentation.
+\end{enumerate}
+\textbf{Postcondition :} L'examen et ses résultats sont enregistrés dans la base locale.
+\end{infobox}
+
+\section{Product Backlog}
+L'ensemble des fonctionnalités a été organisé sous forme d'un \textit{product backlog} regroupant les fonctionnalités effectivement implémentées.
+
+\begin{table}[h]
+\centering
+\caption{Product Backlog -- fonctionnalités implémentées}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{C{1.2cm} p{4.2cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{ID} & \thead{Fonctionnalité} & \thead{Description} \\
+\midrule
+F1 & Authentification & Connexion, déconnexion, « se souvenir de moi ». \\
+\rowcolor{tablerow}
+F2 & Gestion des patients & CRUD, recherche et filtrage. \\
+F3 & Création d'examen & Import d'image (galerie / appareil photo). \\
+\rowcolor{tablerow}
+F4 & Analyse par IA & DenseNet121 (classification) + U-Net (segmentation). \\
+F5 & Affichage des résultats & Scores de confiance et masque de segmentation. \\
+\rowcolor{tablerow}
+F6 & Tableau de bord & Statistiques et examens récents. \\
+F7 & Profil médecin & Consultation du profil et des paramètres. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a permis de clarifier les attentes vis-à-vis du système en identifiant ses acteurs, ses besoins fonctionnels et non fonctionnels, et en structurant les fonctionnalités sous forme d'un backlog. Le chapitre suivant traduit ces besoins en une conception détaillée.
+
+% ============================================================
+%  CHAPITRE 3 : CONCEPTION
+% ============================================================
+\chapter{Conception}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce chapitre présente la conception du système. Il décrit l'architecture logicielle, la modélisation UML (diagramme de classes et diagrammes de séquence), le schéma de la base de données, ainsi que la conception des modèles d'intelligence artificielle.
+
+\section{Architecture générale}
+L'application adopte une architecture \textbf{offline-first} en couches. La couche de présentation (interfaces Flutter) communique avec une couche de services qui encapsule la logique métier. Cette couche de services s'appuie sur deux composants singletons : le service d'IA (\texttt{AIService}), responsable de l'inférence TensorFlow Lite, et le service de base de données (\texttt{DatabaseService}), responsable des opérations CRUD sur la base SQLite locale.
+
+\placeholder[7cm]{Diagramme d'architecture en couches : couche Présentation (8 écrans Flutter) -- couche Services (AIService, DatabaseService) -- couche Données (modèles TFLite, base SQLite). Aucun serveur distant.}
+
+\begin{infobox}[Le patron Singleton]
+Les services \texttt{AIService} et \texttt{DatabaseService} sont implémentés selon le patron de conception \textbf{Singleton}. Cela garantit qu'une seule instance de chaque service existe pendant toute la durée de vie de l'application, évitant ainsi le rechargement coûteux des modèles d'IA et l'ouverture multiple de connexions à la base de données.
+\end{infobox}
+
+\section{Modélisation UML}
+
+\subsection{Diagramme de classes}
+Le diagramme de classes décrit la structure statique du domaine. La classe abstraite \texttt{Utilisateur} est spécialisée en \texttt{AssistantMedical}, \texttt{Médecin} et \texttt{Administrateur}. Les classes \texttt{Patient}, \texttt{Examen} et \texttt{Resultat} modélisent le c\oe ur métier.
+
+\placeholder[8cm]{Diagramme de classes UML. Classe parente Utilisateur (id, name, email, password, role) héritée par AssistantMedical, Médecin et Administrateur. Classes Patient (1) -- (*) Examen (1) -- (1) Resultat. Associations et cardinalités.}
+
+\subsection{Diagrammes de séquence}
+Plusieurs diagrammes de séquence ont été élaborés pour décrire la dynamique des principales interactions : \textit{Authentification}, \textit{Création de patient}, \textit{Acquisition d'image} et \textit{Analyse IA}.
+
+\placeholder[7cm]{Diagramme de séquence « Analyse IA » : Médecin → NewExamScreen → AIService (analyzeImage) → prétraitement → DenseNet121 → U-Net → post-traitement → ResultsScreen → DatabaseService (insertExam).}
+
+\section{Conception de la base de données}
+La persistance repose sur une base \textbf{SQLite} locale (version 4 du schéma), gérée via le paquet \texttt{sqflite}. Elle comporte trois tables principales.
+
+\begin{table}[h]
+\centering
+\caption{Schéma de la base de données SQLite (version 4)}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{p{2.2cm} p{3.2cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Table} & \thead{Champ} & \thead{Description} \\
+\midrule
+\multirow{5}{*}{\textbf{users}} & id & Identifiant (clé primaire) \\
+ & name & Nom de l'utilisateur \\
+ & email & Adresse e-mail \\
+ & password & Mot de passe \\
+ & role & Rôle (médecin / assistant / admin) \\
+\midrule
+\rowcolor{tablerow}
+\cellcolor{tablerow}\multirow{7}{*}{\textbf{patients}} & id & Identifiant (clé primaire) \\
+\rowcolor{tablerow}\cellcolor{tablerow} & firstName & Prénom \\
+\rowcolor{tablerow}\cellcolor{tablerow} & lastName & Nom \\
+\rowcolor{tablerow}\cellcolor{tablerow} & dateOfBirth & Date de naissance \\
+\rowcolor{tablerow}\cellcolor{tablerow} & gender & Genre \\
+\rowcolor{tablerow}\cellcolor{tablerow} & contact & Coordonnées \\
+\rowcolor{tablerow}\cellcolor{tablerow} & createdAt & Date de création \\
+\midrule
+\multirow{8}{*}{\textbf{exams}} & id & Identifiant (clé primaire) \\
+ & patientId & Clé étrangère vers patients \\
+ & imagePath & Chemin de l'image \\
+ & diagnostic & Diagnostic principal \\
+ & confidence & Confiance (0.0 -- 1.0) \\
+ & severite & Sévérité (urgent / moyen / normal / modere / severe / faible) \\
+ & details & Scores des 14 pathologies (JSON) \\
+ & createdAt & Date de création \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Le listing suivant illustre la création de la table \texttt{exams}.
+
+\begin{lstlisting}[language=SQL, caption={Création de la table exams (SQLite)}]
+CREATE TABLE exams (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  patientId INTEGER NOT NULL,
+  imagePath TEXT,
+  diagnostic TEXT,
+  confidence REAL,
+  severite TEXT,
+  details TEXT,
+  createdAt TEXT,
+  FOREIGN KEY (patientId) REFERENCES patients(id)
+);
+\end{lstlisting}
+
+\section{Conception des modèles d'intelligence artificielle}
+Deux modèles complémentaires constituent le c\oe ur intelligent de l'application.
+
+\subsection{DenseNet121 -- Classification}
+Le modèle de classification est un réseau \textbf{DenseNet121} provenant de la bibliothèque \textbf{TorchXRayVision} et entraîné sur NIH ChestX-ray14. Sa particularité réside dans la connectivité dense entre couches, qui favorise la réutilisation des caractéristiques et limite la disparition du gradient.
+
+\begin{table}[h]
+\centering
+\caption{Caractéristiques du modèle DenseNet121}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{4cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Paramètre} & \thead{Valeur} \\
+\midrule
+Fichier & \texttt{pulmoscan\_model.tflite} (13,4 Mo) \\
+\rowcolor{tablerow}
+Entrée & [1, 224, 224, 1] float32, niveaux de gris \\
+Sortie & [1, 18] float32, activation sigmoïde \\
+\rowcolor{tablerow}
+Pathologies utiles & 14 premières (indices 0--13) \\
+Indices non entraînés & 14--17 (valeur $\approx$ 0,5) \\
+\rowcolor{tablerow}
+AUC & 0,80 -- 0,94 (classes fiables) \\
+Dataset & NIH ChestX-ray14 (112\,120 images) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{remarkbox}[Ordre des étiquettes TorchXRayVision]
+Les sorties du modèle suivent l'ordre des \texttt{default\_pathologies} de TorchXRayVision : \textit{Atelectasis, Consolidation, Infiltration, Pneumothorax, Edema, Emphysema, Fibrosis, Effusion, Pneumonia, Pleural\_Thickening, Cardiomegaly, Nodule, Mass, Hernia}. Cet ordre n'est pas alphabétique et diffère de celui du jeu NIH brut.
+\end{remarkbox}
+
+\subsection{U-Net -- Segmentation}
+Le second modèle est un réseau \textbf{U-Net}, architecture en forme de « U » composée d'un chemin de contraction (encodeur) et d'un chemin d'expansion (décodeur) reliés par des connexions de saut. Il produit un masque de probabilité segmentant les champs pulmonaires.
+
+\begin{table}[h]
+\centering
+\caption{Caractéristiques du modèle U-Net}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{4cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Paramètre} & \thead{Valeur} \\
+\midrule
+Fichier & \texttt{unet\_lung.tflite} (29,6 Mo) \\
+\rowcolor{tablerow}
+Entrée & [1, 256, 256, 1] float32, niveaux de gris /255 \\
+Sortie & [1, 256, 256, 1] masque de probabilité \\
+\rowcolor{tablerow}
+Seuil de binarisation & 0,5 \\
+Quantification & Aucune (float32) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\placeholder[6cm]{Schéma de l'architecture U-Net : encodeur (contraction) à gauche, décodeur (expansion) à droite, connexions de saut horizontales, sortie : masque de segmentation pulmonaire.}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a détaillé la conception architecturale et logicielle de PulmoScan AI, depuis l'organisation en couches jusqu'à la modélisation UML, le schéma de base de données et la conception des deux modèles d'IA. Le chapitre suivant aborde la réalisation concrète du système.
+
+% ============================================================
+%  CHAPITRE 4 : RÉALISATION
+% ============================================================
+\chapter{Réalisation}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce dernier chapitre présente la mise en \oe uvre concrète du projet : l'environnement et les outils de développement, la pile technologique, l'organisation du code, les principaux écrans de l'application, la logique d'inférence de l'IA et les difficultés rencontrées avec leurs solutions.
+
+\section{Environnement et outils de développement}
+\begin{table}[h]
+\centering
+\caption{Outils et environnement de développement}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{4.5cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Outil} & \thead{Usage} \\
+\midrule
+GitHub & Gestion de versions et collaboration \\
+\rowcolor{tablerow}
+Figma & Conception des maquettes UI/UX \\
+VS Code / Android Studio & Environnements de développement (IDE) \\
+\rowcolor{tablerow}
+Google Colab & Entraînement et conversion des modèles \\
+Python + TensorFlow & Préparation et conversion TFLite des modèles \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Pile technologique}
+\begin{table}[h]
+\centering
+\caption{Pile technologique de l'application}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{3.8cm} p{3.5cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Couche} & \thead{Technologie} & \thead{Version / Paquet} \\
+\midrule
+Frontend & Flutter / Dart & 3.22 / 3.4 \\
+\rowcolor{tablerow}
+Base de données & SQLite & \texttt{sqflite \textasciicircum2.3.0} \\
+Inférence IA & TensorFlow Lite & \texttt{tflite\_flutter \textasciicircum0.10.4} \\
+\rowcolor{tablerow}
+Traitement d'image & image & \texttt{image \textasciicircum4.1} \\
+Sélection d'image & image\_picker & \texttt{image\_picker \textasciicircum1.0} \\
+\rowcolor{tablerow}
+Préférences & shared\_preferences & \texttt{shared\_preferences \textasciicircum2.2} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Organisation du code source}
+Le code est organisé de manière modulaire au sein du répertoire \texttt{lib/}, séparant clairement les écrans, les services, les widgets et le thème.
+
+\begin{lstlisting}[caption={Arborescence du code source}]
+lib/
++-- main.dart
++-- theme/
+|   +-- v4_theme.dart
++-- screens/            (8 ecrans)
+|   +-- landing_screen.dart
+|   +-- onboarding_screen.dart
+|   +-- dashboard.dart
+|   +-- patients_screen.dart
+|   +-- patient_detail_screen.dart
+|   +-- new_exam_screen.dart
+|   +-- results_screen.dart
+|   +-- profile_screen.dart
++-- services/
+|   +-- ai_service.dart        (singleton, inference TFLite)
+|   +-- database_service.dart  (singleton, CRUD SQLite)
++-- widgets/
+    +-- aperture_mark.dart
+\end{lstlisting}
+
+\section{Le Design System V4}
+Une identité visuelle cohérente a été conçue, baptisée \textbf{Design System V4}. Elle repose sur un thème sombre et un accent turquoise distinctif.
+
+\begin{table}[h]
+\centering
+\caption{Palette de couleurs du Design System V4}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{3.5cm} p{2.5cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Jeton} & \thead{Code} & \thead{Usage} \\
+\midrule
+V4.bg & \texttt{\#0A0F1A} & Fond sombre \\
+\rowcolor{tablerow}
+V4.teal & \texttt{\#34E5C5} & Accent principal \\
+V4.surface1 & \texttt{\#131B2E} & Cartes \\
+\rowcolor{tablerow}
+V4.ink & \texttt{\#E8EDF6} & Texte \\
+V4.urgent & \texttt{\#FF5A5F} & Sévérité urgente \\
+\rowcolor{tablerow}
+V4.moyen & \texttt{\#FFB547} & Sévérité moyenne \\
+V4.normal & \texttt{\#34E5C5} & Sévérité normale \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Un widget personnalisé, \texttt{ApertureMark}, anime un diaphragme (iris) et constitue la signature visuelle de l'application.
+
+\section{Présentation des écrans}
+L'application compte huit écrans principaux.
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{LandingScreen} -- page d'accueil avec section héros défilante et formulaire de connexion, avec défilement animé vers le formulaire.
+  \item \textbf{OnboardingScreen} -- trois diapositives (Capture / IA / Rapport), widget \texttt{ApertureMark}, \texttt{PageView}, état mémorisé via \texttt{SharedPreferences}.
+  \item \textbf{Dashboard} -- cartes de statistiques, examens récents et cartes de modèles d'IA cliquables ouvrant une feuille de détails.
+  \item \textbf{PatientsScreen} -- liste recherchable avec badges de statut (urgent / normal / à surveiller).
+  \item \textbf{PatientDetailScreen} -- dossier du patient et historique des examens.
+  \item \textbf{NewExamScreen} -- assistant par étapes : sélection du patient $\rightarrow$ import de l'image $\rightarrow$ exécution de l'IA.
+  \item \textbf{ResultsScreen} -- diagnostic principal, badge de sévérité, histogramme de 14 barres de confiance (seuil d'alerte 0,15) et superposition du masque U-Net.
+  \item \textbf{ProfileScreen} -- profil du médecin et paramètres.
+\end{enumerate}
+
+\placeholder[8cm]{Captures d'écran de l'application : LandingScreen, Onboarding, Dashboard et NewExamScreen présentées côte à côte.}
+
+\placeholder[8cm]{Capture d'écran du ResultsScreen : diagnostic principal, badge de sévérité, histogramme des 14 scores de confiance et masque de segmentation U-Net superposé.}
+
+\section{Implémentation de l'inférence IA}
+Le service \texttt{AIService} encapsule toute la logique d'inférence. Il est implémenté en singleton et charge les modèles depuis les \textit{assets}, avec un mécanisme de repli (\texttt{\_simulate()}) en cas d'absence des fichiers.
+
+\subsection{Prétraitement de l'image}
+Avant l'inférence, l'image est recadrée au centre en carré, redimensionnée en 224$\times$224, convertie en luminance selon la recommandation Rec.601, puis normalisée par division par 255.
+
+\begin{lstlisting}[language=Java, caption={Prétraitement de l'image (Dart, simplifié)}]
+// Recadrage centre carre puis redimensionnement 224x224
+final cropped = _centerCropSquare(decoded);
+final resized = copyResize(cropped, width: 224, height: 224);
+
+// Conversion en luminance (Rec.601) et normalisation /255
+final input = List.generate(1, (_) => List.generate(224, (y) =>
+  List.generate(224, (x) {
+    final p = resized.getPixel(x, y);
+    final lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+    return [lum / 255.0];
+  })));
+\end{lstlisting}
+
+\subsection{Post-traitement et décision}
+Le post-traitement applique plusieurs règles métier pour produire un diagnostic fiable : exclusion des quatre classes ambiguës à faible AUC du choix du diagnostic principal, repli si le score brut maximal est trop faible, classement « Normal » sous un seuil bas, calcul d'une confiance bornée et attribution d'un niveau de sévérité.
+
+\begin{lstlisting}[language=Java, caption={Post-traitement des prédictions (Dart, simplifié)}]
+// Classes ambigues exclues du diagnostic principal (AUC < 0.80)
+const ambiguous = {'Infiltration', 'Pneumonia', 'Nodule', 'Consolidation'};
+
+// Selection de la meilleure pathologie hors classes ambigues
+final best = _argMaxExcluding(scores, ambiguous);
+final bestRaw = scores[best];
+
+String diagnostic;
+if (bestRaw < 0.03) {
+  diagnostic = 'Normal';
+} else if (bestRaw < 0.04) {
+  diagnostic = _fallbackLabel();
+} else {
+  diagnostic = labels[best];
+}
+
+// Confiance bornee et severite
+final confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
+final severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
+\end{lstlisting}
+
+\begin{table}[h]
+\centering
+\caption{Seuils et paramètres de décision de l'IA}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{6cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Paramètre} & \thead{Valeur} \\
+\midrule
+Seuil « Normal » & score brut $<$ 0,03 \\
+\rowcolor{tablerow}
+Seuil de repli & score brut $<$ 0,04 \\
+Seuils par classe & 0,04 -- 0,10 \\
+\rowcolor{tablerow}
+Formule de confiance & $(\text{bestRaw} \times 2{,}5)$ borné à [0,55 ; 0,97] \\
+Seuil de sévérité « urgent » & score brut $\geq$ 0,20 \\
+\rowcolor{tablerow}
+Seuil d'alerte (histogramme) & 0,15 \\
+Seuil de binarisation U-Net & 0,50 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Données de démonstration}
+Afin de faciliter la démonstration et les tests, des données fictives sont préchargées dans la base.
+
+\begin{table}[h]
+\centering
+\caption{Patients de démonstration}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{4cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Patient} & \thead{Diagnostic (confiance)} \\
+\midrule
+Ahmed Benali & Emphysème (87\%) \\
+\rowcolor{tablerow}
+Fatima Zahra & Pneumonie (92\%) \\
+Youssef Alaoui & Épanchement (78\%) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{infobox}[Compte de démonstration]
+Identifiant : \texttt{demo@pulmoscan.ma} \quad | \quad Mot de passe : \texttt{Demo1234}
+\end{infobox}
+
+\section{Difficultés rencontrées et solutions}
+Le développement a soulevé plusieurs difficultés techniques que nous avons su résoudre.
+
+\begin{table}[h]
+\centering
+\caption{Difficultés rencontrées et solutions apportées}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\linewidth}{X X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Difficulté} & \thead{Solution} \\
+\midrule
+Ordre des étiquettes de TorchXRayVision non alphabétique, entraînant un étiquetage erroné de toutes les prédictions. & Réalignement strict sur l'ordre \texttt{default\_pathologies} de TorchXRayVision. \\
+\rowcolor{tablerow}
+Classes à faible AUC dominant le diagnostic principal. & Exclusion des 4 classes ambiguës (Infiltration, Pneumonia, Nodule, Consolidation) de la sélection. \\
+Débordement de la barre de gestes Android sur l'onboarding. & Prise en compte de \texttt{MediaQuery.padding.bottom}. \\
+\rowcolor{tablerow}
+Incohérence des jetons de sévérité en base. & Normalisation vers \texttt{modere / severe / faible / urgent / moyen / normal}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Répartition du travail}
+Le projet a été mené en binôme avec une répartition équilibrée des tâches.
+
+\begin{table}[h]
+\centering
+\caption{Répartition du travail entre les membres du binôme}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{p{4cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Membre} & \thead{Contributions} \\
+\midrule
+Foudali Kenza & Modèles d'IA (notebooks, conversion TFLite), base de données SQLite, interface Flutter. \\
+\rowcolor{tablerow}
+El Hajji Adnane & Interface Flutter (UI/UX), architecture logicielle, intégration. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a présenté la réalisation effective de PulmoScan AI : la pile technologique, l'organisation du code, le design, les écrans, la logique d'inférence et la résolution des difficultés techniques. L'application livrée répond aux besoins exprimés et démontre la faisabilité d'une solution d'IA médicale embarquée et hors ligne.
+
+% ============================================================
+%  CONCLUSION GÉNÉRALE
+% ============================================================
+\chapter*{Conclusion générale}
+\addcontentsline{toc}{chapter}{Conclusion générale}
+\markboth{Conclusion générale}{Conclusion générale}
+
+Ce projet de fin d'études nous a permis de concevoir et de réaliser \textbf{PulmoScan AI}, une application mobile d'aide au diagnostic des pathologies pulmonaires fonctionnant entièrement hors connexion. Partant d'un constat sanitaire concret -- la pénurie de radiologues et les délais de diagnostic au Maroc, notamment dans les zones à faible connectivité -- nous avons proposé une solution \textit{offline-first} qui embarque deux modèles d'intelligence artificielle directement sur l'appareil de l'utilisateur.
+
+Sur le plan technique, nous avons intégré un modèle de classification \textbf{DenseNet121} capable de reconnaître 14 pathologies thoraciques et un modèle de segmentation \textbf{U-Net} produisant un masque explicatif des champs pulmonaires. Ces modèles, convertis au format TensorFlow Lite, sont exécutés localement au sein d'une application Flutter multiplateforme. La persistance des données est assurée par une base SQLite locale, garantissant la confidentialité des informations médicales.
+
+Au-delà du résultat technique, ce projet a constitué une expérience de formation riche. Il nous a confrontés à des problématiques réelles : l'alignement des étiquettes d'un modèle pré-entraîné, la gestion des classes peu fiables, l'optimisation de l'inférence sur mobile et la conception d'une interface ergonomique. Chaque difficulté a été l'occasion d'approfondir nos compétences en développement mobile, en apprentissage profond et en ingénierie logicielle.
+
+Plusieurs \textbf{perspectives d'évolution} se dégagent. À court terme, l'application pourrait être enrichie d'une fonctionnalité de génération de rapports PDF exportables et de la prise en charge du format DICOM. À moyen terme, une synchronisation optionnelle et chiffrée avec un serveur permettrait le partage sécurisé des dossiers entre praticiens. Enfin, le ré-entraînement des modèles sur des données locales, idéalement validées par des radiologues marocains, améliorerait la fiabilité des prédictions, en particulier pour les classes actuellement exclues du diagnostic principal.
+
+Nous tenons enfin à rappeler que PulmoScan AI est conçu comme un \textbf{outil d'aide à la décision} et ne saurait en aucun cas se substituer au jugement clinique d'un professionnel de santé qualifié.
+
+% ============================================================
+%  BIBLIOGRAPHIE
+% ============================================================
+\chapter*{Bibliographie}
+\addcontentsline{toc}{chapter}{Bibliographie}
+\markboth{Bibliographie}{Bibliographie}
+
+\begin{enumerate}[leftmargin=2em, label={[\arabic*]}]
+  \item G. Huang, Z. Liu, L. van der Maaten et K. Q. Weinberger, \textit{Densely Connected Convolutional Networks (DenseNet)}, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2017.
+  \item O. Ronneberger, P. Fischer et T. Brox, \textit{U-Net: Convolutional Networks for Biomedical Image Segmentation}, Medical Image Computing and Computer-Assisted Intervention (MICCAI), 2015.
+  \item X. Wang, Y. Peng, L. Lu, Z. Lu, M. Bagheri et R. M. Summers, \textit{ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases}, IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2017.
+  \item J. P. Cohen et al., \textit{TorchXRayVision: A library of chest X-ray datasets and models}, 2022.
+  \item Google, \textit{Flutter Documentation}, \url{https://docs.flutter.dev}. Consulté en 2026.
+  \item Google, \textit{TensorFlow Lite Documentation}, \url{https://www.tensorflow.org/lite}. Consulté en 2026.
+\end{enumerate}
+
+% ============================================================
+%  ANNEXES
+% ============================================================
+\appendix
+\chapter{Annexes}
+\markboth{Annexes}{Annexes}
+
+\section{Annexe A -- Liste complète des 14 pathologies}
+L'ordre ci-dessous correspond aux indices 0 à 13 de la sortie du modèle DenseNet121 (TorchXRayVision).
+
+\begin{table}[h]
+\centering
+\caption{Les 14 pathologies classifiées et leur fiabilité}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{C{1.2cm} p{5cm} X}
+\toprule
+\rowcolor{tablehdr}
+\thead{Indice} & \thead{Pathologie} & \thead{Remarque} \\
+\midrule
+0 & Atelectasis & Fiable \\
+\rowcolor{tablerow}
+1 & Consolidation & Exclue (AUC $<$ 0,80) \\
+2 & Infiltration & Exclue (AUC $<$ 0,80) \\
+\rowcolor{tablerow}
+3 & Pneumothorax & Fiable \\
+4 & Edema & Fiable \\
+\rowcolor{tablerow}
+5 & Emphysema & Fiable \\
+6 & Fibrosis & Fiable \\
+\rowcolor{tablerow}
+7 & Effusion & Fiable \\
+8 & Pneumonia & Exclue (AUC $<$ 0,80) \\
+\rowcolor{tablerow}
+9 & Pleural\_Thickening & Fiable \\
+10 & Cardiomegaly & Fiable \\
+\rowcolor{tablerow}
+11 & Nodule & Exclue (AUC $<$ 0,80) \\
+12 & Mass & Fiable \\
+\rowcolor{tablerow}
+13 & Hernia & Fiable \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{remarkbox}[Indices non entraînés]
+Les indices 14 à 17 de la sortie du modèle ne sont pas entraînés et produisent une valeur constante d'environ 0,5. Ils sont systématiquement ignorés lors du post-traitement.
+\end{remarkbox}
+
+\section{Annexe B -- Extrait du chargement des modèles}
+\begin{lstlisting}[language=Java, caption={Chargement des modèles TFLite avec mécanisme de repli (Dart, simplifié)}]
+class AIService {
+  static final AIService _instance = AIService._internal();
+  factory AIService() => _instance;
+  AIService._internal();
+
+  Interpreter? _classifier;
+  Interpreter? _segmenter;
+
+  Future<void> loadModels() async {
+    try {
+      _classifier = await Interpreter.fromAsset(
+        'assets/models/pulmoscan_model.tflite');
+      _segmenter = await Interpreter.fromAsset(
+        'assets/models/unet_lung.tflite');
+    } catch (e) {
+      // Repli : mode simulation si les modeles sont absents
+      _classifier = null;
+      _segmenter = null;
+    }
+  }
+}
+\end{lstlisting}
+
+\section{Annexe C -- Maquettes Figma}
+\placeholder[8cm]{Planche de maquettes Figma présentant les premières versions des écrans de l'application (Dashboard, Patients, Nouvel examen, Résultats).}
+
+\end{document}
