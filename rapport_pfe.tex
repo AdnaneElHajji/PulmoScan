@@ -151,6 +151,31 @@
 \end{tikzpicture}
 \end{center}}
 
+%==================== LOGO APERTUREMARK (vectoriel) ====================
+% Reproduction fidèle du widget ApertureMark de PulmoScan AI.
+% Usage : \aperturemark{<scale>}  — ex. \aperturemark{1} ou \aperturemark{0.7}
+\newcommand{\aperturemark}[1]{%
+\begin{tikzpicture}[scale=#1]
+  % Fond sombre arrondi (dégradé radial simulé)
+  \fill[psBg, rounded corners=14pt] (-2.5,-2.5) rectangle (2.5,2.5);
+  \fill[psDeep!40, rounded corners=14pt, opacity=0.55] (-2.5,-2.5) rectangle (2.5,2.5);
+  % Anneau segmenté — segments atténués
+  \foreach \a in {0,30,...,330}{
+    \draw[psTeal!22, line width=7pt, line cap=round]
+      (\a+5:1.55) arc (\a+5:\a+25:1.55);
+  }
+  % Segments lumineux (4 accents)
+  \foreach \a in {60,150,250,335}{
+    \draw[psTeal, line width=7pt, line cap=round]
+      (\a+5:1.55) arc (\a+5:\a+25:1.55);
+  }
+  % Cible centrale (bullseye)
+  \fill[psBg]  (0,0) circle (0.60);
+  \draw[psTeal, line width=4pt] (0,0) circle (0.42);
+  \fill[psBg]  (0,0) circle (0.24);
+  \fill[psTeal](0,0) circle (0.11);
+\end{tikzpicture}}
+
 %==================== METADONNEES ====================
 \hypersetup{
   pdftitle={PulmoScan AI - Rapport PFE},
@@ -205,13 +230,8 @@
 {\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[10pt]
 {\Large\bfseries Projet de Fin d'Études}\\[8pt]
 
-% ── Logo de l'application au centre ──────────────────────────────────
-% Remplacer par : \includegraphics[height=3.5cm]{logo_app.png}
-\begin{tikzpicture}
-  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (3.6,3.2);
-  \node[psTeal, font=\bfseries\large] at (1.8,2.2) {PulmoScan AI};
-  \node[psInkMuted, font=\footnotesize, align=center] at (1.8,1.2) {Logo application\\(remplacer ici)};
-\end{tikzpicture}\\[8pt]
+% ── Logo de l'application au centre (ApertureMark vectoriel) ─────────
+\aperturemark{0.72}\\[8pt]
 % ─────────────────────────────────────────────────────────────────────
 
 {\fontsize{36}{40}\selectfont\bfseries\color{psTeal} PulmoScan AI}\\[6pt]
@@ -473,18 +493,9 @@ La \textbf{troisième approche}, que nous avons retenue, est une architecture en
 
 \begin{figure}[H]
 \begin{center}
-\begin{tikzpicture}
-  \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5] (0,0) rectangle (6,3.8);
-  \node[psTeal, font=\bfseries\huge] at (3,2.6) {PulmoScan AI};
-  \node[psInkMuted, font=\normalsize\itshape, align=center] at (3,1.7)
-    {Application mobile de pré-diagnostic};
-  \node[psInkMuted, font=\normalsize\itshape, align=center] at (3,1.2)
-    {des pathologies pulmonaires par IA};
-  \node[psTeal] at (0.4,3.4) {\Large$\diamond$};
-  \node[psTeal] at (5.6,0.4) {\Large$\diamond$};
-\end{tikzpicture}
+\aperturemark{0.78}
 \end{center}
-\caption{Logo de l'application PulmoScan AI}
+\caption{Logo de l'application PulmoScan AI (widget \texttt{ApertureMark})}
 \label{fig:logo}
 \end{figure}
 
