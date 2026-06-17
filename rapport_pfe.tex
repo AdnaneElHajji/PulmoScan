@@ -1,186 +1,193 @@
 \documentclass[12pt,a4paper]{report}
 
-% ============ ENCODAGE & LANGUE ============
+%==================== ENCODAGE & LANGUE ====================
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
-\usepackage{lmodern}
 
-% ============ MISE EN PAGE ============
-\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
+%==================== MISE EN PAGE ====================
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm}
 \usepackage{setspace}
 \onehalfspacing
+\usepackage[protrusion=true,expansion=false]{microtype}
 
-% ============ GRAPHIQUES & COULEURS ============
+%==================== COULEURS ====================
+\usepackage[dvipsnames]{xcolor}
+\definecolor{psTeal}{HTML}{34E5C5}
+\definecolor{psBg}{HTML}{0A0F1A}
+\definecolor{psSurface}{HTML}{131B2E}
+\definecolor{psSurface3}{HTML}{1E2A42}
+\definecolor{psInk}{HTML}{E8EDF6}
+\definecolor{psInkSoft}{HTML}{8A9BBF}
+\definecolor{psInkMuted}{HTML}{4A5A78}
+\definecolor{psUrgent}{HTML}{FF5A5F}
+\definecolor{psMoyen}{HTML}{FFB547}
+\definecolor{psDeep}{HTML}{0F3D54}
+
+%==================== GRAPHIQUES & TABLEAUX ====================
 \usepackage{graphicx}
-\usepackage{xcolor}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric,arrows,positioning}
-
-% Palette V4 (PulmoScan AI)
-\definecolor{V4bg}{HTML}{0A0F1A}
-\definecolor{V4teal}{HTML}{34E5C5}
-\definecolor{V4surface}{HTML}{131B2E}
-\definecolor{V4ink}{HTML}{E8EDF6}
-\definecolor{V4urgent}{HTML}{FF5A5F}
-\definecolor{V4moyen}{HTML}{FFB547}
-\definecolor{V4dark}{HTML}{0E2A3A}
-\definecolor{teal}{HTML}{34E5C5}
-\definecolor{grayrule}{HTML}{888888}
-
-% ============ TABLEAUX ============
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{longtable}
+\usepackage{float}
 \usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
 
-% ============ BOITES ============
-\usepackage[most]{tcolorbox}
+%==================== TIKZ ====================
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
 
-% ============ CODE ============
+%==================== BOITES ====================
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable,listings}
+
+%==================== MATHS ====================
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+%==================== EN-TETES & PIEDS ====================
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+%==================== LIENS ====================
+\usepackage[hidelinks]{hyperref}
+
+%==================== LISTINGS (DART / SQL / PYTHON) ====================
 \usepackage{listings}
 
-% ============ EN-TETES / PIEDS ============
-\usepackage{fancyhdr}
-\usepackage{titlesec}
-
-% ============ DIVERS ============
-\usepackage{enumitem}
-\usepackage{hyperref}
-\hypersetup{
-  colorlinks=true,
-  linkcolor=V4dark,
-  citecolor=V4dark,
-  urlcolor=V4dark,
-  pdftitle={Rapport PFE - PulmoScan AI},
-  pdfauthor={Foudali Kenza, El Hajji Adnane}
-}
-
-% ============ STYLE DES LISTINGS ============
-\definecolor{codebg}{HTML}{F4F8F8}
-\definecolor{codekw}{HTML}{0B6E6E}
-\definecolor{codecomment}{HTML}{6A9955}
-\definecolor{codestr}{HTML}{A31515}
-
 \lstdefinelanguage{Dart}{
-  keywords={var,final,const,int,double,String,bool,void,if,else,for,while,return,class,new,import,extends,this,clamp},
-  morecomment=[l]{//},
+  keywords={abstract, as, assert, async, await, break, case, catch, class, const, continue, default, do, dynamic, else, enum, export, extends, external, factory, false, final, finally, for, get, if, implements, import, in, is, library, new, null, operator, part, rethrow, return, set, static, super, switch, this, throw, true, try, typedef, var, void, while, with, yield, int, double, bool, String, List, Map, Future, Widget, override},
+  keywordstyle=\color{psDeep}\bfseries,
+  ndkeywords={true, false, null},
+  ndkeywordstyle=\color{Mahogany}\bfseries,
+  sensitive=true,
+  comment=[l]{//},
   morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{ForestGreen},
   morestring=[b]',
   morestring=[b]"
 }
 
-\lstset{
-  backgroundcolor=\color{codebg},
-  basicstyle=\ttfamily\small,
-  keywordstyle=\color{codekw}\bfseries,
-  commentstyle=\color{codecomment}\itshape,
-  stringstyle=\color{codestr},
-  numbers=left,
-  numberstyle=\tiny\color{grayrule},
-  numbersep=8pt,
-  frame=single,
-  rulecolor=\color{V4teal},
+\lstdefinestyle{codeStyle}{
+  backgroundcolor=\color{psSurface!8},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
   breaklines=true,
-  breakatwhitespace=true,
-  showstringspaces=false,
-  tabsize=2,
   captionpos=b,
-  xleftmargin=1.2em,
-  framexleftmargin=1.2em
+  keepspaces=true,
+  numbers=left,
+  numbersep=8pt,
+  numberstyle=\tiny\color{psInkMuted},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{psSurface3},
+  framesep=6pt,
+  xleftmargin=18pt
 }
+\lstset{style=codeStyle}
 
-% ============ EN-TETES PERSONNALISES ============
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small\textcolor{V4dark}{PulmoScan AI}}
-\fancyhead[R]{\small\textcolor{V4dark}{\leftmark}}
-\fancyfoot[C]{\thepage}
-\renewcommand{\headrulewidth}{1pt}
-\renewcommand{\footrulewidth}{0.4pt}
-\renewcommand{\headrule}{\hbox to\headwidth{\color{V4teal}\leaders\hrule height \headrulewidth\hfill}}
-
-% ============ STYLE DES CHAPITRES (regle teal) ============
+%==================== STYLE DES CHAPITRES ====================
+\usepackage{titlesec}
 \titleformat{\chapter}[display]
-  {\normalfont\huge\bfseries\color{V4dark}}
-  {\filright\Large\textcolor{V4teal}{CHAPITRE \thechapter}}
+  {\normalfont\huge\bfseries\color{psDeep}}
+  {\filright\Large Chapitre \thechapter}
   {0.6ex}
   {\Huge}
-  [\vspace{0.3ex}{\color{V4teal}\titlerule[2pt]}]
-\titlespacing*{\chapter}{0pt}{10pt}{30pt}
+  [\vspace{0.4ex}{\color{psTeal}\titlerule[2.2pt]}]
+\titlespacing*{\chapter}{0pt}{10pt}{28pt}
 
-% ============ COMMANDE BOITE INFO ============
-\newtcolorbox{infobox}[1][]{
-  colback=codebg,
-  colframe=V4teal,
-  coltitle=white,
-  colbacktitle=V4dark,
-  fonttitle=\bfseries,
-  boxrule=1pt,
-  arc=3pt,
-  left=6pt,right=6pt,top=6pt,bottom=6pt,
-  #1
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{psDeep}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{psDeep!85}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{psDeep!70}}{\thesubsubsection}{1em}{}
+
+%==================== EN-TETES ====================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\textit{PulmoScan AI}}
+\fancyhead[R]{\footnotesize\leftmark}
+\fancyfoot[C]{\thepage}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
 }
 
-% ============ COMMANDE PLACEHOLDER FIGURE ============
-\newcommand{\figplaceholder}[2][10cm]{%
+%==================== BOITES PERSONNALISEES ====================
+\newtcolorbox{infobox}[1][]{
+  colback=psTeal!7, colframe=psTeal!70!black, coltitle=white,
+  fonttitle=\bfseries, title=#1, breakable, sharp corners,
+  boxrule=0.8pt, left=6pt, right=6pt
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=psUrgent!6, colframe=psUrgent!75!black, coltitle=white,
+  fonttitle=\bfseries, title=#1, breakable, sharp corners,
+  boxrule=0.8pt, left=6pt, right=6pt
+}
+
+%==================== FIGURE PLACEHOLDER ====================
+\newcommand{\placeholderfig}[2][8]{%
 \begin{center}
 \begin{tikzpicture}
-\draw[dashed,line width=1pt,color=V4teal,fill=codebg]
-  (0,0) rectangle (#1,5.2cm);
-\node[align=center,text width=#1-1cm,color=V4dark] at (#1/2,2.6cm)
-  {\bfseries [FIGURE]\\[4pt] #2};
+  \draw[dashed, line width=1pt, psInkMuted, fill=psSurface!6]
+    (0,0) rectangle (12,#1);
+  \node[align=center, text width=10cm] at (6,#1/2)
+    {\color{psDeep}\bfseries\large #2 \\[4pt]
+     \color{psInkMuted}\normalsize\itshape [Emplacement reserve au diagramme/figure]};
+  \node[psTeal] at (0.6,#1-0.45) {\Large$\diamond$};
+  \node[psTeal] at (11.4,0.45) {\Large$\diamond$};
 \end{tikzpicture}
-\end{center}
-}
+\end{center}}
 
-% ============ NUMEROTATION MANUELLE DES SECTIONS ============
-% On utilise des titres en gras numerotes manuellement pour coller a la maquette.
-\newcommand{\msec}[1]{%
-  \par\vspace{1.2em}\noindent{\Large\bfseries\color{V4dark}#1}\par
-  \vspace{0.4em}\addcontentsline{toc}{section}{#1}}
-\newcommand{\mssec}[1]{%
-  \par\vspace{0.8em}\noindent{\large\bfseries\color{V4dark}#1}\par
-  \vspace{0.3em}\addcontentsline{toc}{subsection}{#1}}
-\newcommand{\msssec}[1]{%
-  \par\vspace{0.6em}\noindent{\normalsize\bfseries\itshape\color{V4dark}#1}\par
-  \vspace{0.2em}}
+%==================== METADONNEES ====================
+\hypersetup{
+  pdftitle={PulmoScan AI - Rapport PFE},
+  pdfauthor={Foudali Kenza, El Hajji Adnane}
+}
 
 \begin{document}
 
-% =====================================================================
-% PAGE DE GARDE
-% =====================================================================
+%======================================================================
+%                            PAGE DE GARDE
+%======================================================================
 \begin{titlepage}
 \centering
 \thispagestyle{empty}
 
-{\large\textbf{ROYAUME DU MAROC}}\\[2pt]
-{\normalsize \textsc{Office de la Formation Professionnelle}}\\[2pt]
-{\normalsize Centre de Formation Al Kendi --- Casablanca}\\[12pt]
+{\large\bfseries ROYAUME DU MAROC}\\[2pt]
+{\normalsize Office de la Formation Professionnelle et de la Promotion du Travail}\\[14pt]
+
+{\large\bfseries Centre de Formation Al Kendi --- Casablanca}\\[6pt]
+{\normalsize Brevet de Technicien Superieur (BTS)}\\[2pt]
+{\normalsize Filiere : Developpement des Applications Informatiques}\\[18pt]
 
 % Logo placeholder
 \begin{tikzpicture}
-\draw[line width=2pt,color=V4teal] (0,0) circle (1.1cm);
-\draw[line width=1.4pt,color=V4dark] (0,0) circle (0.55cm);
-\node[color=V4dark,font=\bfseries\small] at (0,-1.6) {LOGO};
-\end{tikzpicture}
+  \draw[dashed, psInkMuted, line width=0.8pt] (0,0) rectangle (3.2,3.2);
+  \node[psInkMuted, align=center, text width=3cm] at (1.6,1.6) {\small Logo\\ Etablissement};
+\end{tikzpicture}\\[20pt]
 
-\vspace{6pt}
-{\color{V4teal}\rule{0.7\textwidth}{2pt}}\\[6pt]
-{\normalsize \textsc{Brevet de Technicien Supérieur}}\\[2pt]
-{\normalsize Développement des Applications Informatiques}\\[20pt]
-
-{\Large Rapport de Projet de Fin d'Études}\\[26pt]
-
-{\color{V4dark}\Huge\bfseries PulmoScan AI}\\[10pt]
-{\large\itshape Application mobile d'aide au diagnostic des pathologies}\\
-{\large\itshape pulmonaires par intelligence artificielle (offline-first)}\\[14pt]
-{\color{V4teal}\rule{0.7\textwidth}{2pt}}\\[28pt]
+{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[14pt]
+{\Large\bfseries Projet de Fin d'Etudes}\\[10pt]
+{\fontsize{42}{46}\selectfont\bfseries\color{psTeal} PulmoScan AI}\\[10pt]
+{\large\itshape Application mobile de pre-diagnostic des pathologies pulmonaires\\
+par intelligence artificielle embarquee}\\[8pt]
+{\color{psInkMuted}\rule{0.7\textwidth}{0.8pt}}\\[26pt]
 
 \begin{minipage}{0.46\textwidth}
 \begin{flushleft}
-\textbf{Réalisé par :}\\[4pt]
+\textbf{Realise par :}\\[4pt]
 Foudali Kenza\\
 El Hajji Adnane
 \end{flushleft}
@@ -188,831 +195,998 @@ El Hajji Adnane
 \hfill
 \begin{minipage}{0.46\textwidth}
 \begin{flushright}
-\textbf{Encadré par :}\\[4pt]
+\textbf{Encadre par :}\\[4pt]
 Mme. Amina Aboulmira
 \end{flushright}
-\end{minipage}
+\end{minipage}\\[40pt]
 
 \vfill
-{\large\textbf{Année universitaire 2025 / 2026}}
+{\large\bfseries Annee universitaire 2025/2026}
 
 \end{titlepage}
 
-% =====================================================================
-% PAGES LIMINAIRES (numerotation romaine)
-% =====================================================================
+%======================================================================
+%                            FRONT MATTER
+%======================================================================
 \pagenumbering{roman}
 
-% ----- DEDICACE -----
+%---------------------- DEDICACE ----------------------
 \chapter*{Dédicace}
 \addcontentsline{toc}{chapter}{Dédicace}
-\markboth{Dédicace}{}
+\thispagestyle{plain}
+
 \begin{flushright}\itshape
+\vspace{2cm}
 À nos chers parents,\\
-pour leur amour inconditionnel, leur patience et leurs sacrifices,\\[8pt]
-À nos familles et nos amis,\\
-qui nous ont soutenus tout au long de ce parcours,\\[8pt]
-À tous nos formateurs,\\
-qui ont éclairé notre chemin de savoir,\\[8pt]
-Nous dédions ce modeste travail.\\[16pt]
-\textmd{Foudali Kenza \& El Hajji Adnane}
+qui n'ont jamais cessé de croire en nous,\\
+et dont les sacrifices silencieux ont éclairé chaque étape de notre parcours.\\[1.2cm]
+
+À nos frères et sœurs,\\
+sources inépuisables de soutien et d'encouragement.\\[1.2cm]
+
+À nos professeurs,\\
+qui ont semé en nous le goût du savoir et la rigueur du travail.\\[1.2cm]
+
+À tous nos amis,\\
+avec qui nous avons partagé les joies et les difficultés de ces années de formation.\\[1.2cm]
+
+À tous ceux qui, de près ou de loin,\\
+ont contribué à faire de ce projet une réalité,\\
+nous dédions ce modeste travail.
 \end{flushright}
 
-% ----- REMERCIEMENTS -----
+\vspace{2cm}
+\begin{flushright}
+\textit{Kenza \& Adnane}
+\end{flushright}
+
+%---------------------- REMERCIEMENTS ----------------------
 \chapter*{Remerciements}
 \addcontentsline{toc}{chapter}{Remerciements}
-\markboth{Remerciements}{}
-Au terme de ce projet de fin d'études, nous tenons à exprimer notre profonde
-gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la
-réalisation de ce travail.
+\thispagestyle{plain}
 
-Nous adressons nos plus sincères remerciements à notre encadrante,
-\textbf{Mme. Amina Aboulmira}, pour sa disponibilité, ses conseils précieux,
-sa rigueur scientifique et son accompagnement constant tout au long de ce
-projet. Ses orientations ont été déterminantes dans l'aboutissement de ce
-travail.
+Avant toute chose, nous tenons à exprimer notre profonde gratitude envers toutes les personnes qui ont contribué, de près ou de loin, à la réalisation de ce projet de fin d'études.
 
-Nous remercions également l'ensemble du corps professoral et administratif du
-\textbf{Centre de Formation Al Kendi de Casablanca}, ainsi que tous nos
-formateurs de la filière \emph{Développement des Applications Informatiques},
-pour la qualité de la formation dispensée durant ces deux années.
+\bigskip
+Nous adressons nos remerciements les plus sincères à notre encadrante, \textbf{Mme. Amina Aboulmira}, pour la qualité de son encadrement, sa disponibilité constante, ses conseils avisés et la confiance qu'elle nous a accordée tout au long de ce travail. Sa rigueur scientifique et son sens pédagogique ont été déterminants dans l'aboutissement de ce projet.
 
-Nos remerciements vont enfin aux membres du jury qui nous font l'honneur
-d'évaluer ce travail, ainsi qu'à nos familles et nos camarades pour leur
-soutien indéfectible.
+\bigskip
+Nous remercions également l'ensemble du corps professoral et de l'équipe administrative du \textbf{Centre de Formation Al Kendi de Casablanca}, qui nous ont accompagnés durant ces deux années de formation au sein de la filière Développement des Applications Informatiques. La qualité de l'enseignement reçu a constitué le socle indispensable à la réussite de ce projet.
 
-% ----- RESUME -----
+\bigskip
+Nos remerciements vont aussi aux membres du jury, qui nous font l'honneur d'évaluer ce travail. Nous espérons que ce rapport saura répondre à leurs attentes et susciter leur intérêt.
+
+\bigskip
+Enfin, nous exprimons notre reconnaissance à nos familles et à nos amis, dont le soutien moral, la patience et les encouragements n'ont jamais fait défaut, particulièrement dans les moments les plus exigeants de ce parcours.
+
+\bigskip
+À toutes et à tous, nous disons : \emph{merci}.
+
+%---------------------- RESUME ----------------------
 \chapter*{Résumé}
 \addcontentsline{toc}{chapter}{Résumé}
-\markboth{Résumé}{}
-\textbf{PulmoScan AI} est une application mobile multiplateforme d'aide au
-diagnostic des pathologies pulmonaires à partir de radiographies thoraciques.
-Conçue selon une architecture \emph{100\% offline-first}, l'application ne
-nécessite aucun serveur distant : l'inférence par intelligence artificielle et
-le stockage des données sont entièrement exécutés sur l'appareil. Le système
-repose sur deux modèles d'apprentissage profond embarqués au format TensorFlow
-Lite : un réseau \textbf{DenseNet121} (TorchXRayVision) pour la classification
-de 14 pathologies du jeu de données NIH ChestX-ray14, et un réseau
-\textbf{U-Net} pour la segmentation des champs pulmonaires. Développée en
-\textbf{Flutter / Dart} avec une base de données locale \textbf{SQLite}, elle
-permet la gestion des patients, la création d'examens, l'analyse automatique
-des images et la visualisation des résultats avec des scores de confiance et un
-niveau de sévérité. Ce rapport présente le contexte, la conception UML, les
-choix technologiques, l'implémentation, les interfaces et la démarche
-d'assurance qualité du projet.
+\thispagestyle{plain}
 
-\vspace{6pt}
-\noindent\textbf{Mots-clés :} Intelligence artificielle, radiographie
-thoracique, DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite,
-diagnostic médical, offline-first.
+PulmoScan AI est une application mobile multiplateforme, développée avec le framework Flutter, destinée à assister le personnel médical dans le pré-diagnostic des pathologies pulmonaires à partir de radiographies thoraciques. L'application embarque deux modèles d'intelligence artificielle exécutés localement grâce à TensorFlow Lite : un réseau de classification \textbf{DenseNet121} (issu de la bibliothèque TorchXRayVision et entraîné sur le jeu de données NIH ChestX-ray14, comprenant 112\,120 radiographies annotées) capable de détecter 14 pathologies pulmonaires, et un réseau de segmentation \textbf{U-Net} qui isole les champs pulmonaires sur l'image.
 
-% ----- ABSTRACT -----
+\bigskip
+La particularité fondamentale de PulmoScan AI réside dans son architecture \textit{offline-first} : l'intégralité du traitement --- acquisition de l'image, inférence des modèles, stockage des données et génération des rapports PDF --- s'effectue sur l'appareil, sans aucune dépendance à un serveur distant. Les données des patients sont conservées dans une base de données locale SQLite, et l'authentification repose sur un hachage SHA-256 des mots de passe. Cette approche garantit la confidentialité des données médicales, leur disponibilité hors connexion et une conformité accrue en matière de protection des données personnelles.
+
+\bigskip
+Ce rapport présente le contexte du projet, la conception détaillée du système selon une démarche Scrum adaptée, l'implémentation technique du pipeline d'inférence, les interfaces réalisées et les campagnes de tests menées pour valider la fiabilité de la solution.
+
+\medskip
+\noindent\textbf{Mots-clés :} Intelligence artificielle, radiographie thoracique, DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite, pré-diagnostic, offline-first, santé numérique.
+
+%---------------------- ABSTRACT ----------------------
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-\markboth{Abstract}{}
-\textbf{PulmoScan AI} is a cross-platform mobile application designed to assist
-in the diagnosis of pulmonary pathologies from chest X-ray images. Built on a
-\emph{fully offline-first} architecture, the application requires no remote
-server: both AI inference and data storage run entirely on the device. The
-system relies on two embedded deep-learning models in TensorFlow Lite format: a
-\textbf{DenseNet121} network (TorchXRayVision) for the classification of 14
-pathologies from the NIH ChestX-ray14 dataset, and a \textbf{U-Net} network for
-lung-field segmentation. Developed in \textbf{Flutter / Dart} with a local
-\textbf{SQLite} database, it provides patient management, exam creation,
-automatic image analysis, and result visualization with confidence scores and a
-severity level. This report describes the project context, the UML design, the
-technological choices, the implementation, the user interfaces, and the quality
-assurance process.
+\thispagestyle{plain}
 
-\vspace{6pt}
-\noindent\textbf{Keywords:} Artificial intelligence, chest X-ray,
-DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite, medical diagnosis,
-offline-first.
+PulmoScan AI is a cross-platform mobile application, built with the Flutter framework, designed to assist medical staff in the pre-diagnosis of pulmonary pathologies from chest X-rays. The application embeds two artificial intelligence models running locally through TensorFlow Lite: a \textbf{DenseNet121} classification network (from the TorchXRayVision library, trained on the NIH ChestX-ray14 dataset of 112,120 annotated radiographs) capable of detecting 14 lung pathologies, and a \textbf{U-Net} segmentation network that isolates the lung fields in the image.
 
-% ----- ملخص (RESUME ARABE) -----
-% NOTE TECHNIQUE : le moteur pdflatex ne dispose pas de fontes arabes.
-% Le texte arabe ci-dessous est conserve sous forme de commentaire source
-% (UTF-8) ; pour un rendu typographique reel, compiler avec xelatex/lualatex
-% et un package arabe. La version affichee ici est mise en page a droite.
-%
-% TEXTE ARABE SOURCE (UTF-8) :
-% تطبيق بولموسكان للذكاء الاصطناعي هو تطبيق محمول متعدد المنصات يهدف إلى المساعدة
-% في تشخيص أمراض الرئة انطلاقا من صور الأشعة السينية للصدر. تم تصميم التطبيق وفق
-% بنية تعمل دون اتصال بالإنترنت بشكل كامل، حيث لا يحتاج إلى أي خادم خارجي، إذ تتم
-% عملية التحليل بالذكاء الاصطناعي وتخزين البيانات بالكامل داخل الجهاز. يعتمد النظام
-% على نموذجين للتعلم العميق مدمجين بصيغة تنسرفلو لايت: نموذج دينس نت لتصنيف أربعة
-% عشر مرضا من قاعدة بيانات الصور الطبية، ونموذج يو نت لتجزئة مناطق الرئة. تم تطوير
-% التطبيق باستعمال إطار العمل فلاتر ولغة دارت مع قاعدة بيانات محلية إس كيو لايت،
-% ويتيح إدارة المرضى وإنشاء الفحوصات والتحليل التلقائي للصور وعرض النتائج مع درجة
-% الثقة ومستوى الخطورة. يقدم هذا التقرير سياق المشروع والتصميم والتقنيات المستعملة
-% والتنفيذ والواجهات ومنهجية ضمان الجودة.
-% الكلمات المفتاحية: الذكاء الاصطناعي، الأشعة السينية للصدر، التعلم العميق، فلاتر، إس كيو لايت، التشخيص الطبي.
-%
-\chapter*{Molakhass (Résumé en arabe)}
-\addcontentsline{toc}{chapter}{Molakhass (Résumé en arabe)}
-\markboth{Molakhass (Resume en arabe)}{}
+\bigskip
+The core distinguishing feature of PulmoScan AI is its \textit{offline-first} architecture: the entire workflow --- image acquisition, model inference, data storage and PDF report generation --- runs on-device, with no dependency on any remote server. Patient data is stored in a local SQLite database, and authentication relies on SHA-256 password hashing. This approach guarantees the confidentiality of medical data, its offline availability and improved compliance with personal data protection requirements.
+
+\bigskip
+This report presents the project context, the detailed system design following an adapted Scrum methodology, the technical implementation of the inference pipeline, the developed interfaces and the testing campaigns carried out to validate the reliability of the solution.
+
+\medskip
+\noindent\textbf{Keywords:} Artificial intelligence, chest X-ray, DenseNet121, U-Net, TensorFlow Lite, Flutter, SQLite, pre-diagnosis, offline-first, digital health.
+
+%---------------------- RESUME ARABE ----------------------
+\chapter*{Résumé en arabe}
+\addcontentsline{toc}{chapter}{Résumé en arabe}
+\thispagestyle{plain}
+
 \begin{flushright}
-\large
-\textit{Tatbiq PulmoScan AI huwa tatbiq mahmoul muta'addid al-minassat yahduf
-ila al-musa'ada fi tashkhis amrad ar-ri'a intilaqan min suwar al-ashi'a
-as-siniyya lis-sadr. Tamma tasmim at-tatbiq wifqa binya ta'mal duna ittisal
-bil-internet bi-shakl kamil, hayth la yahtaj ila ayy khadim khariji, idh tatimm
-'amaliyyat at-tahlil bidh-dhaka' al-istina'i wa-takhzin al-bayanat bil-kamil
-dakhil al-jihaz. Ya'tamid an-nizam 'ala namudhajayn lit-ta'allum al-'amiq
-mudmajayn bi-sighat TensorFlow Lite: namudhaj DenseNet li-tasnif arba'ata 'ashar
-maradan, wa-namudhaj U-Net li-tajzi'at manatiq ar-ri'a. Tamma tatwir at-tatbiq
-bi-isti'mal Flutter wa-Dart ma'a qa'idat bayanat mahalliyya SQLite.}
-\\[10pt]
-\textbf{\textit{Al-kalimat al-muftahiyya:}} \textit{adh-dhaka' al-istina'i,
-al-ashi'a as-siniyya lis-sadr, at-ta'allum al-'amiq, Flutter, SQLite,
-at-tashkhis at-tibbi.}
+\itshape (Cette page contient le résumé en langue arabe.)
 \end{flushright}
 
-\begin{center}
-\footnotesize\textit{(Le texte arabe original en caractères UTF-8 est conservé
-dans le code source LaTeX ; son rendu typographique nécessite un moteur
-compatible Unicode tel que XeLaTeX ou LuaLaTeX.)}
-\end{center}
+\begin{infobox}[Note technique]
+Le résumé en arabe nécessite une compilation avec \textbf{XeLaTeX} et un moteur de support bidirectionnel pour un affichage correct des caractères arabes. Afin de garantir la compilation propre du présent document avec \texttt{pdfLaTeX}, le texte arabe n'a pas été intégré ici. Le contenu correspond à la traduction du résumé français : présentation de l'application PulmoScan~AI, de son architecture hors-ligne, des deux modèles d'intelligence artificielle (DenseNet121 et U-Net) et de l'approche de confidentialité des données médicales.
+\end{infobox}
 
-% ----- TABLE DES MATIERES -----
+%---------------------- TOC / LOF / LOT ----------------------
+\renewcommand{\contentsname}{Table des matières}
 \tableofcontents
-\listoffigures
-\listoftables
+\thispagestyle{plain}
 
-% =====================================================================
-% CORPS DU RAPPORT (numerotation arabe)
-% =====================================================================
-\cleardoublepage
+\listoffigures
+\addcontentsline{toc}{chapter}{Liste des figures}
+\thispagestyle{plain}
+
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+\thispagestyle{plain}
+
+%---------------------- ABREVIATIONS ----------------------
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+\thispagestyle{plain}
+
+\begin{longtable}{p{3.5cm} p{11cm}}
+\toprule
+\textbf{Abréviation} & \textbf{Signification} \\
+\midrule
+\endhead
+AUC & Area Under the Curve (aire sous la courbe ROC) \\
+API & Application Programming Interface \\
+BPCO & Broncho-Pneumopathie Chronique Obstructive \\
+BTS & Brevet de Technicien Supérieur \\
+CIN & Carte d'Identité Nationale \\
+CNN & Convolutional Neural Network (réseau de neurones convolutif) \\
+CRUD & Create, Read, Update, Delete \\
+DAI & Développement des Applications Informatiques \\
+IA & Intelligence Artificielle \\
+JWT & JSON Web Token \\
+MCD & Modèle Conceptuel de Données \\
+MLD & Modèle Logique de Données \\
+NIH & National Institutes of Health \\
+PA & Paquets-Année (tabagisme) \\
+PERT & Program Evaluation and Review Technique \\
+PFE & Projet de Fin d'Études \\
+RGPD & Règlement Général sur la Protection des Données \\
+REST & Representational State Transfer \\
+ROC & Receiver Operating Characteristic \\
+SDK & Software Development Kit \\
+SGBD & Système de Gestion de Base de Données \\
+SHA & Secure Hash Algorithm \\
+SQL & Structured Query Language \\
+TFLite & TensorFlow Lite \\
+TXV & TorchXRayVision \\
+UML & Unified Modeling Language \\
+UI/UX & User Interface / User Experience \\
+\bottomrule
+\end{longtable}
+
+%======================================================================
+%                            MAIN MATTER
+%======================================================================
+\clearpage
 \pagenumbering{arabic}
 
-% ---------------------------------------------------------------------
-% INTRODUCTION GENERALE
-% ---------------------------------------------------------------------
+%---------------------- INTRODUCTION GENERALE ----------------------
 \chapter*{Introduction Générale}
 \addcontentsline{toc}{chapter}{Introduction Générale}
-\markboth{Introduction Générale}{}
+\markboth{INTRODUCTION GÉNÉRALE}{}
 
-Les maladies respiratoires constituent aujourd'hui l'une des principales causes
-de morbidité et de mortalité dans le monde. La radiographie thoracique demeure
-l'examen d'imagerie médicale le plus répandu, le plus accessible et le moins
-coûteux pour le dépistage des affections pulmonaires. Cependant,
-l'interprétation des clichés exige une expertise radiologique pointue, alors que
-de nombreuses régions souffrent d'une pénurie de radiologues, notamment dans les
-zones rurales et les pays en développement.
+Les maladies respiratoires figurent parmi les principales causes de morbidité et de mortalité à l'échelle mondiale. Selon l'Organisation mondiale de la santé, des affections telles que la pneumonie, la broncho-pneumopathie chronique obstructive (BPCO), l'emphysème ou les épanchements pleuraux touchent chaque année des centaines de millions de personnes. Au Maroc, les pathologies pulmonaires représentent une charge importante pour le système de santé, particulièrement dans les zones rurales et péri-urbaines où l'accès à un radiologue qualifié demeure limité.
 
-L'essor de l'intelligence artificielle, et plus particulièrement de
-l'apprentissage profond appliqué à la vision par ordinateur, ouvre des
-perspectives prometteuses pour l'aide au diagnostic médical. Des réseaux de
-neurones convolutifs entraînés sur de grands jeux de données radiologiques
-atteignent désormais des performances comparables, voire supérieures, à celles
-de praticiens expérimentés pour certaines pathologies.
+\bigskip
+La radiographie thoracique reste l'examen d'imagerie de première intention pour le dépistage de nombreuses pathologies pulmonaires : elle est rapide, peu coûteuse et largement disponible. Néanmoins, son interprétation requiert une expertise spécialisée qui n'est pas toujours présente sur le lieu de soin. Le délai entre l'acquisition de l'image et son interprétation par un spécialiste peut retarder la prise en charge du patient, avec des conséquences cliniques parfois lourdes.
 
-C'est dans ce contexte que s'inscrit notre projet de fin d'études,
-\textbf{PulmoScan AI}, une application mobile innovante qui embarque directement
-sur l'appareil deux modèles d'intelligence artificielle afin d'assister le corps
-médical dans l'interprétation des radiographies thoraciques. Le caractère
-\emph{offline-first} de l'application répond à un double enjeu : la
-confidentialité des données médicales et l'accessibilité dans des environnements
-à connectivité limitée.
+\bigskip
+Les progrès récents de l'intelligence artificielle, et plus particulièrement de l'apprentissage profond appliqué à la vision par ordinateur, ont ouvert des perspectives considérables dans l'analyse automatisée des images médicales. Des réseaux de neurones convolutifs, entraînés sur des jeux de données de grande ampleur, atteignent aujourd'hui des performances proches de celles des experts humains pour la détection de certaines pathologies. Toutefois, la majorité des solutions existantes reposent sur une architecture en nuage (\textit{cloud}), ce qui pose des problèmes de confidentialité des données médicales, de dépendance à la connectivité réseau et de coût d'utilisation.
 
-Ce rapport est organisé en cinq chapitres. Le premier présente le contexte
-général, la problématique et les fonctionnalités de l'application. Le deuxième
-détaille la démarche de conception et la modélisation UML. Le troisième expose
-les outils et technologies utilisés pour l'implémentation. Le quatrième présente
-les interfaces de l'application. Enfin, le cinquième chapitre décrit la démarche
-d'assurance qualité à travers les tests et la validation.
+\bigskip
+C'est dans ce contexte que s'inscrit notre projet de fin d'études : la conception et le développement de \textbf{PulmoScan AI}, une application mobile de pré-diagnostic des pathologies pulmonaires fonctionnant intégralement hors ligne. En embarquant directement sur l'appareil deux modèles d'intelligence artificielle --- un réseau DenseNet121 pour la classification multi-pathologie et un réseau U-Net pour la segmentation pulmonaire --- l'application offre une assistance au diagnostic immédiate, confidentielle et indépendante de toute infrastructure réseau.
 
-% =====================================================================
-% CHAPITRE 1
-% =====================================================================
+\bigskip
+Le présent rapport est organisé en cinq chapitres. Le \textbf{premier chapitre} présente le contexte général du projet, sa problématique, les solutions envisagées et l'étude de l'existant. Le \textbf{deuxième chapitre} détaille la conception et la modélisation du système selon une démarche Scrum adaptée, accompagnée des différents diagrammes UML. Le \textbf{troisième chapitre} décrit l'implémentation technique, les outils utilisés et le pipeline d'inférence de l'intelligence artificielle. Le \textbf{quatrième chapitre} présente les interfaces utilisateur réalisées. Enfin, le \textbf{cinquième chapitre} expose les tests menés et les démarches d'assurance qualité. Une conclusion générale et des perspectives clôturent ce travail.
+
+%======================================================================
+%                            CHAPITRE 1
+%======================================================================
 \chapter{Le contexte général du projet}
 
-\msec{Introduction}
-Ce premier chapitre a pour objectif de poser le cadre général du projet
-PulmoScan AI. Nous y présentons le contexte et les objectifs, la problématique à
-laquelle nous répondons, les solutions envisagées puis la solution retenue.
-Nous détaillons ensuite l'ensemble des fonctionnalités de l'application mobile,
-ses exigences non fonctionnelles, et nous concluons par une étude comparative de
-l'existant qui met en évidence la valeur ajoutée de notre projet.
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce premier chapitre a pour objectif de poser les fondations du projet PulmoScan AI. Nous y présentons d'abord le contexte général et les objectifs poursuivis, puis nous formulons la problématique à laquelle l'application entend répondre. Nous examinons ensuite les différentes solutions envisageables, avant de décrire en détail la solution que nous avons développée ainsi que l'ensemble de ses fonctionnalités. Le chapitre se termine par une étude de l'existant, qui situe notre application par rapport aux solutions comparables du marché et met en lumière sa valeur ajoutée.
 
-\msec{1. Contexte et Objectifs}
-La radiographie thoracique (chest X-ray) est l'un des examens d'imagerie les
-plus prescrits au monde. Son interprétation reste néanmoins dépendante de la
-disponibilité d'un radiologue et de son expertise. L'objectif de PulmoScan AI
-est de fournir aux professionnels de santé un outil mobile d'\textbf{aide à la
-décision} capable de :
-\begin{itemize}[leftmargin=1.5em]
-  \item analyser une radiographie thoracique et identifier les principales
-        pathologies pulmonaires ;
-  \item fournir un score de confiance et un niveau de sévérité ;
-  \item gérer les patients et l'historique de leurs examens ;
-  \item fonctionner intégralement hors ligne afin de garantir la
-        confidentialité et l'accessibilité.
+\section{Contexte et Objectifs}
+Le projet PulmoScan AI s'inscrit dans le cadre du projet de fin d'études du cycle BTS en Développement des Applications Informatiques, au sein du Centre de Formation Al Kendi à Casablanca. Il vise à concevoir une application mobile capable d'assister le personnel médical --- médecins généralistes, internes, infirmiers spécialisés --- dans l'interprétation préliminaire des radiographies thoraciques.
+
+\medskip
+L'idée centrale du projet est de mettre la puissance de l'intelligence artificielle au service de la première ligne de soins, là où l'expertise radiologique fait souvent défaut. En automatisant la détection de signes pathologiques sur les radiographies, l'application permet de hiérarchiser les cas, d'orienter rapidement les patients présentant des anomalies préoccupantes et de documenter chaque examen de manière structurée.
+
+\medskip
+Les objectifs principaux assignés à PulmoScan AI sont les suivants :
+\begin{itemize}
+  \item fournir un outil de \textbf{pré-diagnostic} rapide des pathologies pulmonaires à partir d'une radiographie thoracique ;
+  \item garantir un fonctionnement \textbf{100\% hors ligne}, sans dépendance à un serveur distant ni à une connexion internet ;
+  \item assurer la \textbf{confidentialité} des données médicales en les conservant exclusivement sur l'appareil ;
+  \item offrir une \textbf{interface en français}, claire et ergonomique, adaptée au contexte marocain ;
+  \item permettre la \textbf{gestion complète des patients et des examens} (dossier médical, historique, antécédents) ;
+  \item générer des \textbf{rapports PDF} exploitables et partageables.
 \end{itemize}
 
-\msec{2. Problématique}
-Comment concevoir une application mobile capable d'assister le diagnostic des
-pathologies pulmonaires à partir de radiographies, tout en garantissant la
-\textbf{confidentialité des données de santé}, une \textbf{disponibilité hors
-ligne} et une \textbf{interface en langue française} adaptée au contexte
-marocain ? Les solutions existantes reposent majoritairement sur des
-architectures cloud nécessitant une connexion permanente, soulèvent des
-questions de souveraineté des données et ne sont pas spécialisées dans
-l'imagerie radiologique pulmonaire.
+\medskip
+Il convient de souligner d'emblée que PulmoScan AI est conçu comme un \emph{outil d'aide à la décision} et non comme un dispositif de diagnostic autonome. Le jugement final demeure toujours celui du praticien.
 
-\msec{3. Solutions proposées}
-Trois pistes ont été étudiées :
-\begin{enumerate}[leftmargin=1.8em]
-  \item Une solution \emph{cloud} avec API d'inférence distante : performante
-        mais dépendante d'Internet et problématique sur le plan de la
-        confidentialité.
-  \item Une solution \emph{hybride} (traitement partiel local, partiel
-        distant) : complexe à maintenir.
-  \item Une solution \emph{entièrement embarquée (offline-first)} : modèles IA
-        et base de données exécutés sur l'appareil.
-\end{enumerate}
+\section{Problématique}
+La problématique à laquelle répond PulmoScan AI peut être formulée ainsi : \emph{comment rendre l'analyse assistée par intelligence artificielle des radiographies thoraciques accessible, rapide et confidentielle, y compris dans des contextes dépourvus de connectivité fiable et d'expertise radiologique ?}
 
-\msec{4. Notre Solution Développée (PulmoScan AI)}
-Nous avons retenu la troisième approche. \textbf{PulmoScan AI} embarque
-directement deux modèles TensorFlow Lite (classification DenseNet121 et
-segmentation U-Net) et stocke toutes les données dans une base SQLite locale.
-L'application ne communique avec aucun serveur, ce qui assure une protection
-maximale des données patients et une utilisation possible en l'absence de
-connexion.
+\medskip
+Plusieurs contraintes structurent cette problématique. D'abord, la \textbf{disponibilité} : dans de nombreuses structures de soins, l'interprétation d'une radiographie par un radiologue peut prendre des heures, voire des jours. Ensuite, la \textbf{connectivité} : les solutions reposant sur le cloud sont inutilisables dans les zones où la couverture réseau est insuffisante ou intermittente. Par ailleurs, la \textbf{confidentialité} : le transfert de données médicales vers des serveurs distants, souvent situés à l'étranger, soulève des questions juridiques et éthiques majeures. Enfin, le \textbf{coût} : les API d'analyse d'images médicales en nuage sont fréquemment payantes et facturées à l'usage, ce qui les rend inadaptées à un déploiement à grande échelle dans des contextes à ressources limitées.
 
-\begin{infobox}[title=Synthèse de la solution]
-Application mobile Flutter, architecture 100\% offline-first, deux modèles IA
-embarqués (DenseNet121 + U-Net), base SQLite locale versionnée (v4), interface
-en français, conforme aux contraintes de confidentialité.
-\end{infobox}
+\medskip
+PulmoScan AI cherche à lever simultanément ces quatre contraintes en embarquant l'intégralité de la chaîne de traitement directement sur l'appareil mobile.
 
-\msec{5. Fonctionnalités de l'Application Mobile}
-L'application s'articule autour de huit écrans principaux couvrant l'ensemble du
-parcours médical, de l'accueil à la consultation des résultats.
+\section{Solutions Proposées}
+Face à cette problématique, trois grandes familles de solutions étaient envisageables.
 
-\mssec{5.1. Écran d'Accueil (Landing)}
-L'écran d'accueil présente l'identité visuelle de PulmoScan AI (logo
-\emph{aperture mark}, palette V4) et offre un point d'entrée vers la
-connexion. Il met en avant la proposition de valeur de l'application.
+\medskip
+La \textbf{première approche} consiste à recourir à une solution en nuage, où l'image est transmise à un serveur distant qui exécute l'inférence et renvoie le résultat. Cette approche bénéficie d'une puissance de calcul élevée et de modèles très volumineux, mais elle se heurte aux problèmes de connectivité, de confidentialité et de coût évoqués précédemment.
 
-\mssec{5.2. Onboarding}
-Un onboarding en trois diapositives présente successivement les trois piliers de
-l'application : la gestion des patients, l'analyse par intelligence artificielle
-et la confidentialité des données.
+\medskip
+La \textbf{deuxième approche} repose sur une architecture hybride, où une partie du traitement est effectuée localement et une autre déléguée au serveur. Si elle offre un compromis intéressant, elle conserve une dépendance partielle au réseau et complexifie considérablement l'architecture logicielle.
 
-\mssec{5.3. Gestion des Patients}
-Le module de gestion des patients permet la création, la consultation, la
-modification et la liste de l'ensemble des patients. Chaque patient est décrit
-par son nom, son prénom, sa date de naissance, son genre et un contact.
+\medskip
+La \textbf{troisième approche}, que nous avons retenue, est une architecture entièrement embarquée (\textit{on-device}). Les modèles d'intelligence artificielle sont convertis au format TensorFlow Lite, optimisés pour les contraintes des appareils mobiles, puis exécutés localement. Cette approche maximise la confidentialité et la disponibilité, au prix d'un travail d'optimisation des modèles pour les faire tenir dans une empreinte mémoire raisonnable.
 
-\mssec{5.4. Création d'Examen}
-Le médecin ou l'assistant médical sélectionne un patient, importe ou capture une
-radiographie thoracique, puis lance la création de l'examen associé.
+\section{Notre Solution Développée}
+PulmoScan AI est une application mobile développée avec le framework \textbf{Flutter} (langage Dart), permettant un déploiement multiplateforme à partir d'une base de code unique. L'application s'articule autour de deux modèles d'intelligence artificielle embarqués via \textbf{TensorFlow Lite} :
+\begin{itemize}
+  \item un modèle de \textbf{classification DenseNet121} (13,4 Mo) issu de la bibliothèque TorchXRayVision, qui produit des scores pour 14 pathologies pulmonaires ;
+  \item un modèle de \textbf{segmentation U-Net} (29,6 Mo) qui isole les champs pulmonaires et génère un masque binaire superposable à l'image.
+\end{itemize}
 
-\mssec{5.5. Analyse par Intelligence Artificielle}
-Le c\oe ur de l'application : la radiographie est prétraitée puis soumise au
-modèle DenseNet121 pour la classification et au modèle U-Net pour la
-segmentation. Le système retourne la pathologie dominante, son score de
-confiance et le masque des champs pulmonaires.
+\medskip
+Les données --- utilisateurs, patients, examens et résultats --- sont persistées dans une base \textbf{SQLite} locale (version 4 du schéma), tandis que l'authentification est assurée par un hachage \textbf{SHA-256} des mots de passe et une session stockée via \texttt{SharedPreferences}. L'ensemble fonctionne sans connexion. Un backend optionnel (Node.js / Express) peut être activé pour la synchronisation, mais il n'est jamais requis pour le fonctionnement nominal.
 
-\mssec{5.6. Visualisation des Résultats}
-Les résultats sont présentés sous forme de diagnostic principal, de barres de
-confiance par pathologie et d'un badge de sévérité (urgent / moyen / normal).
+\section{Fonctionnalités de l'Application}
+Cette section décrit les principales fonctionnalités offertes par PulmoScan AI, organisées selon le parcours type d'un utilisateur.
 
-\mssec{5.7. Tableau de Bord (Dashboard)}
-Le tableau de bord agrège les statistiques : nombre de patients, nombre
-d'examens, répartition par sévérité et accès rapide aux derniers examens.
+\subsection{Écran d'Accueil et Connexion}
+À son lancement, l'application présente un écran d'accueil (\textit{landing}) mettant en valeur l'identité visuelle de PulmoScan AI et ses fonctionnalités clés. Cet écran propose un défilement animé conduisant le médecin vers le formulaire de connexion. L'authentification s'effectue par couple e-mail / mot de passe, le mot de passe étant vérifié contre son empreinte SHA-256 stockée localement. Un compte de démonstration (\texttt{demo@pulmoscan.ma / Demo1234}) permet d'explorer l'application sans inscription préalable.
 
-\mssec{5.8. Profil Médecin}
-L'écran de profil affiche les informations du praticien connecté et offre les
-options de déconnexion et de paramétrage.
+\subsection{Onboarding}
+Lors de la première utilisation, un parcours d'introduction (\textit{onboarding}) composé de trois écrans présente successivement les trois piliers de l'application : la \textbf{Capture} de la radiographie, l'\textbf{Analyse par IA} et la génération du \textbf{Rapport}. Ce parcours, animé par le widget personnalisé \texttt{ApertureMark}, familiarise rapidement l'utilisateur avec la philosophie de l'outil.
 
-\mssec{5.9. Exigences Non Fonctionnelles}
-Les exigences non fonctionnelles encadrent la qualité du système.
+\subsection{Gestion des Patients}
+L'application permet la création, la consultation, la modification et la suppression des dossiers patients. Chaque patient est caractérisé par son nom, son âge, son genre, son adresse e-mail, son numéro de téléphone, son numéro de carte d'identité nationale (CIN), ses antécédents médicaux et sa date de naissance. Une liste consultable et filtrable affiche l'ensemble des patients, avec des badges de statut, et un écran de détail présente le dossier complet ainsi que l'historique des examens.
 
-\begin{table}[h!]
+\subsection{Création d'Examen}
+La création d'un examen suit un assistant en plusieurs étapes : sélection du patient concerné, acquisition de l'image radiographique (depuis la galerie ou l'appareil photo via le package \texttt{image\_picker}), puis lancement de l'analyse. Chaque examen est rattaché à un patient et porte un statut évolutif (\texttt{en\_attente}, \texttt{en\_cours}, \texttt{termine}).
+
+\subsection{Analyse par Intelligence Artificielle (DenseNet121)}
+Le cœur de l'application réside dans l'analyse par le modèle DenseNet121. L'image acquise est prétraitée (recadrage carré centré, redimensionnement à 224$\times$224, conversion en niveaux de gris et normalisation), puis soumise au modèle qui produit un vecteur de 18 sorties sigmoïdes. Les 14 premières correspondent aux pathologies NIH. Un post-traitement sélectionne le diagnostic dominant en excluant quatre classes ambiguës à faible AUC, calcule un indice de confiance et détermine un niveau de sévérité.
+
+\subsection{Segmentation Pulmonaire (U-Net)}
+En parallèle de la classification, le modèle U-Net segmente les champs pulmonaires. L'image est redimensionnée à 256$\times$256, normalisée puis traitée par le réseau qui produit une carte de probabilités, binarisée à un seuil de 0,5. Le masque résultant est superposé à l'image originale, permettant de visualiser la région anatomique analysée.
+
+\subsection{Visualisation des Résultats}
+L'écran de résultats présente le diagnostic principal accompagné de son indice de confiance et de son niveau de sévérité, un histogramme des scores des 14 pathologies, ainsi que la superposition du masque de segmentation. Le médecin peut consulter ces éléments, y ajouter des notes cliniques et générer un rapport PDF.
+
+\subsection{Tableau de Bord}
+Le tableau de bord (\textit{dashboard}) offre une vue synthétique de l'activité : cartes statistiques (nombre de patients, d'examens, répartition par sévérité), liste des examens récents et fiches d'information sur les modèles d'IA, accessibles d'une simple tape.
+
+\subsection{Exigences Non Fonctionnelles}
+Au-delà des fonctionnalités, PulmoScan AI répond à un ensemble d'exigences non fonctionnelles essentielles, résumées dans le tableau~\ref{tab:nfr}.
+
+\begin{table}[H]
 \centering
 \caption{Exigences non fonctionnelles de PulmoScan AI}
-\begin{tabular}{>{\bfseries}p{4cm} p{9cm}}
+\label{tab:nfr}
+\begin{tabularx}{\textwidth}{l X}
 \toprule
-Exigence & Description \\
+\textbf{Exigence} & \textbf{Description} \\
 \midrule
-Performance & Inférence IA en moins de 3 secondes sur appareil de milieu de gamme. \\
-Disponibilité & Fonctionnement 100\% hors ligne. \\
-Confidentialité & Aucune donnée transmise hors de l'appareil. \\
-Portabilité & Compatible Android et iOS via Flutter. \\
-Utilisabilité & Interface en français, design system V4 cohérent. \\
-Maintenabilité & Architecture modulaire (screens, services, widgets). \\
+Performance & Inférence DenseNet121 et U-Net en quelques secondes sur appareil mobile standard. \\
+Disponibilité & Fonctionnement intégral hors ligne, sans dépendance réseau. \\
+Confidentialité & Données médicales conservées exclusivement sur l'appareil. \\
+Sécurité & Mots de passe hachés en SHA-256, session protégée. \\
+Ergonomie & Interface en français, design system cohérent, navigation intuitive. \\
+Portabilité & Code Flutter unique déployable sur Android et iOS. \\
+Maintenabilité & Architecture en services (singletons) et séparation des responsabilités. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\msec{6. Étude de l'existant}
-Plusieurs solutions d'aide au diagnostic existent sur le marché. Nous en
-analysons deux représentatives.
+\section{Étude de l'Existant}
+Pour situer PulmoScan AI, nous avons étudié deux solutions de référence dans le domaine de l'analyse médicale assistée par IA.
 
-\mssec{6.1. CheXpert (Stanford)}
-CheXpert est un projet de référence de l'Université de Stanford pour la
-classification de pathologies thoraciques. Il s'agit toutefois d'une solution
-fondée sur le \emph{cloud}, nécessitant une connexion Internet, non disponible
-sous forme d'application mobile grand public et dépourvue d'interface en
-français.
+\subsection{CheXpert (Stanford University)}
+CheXpert est un système développé par l'université de Stanford, reposant sur un vaste jeu de données de radiographies thoraciques. Ses modèles atteignent des performances remarquables (AUC supérieures à 0,90 pour plusieurs pathologies). Cependant, CheXpert est principalement une solution en nuage : l'analyse nécessite l'envoi des images vers des serveurs distants, généralement situés aux États-Unis. Cette architecture pose un problème de conformité au regard de la protection des données (RGPD), l'API associée est payante, l'interface n'est pas francophone et il n'existe pas d'application mobile native grand public.
 
-\mssec{6.2. Infermedica / Ada Health}
-Infermedica et Ada Health sont des assistants de vérification de symptômes
-(\emph{symptom checkers}). Ils reposent sur des questionnaires textuels et non
-sur l'analyse de radiographies, et ne sont donc pas spécialisés dans
-l'imagerie radiologique.
+\subsection{Infermedica / Ada Health}
+Infermedica et Ada Health sont des solutions de pré-diagnostic basées sur l'analyse des symptômes déclarés par l'utilisateur, via un agent conversationnel (chatbot). Elles ne traitent pas d'images radiographiques et ne fournissent donc pas de diagnostic d'imagerie. Leur portée est différente de celle de PulmoScan AI : elles s'adressent au triage symptomatique, ne fonctionnent pas hors ligne et ne produisent pas de détection pathologique précise sur image.
 
-\mssec{6.3. Valeur ajoutée de notre projet}
+\subsection{Valeur Ajoutée de PulmoScan AI}
+Le tableau~\ref{tab:existant} synthétise la comparaison. PulmoScan AI se distingue par son fonctionnement intégralement hors ligne, la conservation des données sur l'appareil (gage de confidentialité et de meilleure conformité), son interface française, sa double intelligence artificielle (classification \emph{et} segmentation) et sa couverture de 14 pathologies issues du jeu NIH ChestX-ray14.
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\caption{Comparaison de PulmoScan AI avec l'existant}
-\begin{tabular}{p{3.5cm} c c c}
+\caption{Étude comparative de l'existant}
+\label{tab:existant}
+\begin{tabularx}{\textwidth}{X c c c}
 \toprule
-Critère & CheXpert & Ada / Infermedica & \textbf{PulmoScan AI} \\
+\textbf{Critère} & \textbf{CheXpert} & \textbf{Ada Health} & \textbf{PulmoScan AI} \\
 \midrule
-Fonctionne hors ligne & Non & Non & \textbf{Oui} \\
-Basé sur la radiographie & Oui & Non & \textbf{Oui} \\
-Interface en français & Non & Partielle & \textbf{Oui} \\
-Confidentialité locale & Non & Non & \textbf{Oui} \\
+Analyse de radiographie & Oui & Non & Oui \\
+Fonctionnement hors ligne & Non & Non & \textbf{Oui} \\
+Données locales (confidentialité) & Non & Non & \textbf{Oui} \\
+Interface française & Non & Partielle & \textbf{Oui} \\
 Segmentation pulmonaire & Non & Non & \textbf{Oui} \\
-Application mobile & Non & Oui & \textbf{Oui} \\
+Mobile natif & Non & Oui & \textbf{Oui} \\
+Coût d'utilisation & Payant & Freemium & \textbf{Gratuit} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-La valeur ajoutée de PulmoScan AI réside dans la combinaison unique d'un
-fonctionnement 100\% hors ligne, d'une interface en français, d'une
-confidentialité totale des données, de la prise en charge de 14 pathologies et
-d'une double intelligence artificielle (classification et segmentation).
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce premier chapitre a permis de cerner le contexte, la problématique et les objectifs du projet PulmoScan AI, ainsi que de positionner notre solution par rapport aux alternatives existantes. Il ressort que le caractère hors ligne et la confidentialité des données constituent les principaux atouts différenciants de notre application. Le chapitre suivant détaille la démarche de conception et de modélisation adoptée pour concrétiser ces objectifs.
 
-\msec{Conclusion}
-Ce chapitre a posé le cadre du projet : un besoin réel d'aide au diagnostic
-radiologique, une problématique centrée sur la confidentialité et l'accessibilité,
-et une solution originale entièrement embarquée. Le chapitre suivant détaille la
-conception et la modélisation du système.
-
-% =====================================================================
-% CHAPITRE 2
-% =====================================================================
+%======================================================================
+%                            CHAPITRE 2
+%======================================================================
 \chapter{Conception et Modélisation}
 
-\msec{Introduction}
-Ce chapitre présente la démarche méthodologique et la modélisation du système.
-Nous décrivons la méthodologie agile Scrum adoptée, la planification du projet,
-puis l'ensemble des diagrammes UML qui formalisent les besoins et l'architecture
-de PulmoScan AI.
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Après avoir défini le contexte et les objectifs du projet, ce deuxième chapitre est consacré à la conception et à la modélisation de PulmoScan AI. Nous y présentons d'abord les méthodologies adoptées, puis la gestion du projet à travers les sprints, le diagramme de Gantt et le diagramme PERT. Nous abordons ensuite la conception détaillée du système au moyen de diagrammes UML --- cas d'utilisation, classes, séquence, activité, état-transition --- avant de présenter les modèles de données conceptuel et logique.
 
-\msec{1. Méthodologies Adoptées}
-Nous avons adopté une démarche \textbf{agile Scrum} couplée à une architecture
-\textbf{offline-first}. Scrum nous a permis de livrer des incréments
-fonctionnels à la fin de chaque sprint, d'intégrer les retours de notre
-encadrante et de gérer les risques techniques (intégration IA, performance)
-de manière itérative.
+\section{Méthodologies Adoptées}
 
-\msec{2. Gestion de projet}
+\subsection{Approche Scrum Adaptée}
+Pour piloter le développement de PulmoScan AI, nous avons adopté une démarche agile inspirée de Scrum, adaptée à la taille de notre binôme et à la durée du projet. Le travail a été découpé en \textbf{sprints} d'une à deux semaines, chacun aboutissant à un incrément fonctionnel testable. À l'issue de chaque sprint, une revue informelle permettait de valider les fonctionnalités livrées et d'ajuster le \textit{backlog} restant. Cette approche itérative s'est révélée particulièrement adaptée à un projet comportant une forte composante d'expérimentation, notamment pour la mise au point du pipeline d'inférence de l'IA.
 
-\mssec{2.1. Méthodologie adoptée (Scrum)}
-Le projet a été découpé en cinq sprints. Le tableau suivant présente le
-\emph{product backlog} réparti par sprint.
+\subsection{Architecture Offline-First}
+Le choix structurant de l'architecture est le paradigme \textit{offline-first}. Contrairement à une architecture centrée sur le réseau, où les données et les traitements résident sur un serveur, l'architecture offline-first place l'appareil mobile au centre du dispositif : les modèles, la base de données et toute la logique applicative y sont embarqués. Le réseau n'intervient, le cas échéant, que pour une synchronisation optionnelle. Cette architecture garantit la disponibilité permanente de l'application, la confidentialité des données et l'absence de latence réseau lors de l'inférence.
 
-\begin{table}[h!]
+\section{Gestion de Projet}
+
+\subsection{Sprints Scrum}
+Le développement s'est échelonné sur cinq sprints, dont le contenu est détaillé dans le tableau~\ref{tab:sprints}.
+
+\begin{table}[H]
 \centering
-\caption{Backlog Scrum et planification des sprints}
-\begin{tabular}{c c p{8.5cm}}
+\caption{Backlog des sprints Scrum}
+\label{tab:sprints}
+\begin{tabularx}{\textwidth}{l l X}
 \toprule
-Sprint & Durée & Objectifs / User stories \\
+\textbf{Sprint} & \textbf{Durée} & \textbf{Contenu} \\
 \midrule
-Sprint 1 & 2 sem. & Mise en place du projet, authentification locale, CRUD patients, base de données v1. \\
-Sprint 2 & 2 sem. & Import d'image, intégration du modèle IA, pipeline TFLite. \\
-Sprint 3 & 2 sem. & Écran de résultats, segmentation U-Net, barres de confiance. \\
-Sprint 4 & 2 sem. & Tableau de bord, onboarding, design system V4, données de démonstration. \\
-Sprint 5 & 1 sem. & Corrections de bugs, fix de l'ordre des labels, fix d'overflow, tests finaux. \\
+Sprint 1 & 2 semaines & Configuration du projet, authentification, CRUD patients, base SQLite v1. \\
+Sprint 2 & 2 semaines & Import d'image, pipeline TensorFlow Lite, intégration du modèle DenseNet121. \\
+Sprint 3 & 2 semaines & Écran de résultats, segmentation U-Net, histogramme des 14 pathologies. \\
+Sprint 4 & 2 semaines & Tableau de bord, onboarding, design system V4, données de démonstration. \\
+Sprint 5 & 1 semaine & Corrections de bugs, fix de l'ordre des labels, fix de l'overflow Android, tests finaux. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\mssec{2.2. Diagramme de Gantt}
-\figplaceholder[13cm]{Diagramme de Gantt --- répartition temporelle des cinq sprints (S1 à S5) sur le semestre 2025/2026.}
+\subsection{Diagramme de Gantt}
+Le diagramme de Gantt (figure~\ref{fig:gantt}) présente l'ordonnancement temporel des sprints et leur répartition sur la durée du projet.
 
-\mssec{2.3. Diagramme PERT}
-\figplaceholder[13cm]{Diagramme PERT --- enchaînement des tâches et chemin critique (Setup, DB, IA, Résultats, Tests).}
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme de Gantt du projet PulmoScan AI}
+\caption{Diagramme de Gantt}
+\label{fig:gantt}
+\end{figure}
 
-\msec{3. Conception}
+\subsection{Diagramme PERT}
+Le diagramme PERT (figure~\ref{fig:pert}) modélise les dépendances entre les tâches du projet et met en évidence le chemin critique.
 
-\mssec{3.1. Identification des Acteurs}
-L'identification des acteurs consiste à recenser les entités externes
-(utilisateurs ou systèmes) interagissant avec l'application. Dans PulmoScan AI,
-les acteurs sont des utilisateurs humains aux rôles distincts.
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme PERT du projet PulmoScan AI}
+\caption{Diagramme PERT}
+\label{fig:pert}
+\end{figure}
 
-\mssec{3.2. Acteurs identifiés dans PulmoScan AI}
+\section{Conception}
 
-\begin{table}[h!]
-\centering
-\caption{Acteurs et cas d'utilisation associés}
-\begin{tabular}{>{\bfseries}p{3.2cm} p{9.5cm}}
-\toprule
-Acteur & Cas d'utilisation \\
-\midrule
-Médecin & lancerAnalyse, consulterResultat, genererRapport, consulterHistorique \\
-Assistant Médical & creerPatient, modifierPatient, capturerImage, consulterPatient \\
-Administrateur & gererUtilisateurs, voirLogs \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Identification des Acteurs}
+Un acteur, au sens de la modélisation UML, désigne une entité externe (humaine ou logicielle) qui interagit avec le système. L'identification des acteurs constitue la première étape de l'analyse fonctionnelle, car elle délimite le périmètre du système et oriente la définition des cas d'utilisation.
 
-\mssec{3.3. Diagramme de Cas d'Utilisation}
-\figplaceholder[12cm]{Diagramme de cas d'utilisation --- acteurs (Médecin, Assistant Médical, Administrateur) et leurs interactions avec le système.}
-
-\mssec{3.4. Diagramme de Classes}
-\figplaceholder[12cm]{Diagramme de classes --- entités User, Patient, Exam et services AiService / DatabaseService avec leurs relations.}
-
-\mssec{3.5. Diagrammes de Séquence}
-Quatre scénarios clés sont modélisés.
-
-\msssec{a) Séquence d'Authentification}
-\figplaceholder[12cm]{Diagramme de séquence --- Authentification : saisie identifiants, vérification du hash, SharedPreferences, accès Dashboard.}
-
-\msssec{b) Séquence de Gestion d'un Patient}
-\figplaceholder[12cm]{Diagramme de séquence --- Création/Modification d'un patient via DatabaseService et table patients.}
-
-\msssec{c) Séquence d'Import d'Image}
-\figplaceholder[12cm]{Diagramme de séquence --- Import/capture de la radiographie via image\_picker et enregistrement du chemin.}
-
-\msssec{d) Séquence d'Analyse IA}
-\figplaceholder[12cm]{Diagramme de séquence --- Analyse IA : prétraitement, DenseNet121, U-Net, post-traitement, enregistrement de l'examen.}
-
-\mssec{3.6. Diagramme d'Activité}
-\figplaceholder[12cm]{Diagramme d'activité --- flux complet de réalisation d'un examen, du choix du patient à l'affichage des résultats.}
-
-\mssec{3.7. Diagramme d'État-Transition : Objet Examen}
-\figplaceholder[12cm]{Diagramme d'état-transition de l'objet Examen : Créé, Image importée, En analyse, Analysé, Archivé.}
-
-\mssec{3.8. Modèle Conceptuel de Données (MCD)}
-\figplaceholder[12cm]{Modèle Conceptuel de Données (MCD) --- entités USER, PATIENT, EXAM et associations (un patient possède plusieurs examens).}
-
-\mssec{3.9. Modèle Logique de Données (MLD)}
-Le modèle logique de données traduit le MCD en relations. Les clés primaires
-sont soulignées et les clés étrangères signalées par \textit{(FK)}.
-
-\begin{table}[h!]
-\centering
-\caption{Modèle Logique de Données (MLD) de PulmoScan AI}
-\begin{tabular}{>{\bfseries}p{2.6cm} p{10.5cm}}
-\toprule
-Relation & Attributs \\
-\midrule
-users & (\underline{id}, name, email, password, role) \\
-patients & (\underline{id}, firstName, lastName, dateOfBirth, gender, contact, createdAt) \\
-exams & (\underline{id}, patientId \textit{(FK vers patients.id)}, imagePath, diagnostic, confidence, severite, details, createdAt) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\noindent Sous forme textuelle :
-\begin{itemize}[leftmargin=1.5em]
-  \item \textbf{users} (\underline{id}, name, email, password, role)
-  \item \textbf{patients} (\underline{id}, firstName, lastName, dateOfBirth,
-        gender, contact, createdAt)
-  \item \textbf{exams} (\underline{id}, \#patientId, imagePath, diagnostic,
-        confidence, severite, details, createdAt)
+\subsection{Acteurs du Système PulmoScan AI}
+Le système PulmoScan AI met en jeu les acteurs suivants :
+\begin{itemize}
+  \item le \textbf{Médecin} (acteur principal) : il s'authentifie, gère les patients, crée des examens, lance les analyses, consulte les résultats et génère les rapports ;
+  \item le \textbf{Moteur d'IA} (acteur secondaire système) : il exécute l'inférence des modèles DenseNet121 et U-Net ;
+  \item le \textbf{Backend optionnel} (acteur secondaire système) : il assure, lorsqu'il est activé, la synchronisation des données via une API REST.
 \end{itemize}
 
-\msec{Conclusion}
-Ce chapitre a formalisé la conception du système à travers la méthodologie
-Scrum et l'ensemble des diagrammes UML. La structure de données ainsi définie
-sert de fondation à l'implémentation présentée dans le chapitre suivant.
+\subsection{Diagramme de Cas d'Utilisation}
+Le diagramme de cas d'utilisation (figure~\ref{fig:usecase}) recense les principales fonctionnalités offertes au médecin et leurs relations.
 
-% =====================================================================
-% CHAPITRE 3
-% =====================================================================
-\chapter{Implémentation et Déploiement du Système}
+\begin{figure}[H]
+\placeholderfig[9]{Diagramme de cas d'utilisation}
+\caption{Diagramme de cas d'utilisation}
+\label{fig:usecase}
+\end{figure}
 
-\msec{Introduction}
-Ce chapitre détaille les outils et technologies mobilisés pour développer
-PulmoScan AI, de la couche de présentation mobile à l'intelligence artificielle
-embarquée, en passant par la persistance des données et la chaîne d'outils de
-développement.
+\subsection{Diagramme de Classes}
+Le diagramme de classes (figure~\ref{fig:classes}) décrit la structure statique du système : les classes métier (Utilisateur, Patient, Examen, Résultat), leurs attributs, leurs méthodes et leurs associations.
 
-\msec{1. Outils et Technologies Utilisés}
+\begin{figure}[H]
+\placeholderfig[9]{Diagramme de classes}
+\caption{Diagramme de classes}
+\label{fig:classes}
+\end{figure}
 
-\begin{table}[h!]
+\subsection{Diagrammes de Séquence}
+Les diagrammes de séquence illustrent les interactions dynamiques entre les acteurs et les composants du système au fil du temps, pour les scénarios les plus représentatifs.
+
+\subsubsection{Séquence Authentification}
+La figure~\ref{fig:seqauth} décrit le scénario d'authentification : saisie des identifiants, hachage SHA-256, vérification en base SQLite et création de la session.
+
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme de séquence --- Authentification}
+\caption{Diagramme de séquence : Authentification}
+\label{fig:seqauth}
+\end{figure}
+
+\subsubsection{Séquence Création Patient}
+La figure~\ref{fig:seqpatient} décrit la création d'un patient : saisie du formulaire, validation des champs et insertion en base.
+
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme de séquence --- Création Patient}
+\caption{Diagramme de séquence : Création Patient}
+\label{fig:seqpatient}
+\end{figure}
+
+\subsubsection{Séquence Acquisition Image}
+La figure~\ref{fig:seqimage} décrit l'acquisition de l'image radiographique via \texttt{image\_picker} et son enregistrement.
+
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme de séquence --- Acquisition Image}
+\caption{Diagramme de séquence : Acquisition Image}
+\label{fig:seqimage}
+\end{figure}
+
+\subsubsection{Séquence Analyse IA}
+La figure~\ref{fig:seqia} décrit le scénario d'analyse : prétraitement de l'image, inférence DenseNet121, post-traitement, segmentation U-Net et enregistrement du résultat.
+
+\begin{figure}[H]
+\placeholderfig[8]{Diagramme de séquence --- Analyse IA}
+\caption{Diagramme de séquence : Analyse IA}
+\label{fig:seqia}
+\end{figure}
+
+\subsection{Diagramme d'Activité}
+Le diagramme d'activité (figure~\ref{fig:activity}) modélise le flux complet d'un examen, depuis la sélection du patient jusqu'à la génération du rapport.
+
+\begin{figure}[H]
+\placeholderfig[9]{Diagramme d'activité}
+\caption{Diagramme d'activité}
+\label{fig:activity}
+\end{figure}
+
+\subsection{Diagramme d'État-Transition : Objet Examen}
+La figure~\ref{fig:state} présente le cycle de vie d'un examen à travers ses états successifs : \texttt{en\_attente}, \texttt{en\_cours} et \texttt{termine}.
+
+\begin{figure}[H]
+\placeholderfig[7]{Diagramme d'état-transition --- Objet Examen}
+\caption{Diagramme d'état-transition : Objet Examen}
+\label{fig:state}
+\end{figure}
+
+\subsection{Modèle Conceptuel de Données (MCD)}
+Le modèle conceptuel de données (figure~\ref{fig:mcd}) décrit les entités du domaine, leurs propriétés et les associations qui les relient, indépendamment de toute implémentation technique.
+
+\begin{figure}[H]
+\placeholderfig[8]{Modèle Conceptuel de Données (MCD)}
+\caption{Modèle Conceptuel de Données (MCD)}
+\label{fig:mcd}
+\end{figure}
+
+\subsection{Modèle Logique de Données (MLD)}
+Le passage du MCD au modèle logique de données traduit les entités en relations et les associations en clés étrangères. Le MLD de PulmoScan AI comporte quatre relations :
+
+\begin{tcolorbox}[colback=psSurface!6, colframe=psDeep, sharp corners, breakable]
+\textbf{users}(\underline{id}, name, email, password, role, created\_at)\\[4pt]
+\textbf{patients}(\underline{id}, nom, age, genre, email, telephone, cin, antecedents, date\_naissance, date\_creation)\\[4pt]
+\textbf{examens}(\underline{id}, \textit{\#patient\_id}, image\_path, notes, date\_examen, statut)\\[4pt]
+\textbf{resultats}(\underline{id}, \textit{\#exam\_id}, diagnostic, confidence, severite, details, date\_analyse)
+\end{tcolorbox}
+
+\noindent où la clé primaire est soulignée et la clé étrangère préfixée d'un dièse. La relation \texttt{examens} référence \texttt{patients} par \texttt{patient\_id}, et la relation \texttt{resultats} référence \texttt{examens} par \texttt{exam\_id}. On obtient ainsi une chaîne relationnelle 1\,:\,N entre un patient, ses examens et les résultats associés.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a formalisé la conception de PulmoScan AI : méthodologie agile, architecture offline-first, modélisation UML complète et structuration des données. Ces fondations conceptuelles guident désormais la phase d'implémentation, détaillée dans le chapitre suivant.
+
+%======================================================================
+%                            CHAPITRE 3
+%======================================================================
+\chapter{Implémentation et Déploiement}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce troisième chapitre décrit la réalisation technique de PulmoScan AI. Nous présentons d'abord l'ensemble des outils et technologies mobilisés, puis la structure du projet Flutter. Nous détaillons ensuite le pipeline complet d'inférence de l'intelligence artificielle --- du prétraitement de l'image à la segmentation U-Net --- en nous appuyant sur des extraits de code commentés. Le chapitre se conclut par les mesures de sécurité et de confidentialité mises en œuvre.
+
+\section{Outils et Technologies Utilisés}
+Le tableau~\ref{tab:stack} synthétise la pile technologique du projet.
+
+\begin{table}[H]
 \centering
 \caption{Pile technologique de PulmoScan AI}
-\begin{tabular}{>{\bfseries}p{3.5cm} p{5cm} p{4.5cm}}
+\label{tab:stack}
+\begin{tabularx}{\textwidth}{l l X}
 \toprule
-Couche & Technologie & Version / Détail \\
+\textbf{Couche} & \textbf{Technologie} & \textbf{Rôle} \\
 \midrule
-Frontend mobile & Flutter / Dart & 3.22 / 3.4 \\
-Persistance & SQLite (sqflite) & \^{}2.3.0 (DB v4) \\
-Inférence IA & tflite\_flutter & \^{}0.10.4 \\
-Traitement image & image, image\_picker & \^{}4.1 / \^{}1.0 \\
-Préférences & shared\_preferences & \^{}2.2 \\
-Architecture & offline-first & sans serveur \\
+Frontend mobile & Flutter / Dart & Interface et logique applicative multiplateforme. \\
+Intelligence artificielle & TensorFlow Lite (\texttt{tflite\_flutter} 0.12.0) & Inférence embarquée des modèles. \\
+Traitement d'image & \texttt{image} 4.1.7 & Recadrage, redimensionnement, conversion. \\
+Base de données & SQLite (\texttt{sqflite} 2.3.0) & Persistance locale des données. \\
+Authentification & \texttt{crypto} 3.0.3 (SHA-256) & Hachage des mots de passe. \\
+Session & \texttt{shared\_preferences} 2.3.0 & Stockage de la session utilisateur. \\
+Acquisition image & \texttt{image\_picker} 1.0.7 & Galerie / appareil photo. \\
+Rapports & \texttt{pdf} 3.11.0 + \texttt{printing} 5.13.0 & Génération et impression de PDF. \\
+Typographie & \texttt{google\_fonts} 6.2.1 & Polices de l'interface. \\
+Internationalisation & \texttt{intl} 0.20.0 & Formatage des dates et nombres. \\
+Réseau (optionnel) & \texttt{http} 1.2.0 & Client REST vers le backend. \\
+Backend optionnel & Node.js / Express / Railway & API REST et JWT. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\mssec{1.1. Frontend Mobile}
-L'interface est développée avec \textbf{Flutter 3.22} et le langage
-\textbf{Dart 3.4}, permettant une compilation native pour Android et iOS à
-partir d'une base de code unique. L'interface s'appuie sur un riche ensemble de
-\emph{widgets} et sur le \textbf{design system V4} caractérisé par un fond
-sombre (\texttt{\#0A0F1A}), une couleur d'accent \emph{teal}
-(\texttt{\#34E5C5}) et des surfaces (\texttt{\#131B2E}). Les badges de sévérité
-utilisent les couleurs \emph{urgent} (\texttt{\#FF5A5F}) et \emph{moyen}
-(\texttt{\#FFB547}).
+\subsection{Frontend Mobile --- Flutter \& Dart}
+Flutter est un framework open-source développé par Google permettant de créer des applications natives compilées pour mobile, web et bureau à partir d'une base de code unique écrite en Dart. Son moteur de rendu propre garantit une interface fluide et cohérente sur toutes les plateformes. Nous avons retenu Flutter pour sa productivité, son écosystème de packages riche et la qualité de son intégration avec TensorFlow Lite. Le projet exploite par ailleurs \texttt{flutter\_localizations} pour la prise en charge de la langue française et \texttt{cupertino\_icons} pour les icônes.
 
-\mssec{1.2. Intelligence Artificielle}
-Deux modèles d'apprentissage profond convertis au format
-\textbf{TensorFlow Lite} sont embarqués dans l'application.
+\subsection{Intelligence Artificielle --- TensorFlow Lite}
+TensorFlow Lite est la déclinaison légère de TensorFlow, conçue pour l'inférence sur appareils mobiles et embarqués. Les modèles entraînés sont convertis au format \texttt{.tflite}, optimisé pour une empreinte mémoire et une latence réduites. Le package \texttt{tflite\_flutter} expose l'interpréteur natif à Dart, permettant de charger les modèles et d'exécuter l'inférence directement sur l'appareil.
 
-Le premier, un réseau \textbf{DenseNet121} issu de la bibliothèque
-TorchXRayVision, assure la classification. Il prend en entrée une image en
-niveaux de gris de dimension $[1, 224, 224, 1]$ normalisée entre 0 et 1, et
-produit en sortie un vecteur $[1, 18]$ activé par une fonction sigmoïde, dont
-les 14 premières composantes correspondent aux pathologies NIH. Le modèle a été
-entraîné sur le jeu de données \textbf{NIH ChestX-ray14} (112\,120 images, 14
-pathologies) et atteint une AUC comprise entre 0,80 et 0,94 pour les classes
-fiables.
+\subsection{Base de Données --- SQLite}
+SQLite est un moteur de base de données relationnelle léger, sans serveur, intégré à l'application. Via le package \texttt{sqflite} (et \texttt{path} pour la localisation du fichier), PulmoScan AI gère une base locale (version 4 du schéma) comportant quatre tables. Le schéma complet est présenté dans le listing~\ref{lst:schema}.
 
-\begin{table}[h!]
+\begin{lstlisting}[language=SQL, caption={Schéma SQL de la base SQLite (version 4)}, label={lst:schema}]
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,          -- empreinte SHA-256
+  role TEXT DEFAULT 'medecin',
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE patients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom TEXT NOT NULL,
+  age INTEGER NOT NULL,
+  genre TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  telephone TEXT DEFAULT '',
+  cin TEXT NOT NULL UNIQUE,
+  antecedents TEXT DEFAULT '',
+  date_naissance TEXT,
+  date_creation TEXT NOT NULL
+);
+
+CREATE TABLE examens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  patient_id INTEGER NOT NULL,
+  image_path TEXT NOT NULL,
+  notes TEXT DEFAULT '',
+  date_examen TEXT NOT NULL,
+  statut TEXT DEFAULT 'en_attente',  -- en_attente / en_cours / termine
+  FOREIGN KEY (patient_id) REFERENCES patients (id)
+);
+
+CREATE TABLE resultats (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  exam_id INTEGER NOT NULL,
+  diagnostic TEXT NOT NULL,
+  confidence REAL NOT NULL,        -- 0.0 a 1.0, affiche x100
+  severite TEXT NOT NULL,          -- urgent/moyen/normal/modere/severe/faible
+  details TEXT DEFAULT '',
+  date_analyse TEXT NOT NULL,
+  FOREIGN KEY (exam_id) REFERENCES examens (id)
+);
+\end{lstlisting}
+
+\subsection{Authentification --- SHA-256 \& SharedPreferences}
+L'authentification de PulmoScan AI est intégralement locale. Lors de l'inscription, le mot de passe de l'utilisateur est haché avec l'algorithme SHA-256 fourni par le package \texttt{crypto}, puis seule l'empreinte est stockée en base. Lors de la connexion, le mot de passe saisi est haché de la même manière et comparé à l'empreinte enregistrée. La session est conservée dans \texttt{SharedPreferences} (clés \texttt{user\_name}, \texttt{user\_email}, \texttt{user\_role}, \texttt{is\_logged\_in}). Le listing~\ref{lst:hash} illustre le hachage.
+
+\begin{lstlisting}[language=Dart, caption={Hachage SHA-256 du mot de passe}, label={lst:hash}]
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+
+String hashPassword(String password) {
+  return sha256.convert(utf8.encode(password)).toString();
+}
+\end{lstlisting}
+
+\subsection{Backend Optionnel --- Node.js / Express / Railway}
+Un backend optionnel, développé avec Node.js et Express et déployable sur la plateforme Railway, peut être activé pour la synchronisation des données. Le client \texttt{ApiService} s'y connecte par défaut sur \texttt{localhost:3000/api} via la redirection ADB (\texttt{adb reverse tcp:3000 tcp:3000}), et l'authentification y repose sur un jeton JWT stocké dans \texttt{SharedPreferences}. Les points d'accès couvrent l'authentification (\texttt{POST /auth/login}, \texttt{POST /auth/register}), la gestion des patients (\texttt{GET/POST/PUT/DELETE /patients}), les examens (\texttt{GET/POST /examens}) et l'analyse (\texttt{POST /examens/:id/analyse}). Ce backend n'est jamais requis pour le fonctionnement nominal : toutes les fonctionnalités essentielles opèrent hors ligne.
+
+\subsection{Outils de Développement \& DevOps}
+Le développement a mobilisé l'éditeur Visual Studio Code avec les extensions Flutter et Dart, le système de gestion de versions Git, les notebooks Google Colab pour l'entraînement et la conversion des modèles, ainsi que l'outil \texttt{adb} pour le déploiement et le débogage sur appareil physique. Les modèles ont été convertis en \texttt{.tflite} depuis PyTorch, puis intégrés aux ressources de l'application.
+
+\section{Structure du Projet Flutter}
+Le projet Flutter est organisé selon une séparation claire des responsabilités : les écrans (\textit{screens}), les services métier (\textit{services}), le thème et les widgets réutilisables. On dénombre 13 écrans et 7 services principaux. Le tableau~\ref{tab:screens} et le tableau~\ref{tab:services} en présentent l'inventaire.
+
+\begin{table}[H]
 \centering
-\caption{Les 14 pathologies, ordre TorchXRayVision et AUC indicative}
-\begin{tabular}{c >{\bfseries}p{4.2cm} c c}
+\caption{Inventaire des écrans Flutter}
+\label{tab:screens}
+\begin{tabularx}{\textwidth}{l r X}
 \toprule
-\# & Pathologie & AUC indicative & Fiable ($\geq 0{,}80$) \\
+\textbf{Fichier} & \textbf{Lignes} & \textbf{Rôle} \\
 \midrule
-1 & Atelectasis & 0,82 & Oui \\
-2 & Consolidation & 0,79 & Non \\
-3 & Infiltration & 0,70 & Non \\
-4 & Pneumothorax & 0,88 & Oui \\
-5 & Edema & 0,90 & Oui \\
-6 & Emphysema & 0,93 & Oui \\
-7 & Fibrosis & 0,82 & Oui \\
-8 & Effusion & 0,88 & Oui \\
-9 & Pneumonia & 0,76 & Non \\
-10 & Pleural\_Thickening & 0,80 & Oui \\
-11 & Cardiomegaly & 0,90 & Oui \\
-12 & Nodule & 0,77 & Non \\
-13 & Mass & 0,84 & Oui \\
-14 & Hernia & 0,94 & Oui \\
+landing\_screen.dart & 827 & Hero animé et défilement vers le formulaire de connexion. \\
+onboarding.dart & 304 & Trois slides (Capture / IA / Rapport), widget ApertureMark. \\
+login.dart & 687 & Connexion e-mail/mot de passe, SHA-256, session. \\
+register.dart & 506 & Formulaire d'inscription. \\
+verify\_screen.dart & 290 & Vérification d'un code à 6 chiffres. \\
+dashboard.dart & 707 & Cartes statistiques, examens récents, fiches modèles IA. \\
+patients\_list\_screen.dart & 367 & Liste filtrable, badges de statut. \\
+add\_patient\_screen.dart & 423 & Formulaire de création de patient avec validation. \\
+patient\_detail\_screen.dart & 506 & Dossier patient et historique des examens. \\
+exam\_screen.dart & 568 & Assistant : patient $\rightarrow$ image $\rightarrow$ IA. \\
+results\_screen.dart & 1226 & Diagnostic principal, histogramme 14 barres, masque U-Net. \\
+history\_screen.dart & 266 & Historique global des examens. \\
+profile\_screen.dart & 647 & Profil médecin, réglages, changement de mot de passe. \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-Quatre classes à faible AUC (Infiltration, Pneumonia, Nodule, Consolidation)
-sont exclues du diagnostic principal (\emph{headline}) afin de ne pas
-dégrader la fiabilité perçue de l'application.
+\begin{table}[H]
+\centering
+\caption{Inventaire des services Flutter}
+\label{tab:services}
+\begin{tabularx}{\textwidth}{l r X}
+\toprule
+\textbf{Service} & \textbf{Lignes} & \textbf{Rôle} \\
+\midrule
+ai\_service.dart & 218 & Singleton d'inférence TFLite (DenseNet121 + U-Net). \\
+database\_service.dart & 508 & Singleton CRUD, SQLite v4. \\
+auth\_service.dart & 116 & Authentification SHA-256 locale et session. \\
+api\_service.dart & 174 & Client REST optionnel (JWT, localhost:3000/api). \\
+pdf\_service.dart & 682 & Génération des rapports PDF. \\
+segmentation\_service.dart & 89 & Génération de la superposition du masque U-Net. \\
+sync\_service.dart & 11 & Stub de synchronisation cloud future. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-Le second modèle, un réseau \textbf{U-Net}, réalise la segmentation des champs
-pulmonaires. Il prend une image $[1, 256, 256, 1]$ normalisée et retourne un
-masque de probabilité de mêmes dimensions, binarisé au seuil 0,5.
+\section{Pipeline d'Inférence IA Complet}
+Le pipeline d'inférence constitue le cœur technique de PulmoScan AI. Il se décompose en quatre phases : le prétraitement de l'image, l'inférence DenseNet121, le post-traitement et la segmentation U-Net.
 
-\begin{infobox}[title=Fichiers des modèles embarqués]
-\texttt{pulmoscan\_model.tflite} (13,4 Mo) --- classification DenseNet121.\\
-\texttt{unet\_lung.tflite} (29,6 Mo) --- segmentation U-Net.
-\end{infobox}
+\subsection{Prétraitement des Images}
+Le prétraitement vise à transformer l'image radiographique fournie par l'utilisateur en un tenseur conforme aux attentes du modèle DenseNet121, à savoir un tableau de dimensions $[1, 224, 224, 1]$ en virgule flottante, en niveaux de gris et normalisé dans l'intervalle $[0,1]$. L'image subit d'abord un recadrage carré centré, puis un redimensionnement à 224$\times$224, et enfin une conversion en luminance selon la recommandation Rec.~601, suivie d'une division par 255. Le listing~\ref{lst:preproc} présente le code Dart correspondant.
 
-Le prétraitement Dart applique un recadrage centré, un redimensionnement en
-$224\times224$, le calcul de la luminance selon la recommandation Rec.601 puis
-une normalisation par 255 :
+\begin{lstlisting}[language=Dart, caption={Prétraitement de l'image (Dart)}, label={lst:preproc}]
+// Recadrage carre centre
+final side = w < h ? w : h;
+final cropped = img.copyCrop(decoded,
+  x: (w - side) ~/ 2, y: (h - side) ~/ 2, width: side, height: side);
 
-\begin{lstlisting}[language=Dart,caption={Prétraitement de l'image (luminance Rec.601)}]
+// Redimensionnement
+final resized = img.copyResize(cropped, width: 224, height: 224);
+
+// Luminance Rec. 601 -> [0,1]
 final lum = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
 inputData[idx++] = lum / 255.0;
 \end{lstlisting}
 
-Le post-traitement écarte les classes ambiguës, sélectionne la meilleure classe
-fiable, calibre la confiance et déduit la sévérité :
+\begin{warnbox}[Point critique : normalisation]
+Le modèle DenseNet121 issu de TorchXRayVision intègre déjà (\emph{baked in}) sa propre normalisation interne. Lui fournir des valeurs dans l'intervalle TorchXRayVision $[-1024, 1024]$ provoque la \textbf{saturation de toutes les sorties}. Seule une normalisation par division par 255 (intervalle $[0,1]$) produit des sorties exploitables. Ce point, confirmé par les tests Python, est développé au chapitre~5.
+\end{warnbox}
 
-\begin{lstlisting}[language=Dart,caption={Post-traitement et calibration de la confiance}]
-const ambiguous = {'Infiltration','Pneumonia','Nodule','Consolidation'};
-// pick best reliable class, fallback if < 0.04
-confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
-severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
+\subsection{Inférence DenseNet121}
+Une fois le tenseur d'entrée préparé, il est soumis à l'interpréteur TensorFlow Lite chargé avec le fichier \texttt{pulmoscan\_model.tflite} (13,4~Mo). Le modèle produit un vecteur de sortie $[1, 18]$ de valeurs sigmoïdes. Les 14 premiers indices correspondent aux pathologies NIH ; les indices 14 à 17 restent invariablement aux alentours de 0,5 car ils ne sont pas entraînés. Un point d'attention majeur concerne l'ordre des étiquettes : l'ordre TorchXRayVision n'est \textbf{pas alphabétique}. Le tableau~\ref{tab:labels} présente l'ordre exact, indispensable à une interprétation correcte.
+
+\begin{table}[H]
+\centering
+\caption{Ordre exact des étiquettes TorchXRayVision (indices 0 à 13)}
+\label{tab:labels}
+\begin{tabularx}{\textwidth}{c l c l}
+\toprule
+\textbf{Idx} & \textbf{Pathologie} & \textbf{Idx} & \textbf{Pathologie} \\
+\midrule
+0 & Atelectasis & 7 & Effusion \\
+1 & Consolidation & 8 & Pneumonia \\
+2 & Infiltration & 9 & Pleural\_Thickening \\
+3 & Pneumothorax & 10 & Cardiomegaly \\
+4 & Edema & 11 & Nodule \\
+5 & Emphysema & 12 & Mass \\
+6 & Fibrosis & 13 & Hernia \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Post-traitement et Sélection du Diagnostic}
+Le post-traitement sélectionne la pathologie dominante. Quatre classes jugées ambiguës, en raison d'une AUC inférieure à 0,80 (Infiltration, Pneumonia, Nodule, Consolidation), sont exclues du diagnostic principal --- tout en restant affichées dans l'histogramme. Le score brut le plus élevé parmi les classes restantes détermine le diagnostic. En l'absence de score suffisant ($< 0,04$), un repli sélectionne le score le plus élevé toutes classes confondues. L'indice de confiance est ensuite calculé par $(\text{bestRaw} \times 2,5)$ borné à l'intervalle $[0,55 ; 0,97]$, et la sévérité est fixée à \texttt{urgent} si le score brut atteint 0,20, à \texttt{moyen} sinon. Le listing~\ref{lst:postproc} détaille cette logique. Des seuils par classe sont également définis (Atelectasis 0,07 ; Cardiomegaly 0,06 ; Effusion 0,08 ; Emphysema 0,05 ; Fibrosis 0,04 ; etc.).
+
+\begin{lstlisting}[language=Dart, caption={Post-traitement et sélection du diagnostic (Dart)}, label={lst:postproc}]
+const ambiguous = {'Infiltration', 'Pneumonia', 'Nodule', 'Consolidation'};
+int bestIdx = -1;
+double bestRaw = 0;
+
+for (int i = 0; i < labels.length; i++) {
+  if (!ambiguous.contains(labels[i]) && raw[i] > bestRaw) {
+    bestRaw = raw[i];
+    bestIdx = i;
+  }
+}
+
+if (bestIdx < 0 || bestRaw < 0.04) {  // repli : meilleur score global
+  for (int i = 0; i < labels.length; i++) {
+    if (raw[i] > bestRaw) { bestRaw = raw[i]; bestIdx = i; }
+  }
+}
+
+final confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
+final severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
 \end{lstlisting}
 
-\mssec{1.3. Base de Données}
-La persistance repose sur \textbf{SQLite} via le paquet \texttt{sqflite}. La base
-est versionnée (version 4) et comporte trois tables principales.
+\subsection{Segmentation U-Net}
+En parallèle de la classification, le modèle U-Net (\texttt{unet\_lung.tflite}, 29,6~Mo, non quantifié) segmente les champs pulmonaires. Son entrée est un tenseur $[1, 256, 256, 1]$ en niveaux de gris normalisé par division par 255. Sa sortie est une carte de probabilités $[1, 256, 256, 1]$, binarisée à un seuil de 0,5 pour produire un masque. Ce masque, généré par le \texttt{segmentation\_service}, est ensuite superposé à l'image originale dans l'écran de résultats, offrant au médecin une visualisation claire de la région anatomique prise en compte par l'analyse.
 
-\begin{table}[h!]
+\section{Sécurité et Confidentialité}
+La sécurité et la confidentialité constituent des préoccupations centrales d'une application traitant des données médicales. PulmoScan AI met en œuvre plusieurs mesures. D'abord, les mots de passe ne sont jamais stockés en clair : seules leurs empreintes SHA-256 sont conservées. Ensuite, l'intégralité des données --- patients, examens, résultats --- reste sur l'appareil, dans la base SQLite locale, sans transfert vers un serveur distant lors du fonctionnement nominal. Cette localisation des données réduit considérablement la surface d'exposition et améliore la conformité aux exigences de protection des données personnelles. Enfin, lorsque le backend optionnel est activé, l'authentification s'appuie sur des jetons JWT, et les communications transitent par un canal contrôlé. La combinaison de ces mesures fait de la confidentialité non pas une option, mais une propriété structurelle de l'architecture.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a détaillé la réalisation technique de PulmoScan AI : la pile technologique, la structure du projet, le pipeline d'inférence des deux modèles d'IA et les mesures de sécurité. La maîtrise fine de la normalisation et de l'ordre des étiquettes s'est révélée déterminante pour la justesse des prédictions. Le chapitre suivant présente les interfaces utilisateur qui exposent ces traitements.
+
+%======================================================================
+%                            CHAPITRE 4
+%======================================================================
+\chapter{Présentation des Interfaces}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+Ce chapitre présente les interfaces utilisateur de PulmoScan AI, conçues selon le design system V4. Ce système repose sur un fond sombre (\texttt{\#0A0F1A}), des surfaces de cartes (\texttt{\#131B2E}), un accent principal turquoise (\texttt{\#34E5C5}) et une hiérarchie de teintes de texte. Trois couleurs sémantiques signalent la sévérité : rouge pour l'urgence, ambre pour les cas modérés et turquoise pour les cas normaux. Le widget animé \texttt{ApertureMark} incarne l'identité visuelle de l'application. Nous parcourons ci-après les principaux écrans.
+
+\section{Écrans d'Onboarding (3 slides)}
+Le parcours d'introduction se compose de trois écrans successifs présentant les trois piliers de PulmoScan AI : la \textbf{Capture} de la radiographie, l'\textbf{Analyse par IA} et la production du \textbf{Rapport}. Chaque slide associe une illustration animée par le widget \texttt{ApertureMark} à un texte concis. Un indicateur de progression et un bouton de navigation permettent à l'utilisateur de parcourir ou de passer cette introduction. Une attention particulière a été portée à l'adaptation à la barre de navigation gestuelle d'Android.
+
+\begin{figure}[H]
+\placeholderfig[8]{Écrans d'onboarding (Capture / IA / Rapport)}
+\caption{Écrans d'onboarding}
+\label{fig:onboarding}
+\end{figure}
+
+\section{Landing Page \& Connexion}
+La page d'accueil met en scène l'identité de PulmoScan AI à travers une section \textit{hero} et un défilement animé qui conduit naturellement l'utilisateur vers le formulaire de connexion. Ce dernier propose la saisie de l'e-mail et du mot de passe, avec vérification locale via SHA-256 et ouverture de session.
+
+\begin{figure}[H]
+\placeholderfig[8]{Landing page et écran de connexion}
+\caption{Landing page et connexion}
+\label{fig:landing}
+\end{figure}
+
+\section{Inscription \& Vérification}
+L'écran d'inscription recueille le nom, l'e-mail et le mot de passe du médecin, avec validation des champs. Il est suivi, le cas échéant, d'un écran de vérification par code à six chiffres.
+
+\begin{figure}[H]
+\placeholderfig[8]{Inscription et vérification par code}
+\caption{Inscription et vérification}
+\label{fig:register}
+\end{figure}
+
+\section{Dashboard \& Statistiques}
+Le tableau de bord offre une vue d'ensemble de l'activité. Des cartes statistiques présentent le nombre de patients, le nombre d'examens et la répartition par sévérité. Une liste des examens récents permet un accès rapide, et des fiches d'information détaillent les deux modèles d'IA embarqués.
+
+\begin{figure}[H]
+\placeholderfig[8]{Tableau de bord et statistiques}
+\caption{Dashboard et statistiques}
+\label{fig:dashboard}
+\end{figure}
+
+\section{Liste des Patients}
+L'écran de liste des patients affiche l'ensemble des dossiers sous forme de cartes, avec une barre de recherche et des badges de statut. Le tableau~\ref{tab:demo} présente les patients de démonstration intégrés à l'application.
+
+\begin{table}[H]
 \centering
-\caption{Schéma de la base de données SQLite (v4)}
-\begin{tabular}{>{\bfseries}p{2.2cm} p{10.8cm}}
+\caption{Patients de démonstration}
+\label{tab:demo}
+\begin{tabularx}{\textwidth}{l c c X l}
 \toprule
-Table & Colonnes \\
+\textbf{Nom} & \textbf{Âge} & \textbf{Genre} & \textbf{Antécédents} & \textbf{Diagnostic} \\
 \midrule
-users & id, name, email, password, role \\
-patients & id, firstName, lastName, dateOfBirth, gender, contact, createdAt \\
-exams & id, patientId, imagePath, diagnostic, confidence (0.0--1.0), severite (urgent/moyen/normal), details (JSON, 14 scores), createdAt \\
+Ahmed Benali & 58 & Homme & Tabagisme chronique (30 PA) & Emphysema 87\% (modéré) \\
+Fatima Zahra & 45 & Femme & Asthme & Pneumonia 92\% (sévère) \\
+Youssef Alaoui & 63 & Homme & BPCO, hypertension & Effusion 78\% (faible) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-Des données de démonstration sont injectées au premier lancement :
-\textit{Ahmed Benali} (Emphysema 87\%), \textit{Fatima Zahra} (Pneumonia 92\%) et
-\textit{Youssef Alaoui} (Effusion 78\%).
+\begin{figure}[H]
+\placeholderfig[8]{Liste des patients}
+\caption{Liste des patients}
+\label{fig:patients}
+\end{figure}
 
-\mssec{1.4. Authentification}
-L'authentification est entièrement \textbf{locale}. Les identifiants sont
-vérifiés par comparaison de \emph{hash} et la session est persistée via
-\texttt{SharedPreferences}, sans aucun appel réseau.
+\section{Détails Patient \& Historique}
+L'écran de détail d'un patient présente l'intégralité de son dossier --- informations administratives, antécédents --- ainsi que l'historique chronologique de ses examens, chacun étant cliquable pour accéder aux résultats correspondants.
 
-\mssec{1.5. Outils de Développement \& DevOps}
-L'environnement de travail combine \textbf{VS Code} et \textbf{Android Studio}
-pour le développement Flutter, \textbf{GitHub} pour le versionnement,
-\textbf{Google Colab} pour l'entraînement et la conversion des modèles en
-TFLite, et \textbf{Figma} pour la conception des maquettes du design system V4.
+\begin{figure}[H]
+\placeholderfig[8]{Détails du patient et historique}
+\caption{Détails patient et historique}
+\label{fig:patientdetail}
+\end{figure}
 
-\msec{Conclusion}
-Ce chapitre a présenté la pile technologique complète de PulmoScan AI. Le
-chapitre suivant illustre concrètement le résultat de cette implémentation à
-travers les interfaces de l'application.
+\section{Création d'Examen}
+L'écran de création d'examen guide le médecin à travers un assistant en plusieurs étapes : choix du patient, acquisition de l'image radiographique (galerie ou appareil photo), puis déclenchement de l'analyse par IA.
 
-% =====================================================================
-% CHAPITRE 4
-% =====================================================================
-\chapter{Présentation des Interfaces de l'Application}
+\begin{figure}[H]
+\placeholderfig[8]{Assistant de création d'examen}
+\caption{Création d'examen}
+\label{fig:exam}
+\end{figure}
 
-\msec{Introduction}
-Ce chapitre présente les principales interfaces de PulmoScan AI, conçues selon
-le design system V4. Chaque écran est illustré par une capture (emplacement
-réservé) et accompagné d'une description fonctionnelle.
+\section{Résultats de l'Analyse IA}
+L'écran de résultats est l'élément le plus riche de l'application. Il présente le diagnostic principal avec son indice de confiance et son niveau de sévérité (codé par couleur), un histogramme des scores des 14 pathologies, et la superposition du masque de segmentation U-Net sur l'image. Le médecin peut y ajouter des notes cliniques et générer le rapport PDF.
 
-\msec{1. Écran d'Onboarding (3 slides)}
-\figplaceholder[11cm]{Onboarding --- trois diapositives : gestion des patients, analyse IA, confidentialité des données.}
-L'onboarding introduit l'utilisateur aux trois piliers de l'application avant la
-première connexion.
+\begin{figure}[H]
+\placeholderfig[9]{Écran des résultats de l'analyse IA}
+\caption{Résultats de l'analyse IA}
+\label{fig:results}
+\end{figure}
 
-\msec{2. Landing Page \& Connexion}
-\figplaceholder[11cm]{Landing page et écran de connexion (authentification locale).}
-La page d'accueil présente l'identité de l'application et donne accès au
-formulaire de connexion sécurisé localement.
+\section{Profil Médecin}
+L'écran de profil regroupe les informations du médecin, les réglages de l'application et la possibilité de modifier le mot de passe. Il assure également la déconnexion et la gestion de la session.
 
-\msec{3. Dashboard}
-\figplaceholder[11cm]{Tableau de bord --- statistiques (patients, examens, sévérités) et accès rapides.}
-Le tableau de bord offre une vue synthétique de l'activité.
+\begin{figure}[H]
+\placeholderfig[8]{Profil du médecin}
+\caption{Profil médecin}
+\label{fig:profile}
+\end{figure}
 
-\msec{4. Liste des Patients}
-\figplaceholder[11cm]{Liste des patients --- recherche et accès aux fiches.}
-L'écran liste l'ensemble des patients enregistrés.
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Ce chapitre a parcouru les principales interfaces de PulmoScan AI. Le design system V4 confère à l'application une identité visuelle cohérente et une ergonomie soignée, au service de la clarté du parcours médical. Le chapitre suivant présente les tests menés pour valider la fiabilité de l'ensemble.
 
-\msec{5. Détails Patient}
-\figplaceholder[11cm]{Détails patient --- informations et historique des examens.}
-La fiche patient regroupe ses informations et l'historique de ses examens.
+%======================================================================
+%                            CHAPITRE 5
+%======================================================================
+\chapter{Tests et Assurance Qualité}
 
-\msec{6. Nouvel Examen}
-\figplaceholder[11cm]{Nouvel examen --- import/capture de la radiographie et lancement de l'analyse.}
-Cet écran permet de créer un examen en important une radiographie.
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+La fiabilité d'un outil d'aide au diagnostic médical est primordiale. Ce dernier chapitre décrit les démarches de test et d'assurance qualité menées sur PulmoScan AI. Nous abordons successivement les tests du modèle d'IA, les tests fonctionnels, les tests d'interface et d'ergonomie, puis les principales difficultés rencontrées et les solutions apportées.
 
-\msec{7. Résultats de l'Analyse IA}
-\figplaceholder[11cm]{Résultats IA --- diagnostic principal, barres de confiance, badge de sévérité, masque U-Net.}
-Les résultats présentent le diagnostic, les scores de confiance et la sévérité.
+\section{Tests du Modèle IA}
 
-\msec{8. Profil Médecin}
-\figplaceholder[11cm]{Profil médecin --- informations du praticien et déconnexion.}
-Le profil affiche les données du praticien connecté.
+\subsection{Validation de la Normalisation (Python)}
+La première campagne de tests, menée en Python sur les modèles avant leur intégration, visait à valider la stratégie de normalisation. Deux hypothèses ont été comparées : la normalisation par division par 255 (intervalle $[0,1]$) et la normalisation TorchXRayVision (intervalle $[-1024, 1024]$). Les résultats, résumés dans le tableau~\ref{tab:norm}, sont sans appel : la division par 255 produit des scores distribués entre 0,00 et 0,17, exploitables, tandis que la normalisation TorchXRayVision sature l'ensemble des sorties à 1,0 ou 0,0. Ce résultat confirme que la normalisation TorchXRayVision est \emph{déjà intégrée} au modèle exporté, et qu'il ne faut donc pas l'appliquer une seconde fois.
 
-\msec{Conclusion}
-Ce chapitre a présenté les huit interfaces principales de l'application,
-illustrant la cohérence du design system V4 et la fluidité du parcours
-utilisateur. Le chapitre suivant aborde l'assurance qualité.
-
-% =====================================================================
-% CHAPITRE 5
-% =====================================================================
-\chapter{Assurance Qualité --- Tests et Validation}
-
-\msec{Introduction}
-La qualité d'une application d'aide au diagnostic médical est primordiale. Ce
-chapitre décrit la démarche de validation menée à trois niveaux : les tests du
-modèle IA, les tests fonctionnels et les tests d'interface.
-
-\msec{1. Tests du Modèle IA}
-La validation du modèle a été réalisée en Python avant la conversion TFLite.
-Les tests ont porté sur la cohérence de la normalisation des entrées (valeurs
-dans $[0,1]$), l'ordre exact des labels TorchXRayVision et le calcul de l'AUC
-par classe. Ces tests ont notamment permis de détecter et de corriger une erreur
-d'ordre des labels qui produisait des prédictions erronées.
-
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\caption{Tests de validation du modèle IA}
-\begin{tabular}{>{\bfseries}p{4.5cm} p{5.5cm} c}
+\caption{Validation de la normalisation (tests Python)}
+\label{tab:norm}
+\begin{tabularx}{\textwidth}{l X c}
 \toprule
-Test & Description & Résultat \\
+\textbf{Normalisation} & \textbf{Comportement des sorties} & \textbf{Verdict} \\
 \midrule
-Normalisation & Entrées comprises dans $[0,1]$ & OK \\
-Ordre des labels & Conformité TorchXRayVision & Corrigé \\
-AUC par classe & 0,80--0,94 (classes fiables) & OK \\
-Exclusion classes ambiguës & 4 classes hors headline & OK \\
-Sortie sigmoïde & Vecteur $[1,18]$ valide & OK \\
+div255 $[0,1]$ & Scores distribués 0,00--0,17, non saturés. & Valide \\
+TXV $[-1024,1024]$ & Toutes les sorties saturées à 1,0 / 0,0. & Invalide \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\msec{2. Tests Fonctionnels}
-Des scénarios de test manuels ont été exécutés pour chaque fonctionnalité afin de
-valider le comportement attendu de l'application.
+\subsection{Métriques de Performance par Pathologie}
+Les performances du modèle DenseNet121 sont mesurées par l'aire sous la courbe ROC (AUC) pour chacune des 14 pathologies. Le tableau~\ref{tab:auc} présente ces valeurs. Les quatre classes marquées d'un astérisque, dont l'AUC est inférieure à 0,80, sont exclues du diagnostic principal en raison de leur fiabilité insuffisante, tout en demeurant visibles dans l'histogramme.
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\caption{Scénarios de tests fonctionnels}
-\begin{tabular}{c >{\bfseries}p{4cm} p{5cm} c}
+\caption{AUC par pathologie (* = exclue du diagnostic principal)}
+\label{tab:auc}
+\begin{tabularx}{\textwidth}{X c X c}
 \toprule
-\# & Fonctionnalité & Scénario & Résultat \\
+\textbf{Pathologie} & \textbf{AUC} & \textbf{Pathologie} & \textbf{AUC} \\
 \midrule
-T1 & Authentification & Connexion avec identifiants valides & OK \\
-T2 & Création patient & Ajout d'un patient complet & OK \\
-T3 & Import image & Sélection d'une radiographie & OK \\
-T4 & Analyse IA & Lancement et obtention du diagnostic & OK \\
-T5 & Résultats & Affichage confiance et sévérité & OK \\
-T6 & Dashboard & Mise à jour des statistiques & OK \\
-T7 & Historique & Consultation des examens passés & OK \\
+Atelectasis & 0,818 & Pneumonia* & 0,768 \\
+Consolidation* & 0,793 & Pleural\_Thickening & 0,806 \\
+Infiltration* & 0,703 & Cardiomegaly & 0,891 \\
+Pneumothorax & 0,872 & Nodule* & 0,780 \\
+Edema & 0,884 & Mass & 0,863 \\
+Emphysema & 0,937 & Hernia & 0,938 \\
+Fibrosis & 0,883 & Effusion & 0,882 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\msec{3. Tests d'Interface}
-Les tests d'interface (UI/UX) ont porté sur le respect du design system V4, la
-lisibilité et la robustesse de la mise en page. Plusieurs corrections ont été
-apportées, notamment la résolution d'un débordement (\emph{overflow}) lié à la
-barre de gestes Android, traité via \texttt{MediaQuery.padding.bottom}, ainsi
-que l'ajustement des marges (\emph{padding}) sur plusieurs écrans.
+\subsection{Comportement sur Images Synthétiques}
+Des tests complémentaires ont été conduits sur des images synthétiques et sur des radiographies réelles du jeu NIH. Ils ont confirmé que la classe Infiltration ressort systématiquement comme la plus élevée (scores de 0,10 à 0,17), conséquence du déséquilibre des classes dans le jeu d'entraînement --- ce qui justifie son exclusion du diagnostic principal. À l'inverse, les classes fiables (Emphysema, Cardiomegaly, Effusion) sont correctement prédites sur les images réelles, validant le bon fonctionnement du pipeline une fois la normalisation et l'ordre des étiquettes corrigés.
 
-\begin{infobox}[title=Difficultés techniques résolues]
-\begin{enumerate}[leftmargin=1.5em]
-  \item Ordre des labels TorchXRayVision (non alphabétique) : prédictions
-        corrigées.
-  \item Classes ambiguës à faible AUC dominant le résultat : exclues du
-        headline.
-  \item Débordement de la barre de gestes Android :
-        \texttt{MediaQuery.padding.bottom}.
-  \item Incohérence des jetons de sévérité en base : jetons normalisés.
-\end{enumerate}
-\end{infobox}
+\section{Tests Fonctionnels}
+Les tests fonctionnels ont vérifié, scénario par scénario, le bon comportement de l'application. Le tableau~\ref{tab:functests} en présente une synthèse.
 
-\msec{Conclusion}
-Les trois niveaux de tests ont confirmé la robustesse et la fiabilité de
-PulmoScan AI. Les difficultés rencontrées ont été identifiées et résolues, ce qui
-garantit une expérience utilisateur stable et des prédictions cohérentes.
+\begin{table}[H]
+\centering
+\caption{Synthèse des tests fonctionnels}
+\label{tab:functests}
+\begin{tabularx}{\textwidth}{X X c}
+\toprule
+\textbf{Scénario} & \textbf{Résultat attendu} & \textbf{Statut} \\
+\midrule
+Inscription d'un médecin & Compte créé, mot de passe haché. & Réussi \\
+Connexion (identifiants valides) & Session ouverte, accès au dashboard. & Réussi \\
+Connexion (identifiants invalides) & Message d'erreur, accès refusé. & Réussi \\
+Création d'un patient & Patient enregistré, CIN unique vérifiée. & Réussi \\
+Création d'un examen avec image & Examen au statut en\_attente. & Réussi \\
+Analyse IA & Diagnostic, confiance et sévérité produits. & Réussi \\
+Segmentation U-Net & Masque superposé affiché. & Réussi \\
+Génération de rapport PDF & PDF généré et partageable. & Réussi \\
+Historique des examens & Liste chronologique correcte. & Réussi \\
+Déconnexion & Session effacée. & Réussi \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-% =====================================================================
-% CONCLUSION GENERALE
-% =====================================================================
+\section{Tests d'Interface et Ergonomie}
+Les tests d'interface ont porté sur la cohérence visuelle (respect du design system V4), la lisibilité, la réactivité de la navigation et l'adaptation aux différentes tailles d'écran. Une attention particulière a été portée à la gestion de la barre de navigation gestuelle d'Android, source d'un débordement initialement constaté sur l'onboarding. L'ensemble des écrans a été vérifié sur appareil physique afin de garantir une expérience fluide et sans débordement de mise en page.
+
+\section{Difficultés Rencontrées et Solutions}
+Le développement de PulmoScan AI a comporté plusieurs difficultés techniques notables, dont la résolution a été déterminante pour la qualité finale. Le tableau~\ref{tab:difficulties} les récapitule.
+
+\begin{table}[H]
+\centering
+\caption{Difficultés rencontrées et solutions apportées}
+\label{tab:difficulties}
+\begin{tabularx}{\textwidth}{X X}
+\toprule
+\textbf{Difficulté} & \textbf{Solution} \\
+\midrule
+Ordre des étiquettes TorchXRayVision $\neq$ ordre alphabétique NIH, entraînant des prédictions erronées. & Correction de l'ordre des étiquettes selon la table TorchXRayVision officielle. \\
+Classes ambiguës à faible AUC (Infiltration, Pneumonia, Nodule, Consolidation) dominant le diagnostic. & Exclusion de ces classes du diagnostic principal, tout en les conservant dans l'histogramme. \\
+Normalisation TXV $[-1024,1024]$ saturant toutes les sorties. & Retour à la normalisation par division par 255, validée par test Python. \\
+Débordement (overflow) lié à la barre de navigation gestuelle Android sur l'onboarding. & Prise en compte de \texttt{MediaQuery.of(context).padding.bottom}. \\
+Incohérence des libellés de sévérité en base ('Modérée' vs 'modere'). & Normalisation vers les jetons du thème V4. \\
+Condition de course lors de la migration de version de la base. & Implémentation correcte du callback \texttt{onUpgrade}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+Les campagnes de tests ont confirmé la fiabilité du pipeline d'inférence et le bon fonctionnement des fonctionnalités de l'application. La résolution méthodique des difficultés rencontrées --- notamment l'ordre des étiquettes et la stratégie de normalisation --- a permis d'atteindre des prédictions exploitables sur les classes fiables. PulmoScan AI répond ainsi aux exigences fonctionnelles et non fonctionnelles fixées au début du projet.
+
+%======================================================================
+%                            CONCLUSION GENERALE
+%======================================================================
 \chapter*{Conclusion Générale}
 \addcontentsline{toc}{chapter}{Conclusion Générale}
-\markboth{Conclusion Générale}{}
+\markboth{CONCLUSION GÉNÉRALE}{}
 
-Le projet PulmoScan AI nous a permis de concevoir et de réaliser une application
-mobile complète d'aide au diagnostic des pathologies pulmonaires, fondée sur une
-architecture entièrement \emph{offline-first}. Nous avons intégré avec succès
-deux modèles d'apprentissage profond (DenseNet121 pour la classification et
-U-Net pour la segmentation) au format TensorFlow Lite, dans une application
-Flutter dotée d'une base de données SQLite locale.
+Le projet PulmoScan AI nous a permis de concevoir et de réaliser une application mobile complète de pré-diagnostic des pathologies pulmonaires, fonctionnant intégralement hors ligne. À travers ce travail, nous avons relevé un double défi : maîtriser un framework de développement multiplateforme moderne (Flutter) et intégrer, sur les contraintes d'un appareil mobile, deux modèles d'intelligence artificielle --- un réseau DenseNet121 pour la classification de 14 pathologies et un réseau U-Net pour la segmentation pulmonaire.
 
-Ce travail a constitué une expérience formatrice à la croisée du développement
-mobile, de l'ingénierie des données et de l'intelligence artificielle. Il nous a
-confrontés à des défis techniques concrets --- l'ordre des labels, la
-calibration de la confiance, la gestion des classes ambiguës ou encore les
-contraintes d'affichage --- que nous avons su surmonter par une démarche
-rigoureuse et itérative.
+\bigskip
+L'architecture offline-first retenue répond directement à la problématique initiale : elle garantit la confidentialité des données médicales, leur disponibilité permanente et une indépendance totale vis-à-vis du réseau. La mise au point du pipeline d'inférence a constitué la partie la plus exigeante du projet ; elle nous a appris l'importance cruciale de la compréhension fine des modèles utilisés, notamment de leur normalisation interne et de l'ordre exact de leurs sorties.
 
-Plusieurs perspectives d'évolution se dégagent : l'extension à d'autres
-modalités d'imagerie, l'amélioration des modèles par un ré-entraînement sur des
-données locales, la génération automatique de rapports PDF, l'ajout d'une
-synchronisation chiffrée optionnelle, ainsi qu'une validation clinique en
-conditions réelles. PulmoScan AI constitue ainsi une base solide pour un outil
-d'aide à la décision médicale accessible, respectueux de la confidentialité et
-adapté au contexte marocain.
+\bigskip
+Sur le plan des compétences, ce projet a renforcé notre maîtrise du développement mobile, de la modélisation UML, de la conception de bases de données relationnelles, de la sécurité applicative et de l'apprentissage profond appliqué à l'imagerie médicale. La répartition du travail --- Kenza Foudali sur les modèles d'IA (notebooks Colab, conversion TFLite), la conception de la base SQLite et l'UI/UX, Adnane El Hajji sur l'architecture Flutter, l'intégration, le backend optionnel, les tests et le déploiement --- nous a également formés au travail collaboratif.
 
-% =====================================================================
-% WEBOGRAPHIE
-% =====================================================================
-\chapter*{Webographie}
-\addcontentsline{toc}{chapter}{Webographie}
-\markboth{Webographie}{}
+\bigskip
+Plusieurs \textbf{perspectives} d'évolution se dégagent. À court terme, l'activation effective du backend de synchronisation permettrait le partage sécurisé des dossiers entre praticiens. À moyen terme, le ré-entraînement ou le \textit{fine-tuning} des modèles sur des données locales améliorerait la fiabilité sur les classes actuellement exclues. Enfin, l'ajout d'une fonction d'explicabilité (cartes de chaleur de type Grad-CAM) renforcerait la confiance des praticiens dans les prédictions de l'application.
 
-\begin{enumerate}[leftmargin=1.8em]
-  \item G. Huang, Z. Liu, L. van der Maaten, K. Q. Weinberger,
-        \textit{Densely Connected Convolutional Networks (DenseNet)},
-        CVPR, 2017.
-  \item O. Ronneberger, P. Fischer, T. Brox,
-        \textit{U-Net: Convolutional Networks for Biomedical Image
-        Segmentation}, MICCAI, 2015.
-  \item X. Wang et al.,
-        \textit{ChestX-ray8: Hospital-scale Chest X-ray Database}, CVPR, 2017.
-  \item J. P. Cohen et al., \textit{TorchXRayVision},
-        \url{https://github.com/mlmed/torchxrayvision}, 2022.
-  \item Flutter Documentation, \url{https://flutter.dev}.
-  \item TensorFlow Lite, \url{https://www.tensorflow.org/lite}.
-  \item SQLite, \url{https://www.sqlite.org}.
-  \item NIH Chest X-ray Dataset,
-        \url{https://nihcc.app.box.com/v/ChestXray-NIHCC}.
+\bigskip
+PulmoScan AI démontre qu'il est possible de mettre une assistance au diagnostic par intelligence artificielle, performante et respectueuse de la vie privée, à la portée de la première ligne de soins, y compris dans des contextes à connectivité limitée. Nous espérons que ce travail contribuera, modestement, à la réflexion sur une santé numérique accessible et éthique.
+
+%======================================================================
+%                            REFERENCES
+%======================================================================
+\chapter*{Webographie / Références}
+\addcontentsline{toc}{chapter}{Webographie / Références}
+\markboth{RÉFÉRENCES}{}
+
+\begin{enumerate}
+  \item Huang, G., Liu, Z., van der Maaten, L., \& Weinberger, K. Q. (2017). \textit{Densely Connected Convolutional Networks}. IEEE Conference on Computer Vision and Pattern Recognition (CVPR 2017).
+  \item Ronneberger, O., Fischer, P., \& Brox, T. (2015). \textit{U-Net: Convolutional Networks for Biomedical Image Segmentation}. MICCAI 2015.
+  \item Wang, X., Peng, Y., Lu, L., Lu, Z., Bagheri, M., \& Summers, R. M. (2017). \textit{ChestX-ray8: Hospital-scale Chest X-ray Database and Benchmarks on Weakly-Supervised Classification and Localization of Common Thorax Diseases}. CVPR 2017.
+  \item Cohen, J. P., \textit{et al.} (2022). \textit{TorchXRayVision: A library of chest X-ray datasets and models}. \texttt{github.com/mlmed/torchxrayvision}
+  \item Flutter Team (2024). \textit{Flutter Documentation}. \texttt{flutter.dev}
+  \item Google (2024). \textit{TensorFlow Lite --- ML for Mobile and Edge Devices}. \texttt{tensorflow.org/lite}
+  \item National Institutes of Health (2017). \textit{NIH Chest X-ray Dataset}. \texttt{nihcc.app.box.com}
+  \item Ministère de la Santé du Maroc (2022). \textit{Rapport sur les maladies respiratoires}. \texttt{sante.gov.ma}
 \end{enumerate}
 
 \end{document}
