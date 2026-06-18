@@ -196,44 +196,50 @@
 {\normalsize Office de la Formation Professionnelle et de la Promotion du Travail}\\[12pt]
 
 % ── Trois logos en haut (remplacer chaque tikzpicture par \includegraphics) ──
-% Noms des fichiers à placer dans le même dossier que le .tex :
-%   logo gauche  → logo_ofppt.png
-%   logo centre  → logo_centre.png
-%   logo droite  → logo_filiere.png
+% Noms des fichiers à placer dans le même dossier que le .tex (.jpg ou .png) :
+%   logo gauche  → logo_ofppt.jpg
+%   logo centre  → logo_centre.jpg
+%   logo droite  → logo_filiere.jpg
 \noindent\begin{minipage}[c]{0.28\textwidth}
 \centering
-\IfFileExists{logo_ofppt.png}{%
+\IfFileExists{logo_ofppt.jpg}{%
+  \includegraphics[height=2.6cm]{logo_ofppt.jpg}%
+}{\IfFileExists{logo_ofppt.png}{%
   \includegraphics[height=2.6cm]{logo_ofppt.png}%
 }{%
   \begin{tikzpicture}
     \draw[dashed,psInkMuted,line width=0.8pt,fill=psSurface!5](0,0)rectangle(2.8,2.6);
     \node[psInkMuted,align=center,font=\footnotesize] at (1.4,1.3){Logo\\OFPPT};
   \end{tikzpicture}%
-}
+}}
 \end{minipage}
 \hfill
 \begin{minipage}[c]{0.28\textwidth}
 \centering
-\IfFileExists{logo_centre.png}{%
+\IfFileExists{logo_centre.jpg}{%
+  \includegraphics[height=2.6cm]{logo_centre.jpg}%
+}{\IfFileExists{logo_centre.png}{%
   \includegraphics[height=2.6cm]{logo_centre.png}%
 }{%
   \begin{tikzpicture}
     \draw[dashed,psInkMuted,line width=0.8pt,fill=psSurface!5](0,0)rectangle(2.8,2.6);
     \node[psInkMuted,align=center,font=\footnotesize] at (1.4,1.3){Logo\\Centre\\Al Kendi};
   \end{tikzpicture}%
-}
+}}
 \end{minipage}
 \hfill
 \begin{minipage}[c]{0.28\textwidth}
 \centering
-\IfFileExists{logo_filiere.png}{%
+\IfFileExists{logo_filiere.jpg}{%
+  \includegraphics[height=2.6cm]{logo_filiere.jpg}%
+}{\IfFileExists{logo_filiere.png}{%
   \includegraphics[height=2.6cm]{logo_filiere.png}%
 }{%
   \begin{tikzpicture}
     \draw[dashed,psInkMuted,line width=0.8pt,fill=psSurface!5](0,0)rectangle(2.8,2.6);
     \node[psInkMuted,align=center,font=\footnotesize] at (1.4,1.3){Logo\\Filière\\DAI};
   \end{tikzpicture}%
-}
+}}
 \end{minipage}
 
 {\color{psInkMuted}\rule{\textwidth}{0.6pt}}\\[14pt]
