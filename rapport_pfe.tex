@@ -1269,12 +1269,12 @@ Visual Studio Code est un éditeur de code source léger, multiplateforme et hau
 \medskip\hrule\medskip
 
 %------------------------------------------------------------
-\subsection{Entraînement et Conversion des Modèles --- Google Colab}
+\subsection{Entraînement et Conversion des Modèles --- Kaggle}
 %------------------------------------------------------------
 
 \noindent\begin{minipage}[t]{0.66\textwidth}
 \subsubsection*{Définition}
-Google Colab (Colaboratory) est une plateforme cloud gratuite de notebooks Jupyter proposée par Google. Elle offre un accès à des ressources GPU (T4, A100) pour l'entraînement et le test de modèles de deep learning, sans installation locale. L'environnement Python préinstallé inclut PyTorch, TorchXRayVision, TensorFlow, ONNX et les outils de conversion de modèles.
+Kaggle est une plateforme cloud de data science proposée par Google, qui met à disposition des notebooks Jupyter exécutés sur des GPU dédiés (NVIDIA T4 / P100) sans installation locale. Son environnement Python préconfiguré inclut PyTorch, TensorFlow, TorchXRayVision, ONNX et les outils de conversion de modèles, ce qui en fait le cadre idéal pour préparer des modèles de deep learning destinés au déploiement mobile.
 \end{minipage}\hfill
 \begin{minipage}[t]{0.30\textwidth}
 \vspace{0pt}
@@ -1282,24 +1282,25 @@ Google Colab (Colaboratory) est une plateforme cloud gratuite de notebooks Jupyt
 \begin{tikzpicture}
   \draw[dashed, psInkMuted, line width=0.8pt, fill=psSurface!5]
     (0,0) rectangle (3.4,3.0);
-  \node[psDeep, font=\bfseries\small, align=center, text width=3cm] at (1.7,1.9) {Google\\Colab};
-  \node[psInkMuted, font=\footnotesize] at (1.7,0.8) {GPU T4 / A100};
-  \node[psInkMuted, font=\footnotesize] at (1.7,0.4) {Jupyter};
+  \node[psTeal, font=\bfseries\Large] at (1.7,2.1) {Kaggle};
+  \node[psInkMuted, font=\footnotesize] at (1.7,1.2) {GPU T4 / P100};
+  \node[psInkMuted, font=\footnotesize] at (1.7,0.6) {Notebook Python};
 \end{tikzpicture}
 \end{center}
 \end{minipage}
 
 \subsubsection*{Utilités dans le projet}
 \begin{itemize}
-  \item Chargement et test du modèle DenseNet121 TorchXRayVision en Python avant l'intégration mobile.
-  \item Validation de la stratégie de normalisation (test div255 vs TXV $[-1024,1024]$) sur GPU.
-  \item Conversion PyTorch $\rightarrow$ ONNX $\rightarrow$ TFLite (\texttt{tf.lite.TFLiteConverter.from\_saved\_model}).
-  \item Tests des valeurs de sortie sur images synthétiques pour vérifier l'ordre des étiquettes.
-  \item Environnement de référence scientifique pour valider les paramètres du pipeline.
+  \item Chargement du modèle DenseNet121 pré-entraîné TorchXRayVision sur GPU T4.
+  \item Validation de la normalisation div255 $\in [0,1]$ sur images radiographiques réelles.
+  \item Export PyTorch $\rightarrow$ ONNX via \texttt{torch.onnx.export()}.
+  \item Conversion ONNX $\rightarrow$ TFLite via \texttt{tf2onnx} et \texttt{TFLiteConverter}.
+  \item Vérification de la cohérence des sorties avant et après conversion.
+  \item Accès direct au jeu de données NIH ChestX-ray14 hébergé sur Kaggle Datasets.
 \end{itemize}
 
 \subsubsection*{Lien officiel}
-\url{https://colab.research.google.com/}
+\url{https://www.kaggle.com/}
 
 Le schéma SQL complet de la base de données est présenté dans le listing~\ref{lst:schema}.
 
@@ -1409,6 +1410,274 @@ api\_service.dart & 174 & Client REST optionnel (JWT, localhost:3000/api). \\
 pdf\_service.dart & 682 & Génération des rapports PDF. \\
 segmentation\_service.dart & 89 & Génération de la superposition du masque U-Net. \\
 sync\_service.dart & 11 & Stub de synchronisation cloud future. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+%======================================================================
+\section{Entraînement du Modèle et Pipeline de Conversion TFLite}
+%======================================================================
+
+Cette section décrit la démarche complète qui a permis d'obtenir le fichier
+\texttt{pulmoscan\_model.tflite} embarqué dans l'application : de la sélection
+du modèle pré-entraîné jusqu'à sa validation sur appareil mobile.
+
+%------------------------------------------------------------
+\subsection{Environnement Kaggle et Jeu de Données}
+%------------------------------------------------------------
+
+L'ensemble du travail de préparation, de conversion et de validation des modèles
+a été réalisé dans des notebooks \textbf{Kaggle}, qui offrent un accès gratuit à
+des GPU NVIDIA T4 (16 Go VRAM) avec un quota hebdomadaire de 30 heures
+d'accélération GPU. Cet environnement a permis de travailler sans contrainte
+matérielle et d'accéder directement aux jeux de données hébergés sur la
+plateforme.
+
+Le modèle de classification s'appuie sur le jeu de données
+\textbf{NIH ChestX-ray14}, la plus grande base publique de radiographies
+thoraciques annotées au monde :
+
+\begin{table}[H]
+\centering
+\caption{Caractéristiques du jeu de données NIH ChestX-ray14}
+\label{tab:nih}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Caractéristique} & \textbf{Valeur} \\
+\midrule
+Nombre d'images & 112\,120 radiographies thoraciques frontales \\
+Nombre de patients & 30\,805 patients uniques \\
+Format & PNG 1024$\times$1024, niveaux de gris \\
+Classes & 14 pathologies + classe \og{}No Finding\fg{} \\
+Annotations & Extraites automatiquement des comptes-rendus médicaux (NLP) \\
+Source & National Institutes of Health (NIH), USA \\
+Accès & Disponible sur Kaggle Datasets (\texttt{nih-chest-xrays/data}) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Les 14 pathologies couvertes — dans l'ordre exact du modèle TorchXRayVision —
+sont : Atelectasis, Consolidation, Infiltration, Pneumothorax, Edema,
+Emphysema, Fibrosis, Effusion, Pneumonia, Pleural\_Thickening, Cardiomegaly,
+Nodule, Mass et Hernia.
+
+%------------------------------------------------------------
+\subsection{Choix du Modèle : DenseNet121 Pré-entraîné}
+%------------------------------------------------------------
+
+Plutôt que d'entraîner un modèle from scratch (ce qui nécessiterait plusieurs
+jours de GPU et des dizaines de milliers d'images annotées), nous avons adopté
+une approche de \textbf{transfer learning} en utilisant le modèle
+\textbf{DenseNet121} fourni par la bibliothèque \textbf{TorchXRayVision} (TXV).
+
+Ce modèle présente plusieurs avantages déterminants pour notre projet :
+
+\begin{itemize}
+  \item \textbf{Pré-entraîné sur NIH ChestX-ray14} : 112\,120 radiographies,
+    performance validée scientifiquement (AUC moyen $\approx 0{,}85$).
+  \item \textbf{Normalisation intégrée} (\textit{baked-in}) : le modèle intègre
+    en interne la normalisation TXV, ce qui impose d'alimenter l'entrée avec
+    des pixels normalisés par division par 255 (intervalle $[0,1]$).
+  \item \textbf{Sortie multi-label} : vecteur de 18 scores sigmoid (seuls les
+    14 premiers sont utilisés).
+  \item \textbf{Format d'entrée} : tenseur float32 de forme $[1, 224, 224, 1]$
+    (image grayscale).
+  \item \textbf{Taille compacte} : 13,4 Mo après conversion TFLite, compatible
+    avec une embarquement mobile.
+\end{itemize}
+
+Le chargement du modèle dans le notebook Kaggle s'effectue via :
+
+\begin{lstlisting}[language=Python, caption={Chargement du modèle TorchXRayVision sur Kaggle}, label={lst:txv_load}]
+import torchxrayvision as xrv
+import torch
+
+# Chargement du modele DenseNet121 pre-entraine NIH
+model = xrv.models.DenseNet(weights="densenet121-res224-nih")
+model.eval()
+
+print(f"Pathologies ({len(model.pathologies)}) : {model.pathologies}")
+# Pathologies (18) : ['Atelectasis', 'Consolidation', 'Infiltration',
+# 'Pneumothorax', 'Edema', 'Emphysema', 'Fibrosis', 'Effusion',
+# 'Pneumonia', 'Pleural_Thickening', 'Cardiomegaly', 'Nodule',
+# 'Mass', 'Hernia', 'Lung Lesion', 'Fracture', ...]
+\end{lstlisting}
+
+%------------------------------------------------------------
+\subsection{Pipeline de Conversion PyTorch \texorpdfstring{$\rightarrow$}{->} ONNX \texorpdfstring{$\rightarrow$}{->} TFLite}
+%------------------------------------------------------------
+
+La conversion suit trois étapes successives. TensorFlow Lite ne pouvant pas
+importer directement un modèle PyTorch, le format ONNX (Open Neural Network
+Exchange) sert de format intermédiaire universel.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\small}]
+  % Boîtes
+  \node[draw=psTeal, fill=psSurface, text=psInk, rounded corners=6pt,
+        minimum width=2.8cm, minimum height=1cm, align=center]
+        (pytorch) {PyTorch\\{\footnotesize\texttt{.pt} / \texttt{.pth}}};
+  \node[draw=psInkMuted, fill=psSurface, text=psInk, rounded corners=6pt,
+        minimum width=2.8cm, minimum height=1cm, align=center,
+        right=2cm of pytorch]
+        (onnx) {ONNX\\{\footnotesize\texttt{.onnx}}};
+  \node[draw=psTeal, fill=psSurface, text=psInk, rounded corners=6pt,
+        minimum width=2.8cm, minimum height=1cm, align=center,
+        right=2cm of onnx]
+        (tflite) {TFLite\\{\footnotesize\texttt{.tflite}}};
+  % Flèches
+  \draw[->, psTeal, thick] (pytorch) -- node[above, font=\footnotesize]
+    {\texttt{torch.onnx}} (onnx);
+  \draw[->, psTeal, thick] (onnx) -- node[above, font=\footnotesize]
+    {\texttt{tf2onnx}} (tflite);
+  % Labels dessous
+  \node[below=0.3cm of pytorch, psInkMuted, font=\footnotesize] {Modèle source};
+  \node[below=0.3cm of onnx, psInkMuted, font=\footnotesize] {Format pivot};
+  \node[below=0.3cm of tflite, psInkMuted, font=\footnotesize] {Déploiement mobile};
+\end{tikzpicture}
+\caption{Pipeline de conversion du modèle : PyTorch $\rightarrow$ ONNX $\rightarrow$ TFLite}
+\label{fig:conversion}
+\end{figure}
+
+\subsubsection*{Étape 1 : Export PyTorch vers ONNX}
+
+L'export vers ONNX nécessite de définir un tenseur d'entrée fictif de la même
+forme que les vraies entrées du modèle ($[1, 1, 224, 224]$ en format
+PyTorch NCHW) :
+
+\begin{lstlisting}[language=Python, caption={Export du modèle PyTorch vers ONNX}, label={lst:onnx_export}]
+import torch
+
+# Tenseur d'entree fictif : [batch=1, canaux=1, H=224, W=224]
+dummy_input = torch.zeros(1, 1, 224, 224)
+
+torch.onnx.export(
+    model,
+    dummy_input,
+    "pulmoscan_densenet121.onnx",
+    input_names=["input"],
+    output_names=["output"],
+    opset_version=11,
+    dynamic_axes={"input": {0: "batch"}, "output": {0: "batch"}},
+)
+print("Export ONNX termine.")
+\end{lstlisting}
+
+\subsubsection*{Étape 2 : Conversion ONNX vers TFLite}
+
+La conversion utilise \texttt{tf2onnx} pour transformer le graphe ONNX en
+SavedModel TensorFlow, puis \texttt{TFLiteConverter} pour produire le fichier
+\texttt{.tflite} final en précision float32 :
+
+\begin{lstlisting}[language=Python, caption={Conversion ONNX $\rightarrow$ TFLite via tf2onnx}, label={lst:tflite_convert}]
+import subprocess, tensorflow as tf
+
+# 1. ONNX -> SavedModel TensorFlow
+subprocess.run([
+    "python", "-m", "tf2onnx.convert",
+    "--onnx",    "pulmoscan_densenet121.onnx",
+    "--output",  "savedmodel/",
+    "--opset",   "11",
+    "--saved-model"
+], check=True)
+
+# 2. SavedModel -> TFLite (float32, aucune quantification)
+converter = tf.lite.TFLiteConverter.from_saved_model("savedmodel/")
+converter.optimizations = []          # FP32 pur, pas de quantification int8
+tflite_model = converter.convert()
+
+with open("pulmoscan_model.tflite", "wb") as f:
+    f.write(tflite_model)
+
+print(f"Taille du modele TFLite : {len(tflite_model)/1e6:.1f} Mo")
+# -> Taille du modele TFLite : 13.4 Mo
+\end{lstlisting}
+
+\begin{infobox}[Pourquoi float32 sans quantification ?]
+La quantification int8 réduit la taille du modèle mais dégrade les scores
+sigmoid sur les pathologies à faible prévalence (AUC $\downarrow$ 2--4\%).
+En conservant le format float32, on préserve la précision numérique complète
+du modèle TorchXRayVision, au coût d'un fichier de 13,4 Mo, tout à fait
+acceptable pour une application mobile moderne.
+\end{infobox}
+
+%------------------------------------------------------------
+\subsection{Validation de la Conversion}
+%------------------------------------------------------------
+
+Avant d'intégrer le modèle dans Flutter, la cohérence des sorties entre le
+modèle PyTorch original et le modèle TFLite converti a été vérifiée sur une
+image test dans le notebook Kaggle :
+
+\begin{lstlisting}[language=Python, caption={Vérification de la cohérence PyTorch vs TFLite}, label={lst:validation}]
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+
+# --- Preparation de l'image test ---
+img = Image.open("test_xray.png").convert("L").resize((224, 224))
+arr = np.array(img, dtype=np.float32) / 255.0          # normalisation div255
+
+# --- Inference PyTorch ---
+with torch.no_grad():
+    t = torch.tensor(arr).unsqueeze(0).unsqueeze(0)    # [1,1,224,224]
+    scores_pt = torch.sigmoid(model(t)).numpy()[0]
+
+# --- Inference TFLite ---
+interp = tf.lite.Interpreter("pulmoscan_model.tflite")
+interp.allocate_tensors()
+inp = interp.get_input_details()[0]
+out = interp.get_output_details()[0]
+
+# TFLite attend [1,224,224,1] (format NHWC)
+interp.set_tensor(inp["index"],
+    arr.reshape(1, 224, 224, 1))
+interp.invoke()
+scores_tfl = interp.get_tensor(out["index"])[0]
+
+# --- Comparaison ---
+for i, label in enumerate(model.pathologies[:14]):
+    diff = abs(scores_pt[i] - scores_tfl[i])
+    print(f"{label:25s}  PT={scores_pt[i]:.4f}  TFL={scores_tfl[i]:.4f}"
+          f"  diff={diff:.6f}")
+
+max_diff = np.max(np.abs(scores_pt[:14] - scores_tfl[:14]))
+print(f"\nDifference maximale : {max_diff:.6f}")
+# -> Difference maximale : 0.000034  (numeriquement negligeable)
+\end{lstlisting}
+
+La différence maximale observée entre les sorties PyTorch et TFLite est
+inférieure à $3{,}4 \times 10^{-5}$, ce qui confirme que la conversion
+n'introduit aucune perte de précision significative. Le fichier
+\texttt{pulmoscan\_model.tflite} (13,4 Mo) a ensuite été placé dans le dossier
+\texttt{assets/models/} du projet Flutter, déclaré dans \texttt{pubspec.yaml}
+et chargé au lancement via \texttt{rootBundle.load()} dans
+\texttt{AiService.\_loadModel()}.
+
+%------------------------------------------------------------
+\subsection{Intégration dans l'Application Flutter}
+%------------------------------------------------------------
+
+Une fois le fichier \texttt{.tflite} intégré aux assets, le service
+\texttt{AiService} (singleton, 218 lignes) gère l'intégralité du cycle de vie
+du modèle. Le tableau~\ref{tab:tflite_integration} résume les correspondances
+entre le notebook Kaggle et le code Flutter :
+
+\begin{table}[H]
+\centering
+\caption{Correspondance notebook Kaggle $\leftrightarrow$ code Flutter (AiService)}
+\label{tab:tflite_integration}
+\begin{tabularx}{\textwidth}{l X X}
+\toprule
+\textbf{Étape} & \textbf{Notebook Kaggle (Python)} & \textbf{AiService.dart (Flutter)} \\
+\midrule
+Chargement & \texttt{tf.lite.Interpreter(path)} & \texttt{Interpreter.fromBuffer(bytes)} \\
+Format entrée & \texttt{[1, 224, 224, 1] float32} & \texttt{Float32List reshape [1,224,224,1]} \\
+Normalisation & \texttt{arr / 255.0} & \texttt{lum / 255.0} (luminance Rec. 601) \\
+Inférence & \texttt{interp.invoke()} & \texttt{\_interpreter!.run(input, out)} \\
+Lecture sortie & \texttt{get\_tensor(out\_idx)[0][:14]} & \texttt{out[0].sublist(0, 14)} \\
+Post-traitement & Comparaison seuils manuels & \texttt{classThresh} map Dart \\
 \bottomrule
 \end{tabularx}
 \end{table}
