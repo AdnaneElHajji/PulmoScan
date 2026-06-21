@@ -69,7 +69,7 @@ class AiService {
   // normal. Validated at 0% false-positives on non-pathological sweeps while
   // still surfacing real signals (raw ≈ 0.2–0.6). Also used by the results
   // screen and PDF export to flag findings, so everything stays consistent.
-  static const double alertThreshold = 0.20;
+  static const double alertThreshold = 0.10;
 
   bool _modelMissing = false;
 
