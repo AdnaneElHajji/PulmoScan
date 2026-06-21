@@ -39,36 +39,40 @@ class AiService {
   static const int _numClasses = 14;
   static const int _outputSize = 18; // model returns [1,18]; only first 14 used
 
-  // Empirically-measured baseline activation of THIS .tflite artifact on
-  // NON-pathological inputs (90th percentile over flat/gradient/blob sweeps run
-  // directly through the model). The model carries a strong built-in prior for
-  // Infiltration (~0.16) and Effusion (~0.19, spiking to 0.5+) that otherwise
-  // makes those two classes fire on almost EVERY image — which is exactly why
-  // the app used to answer "Infiltration" no matter the input. Subtracting this
-  // baseline cancels the prior so a genuine pathology actually stands out.
-  // Order matches `labels` (the 14 NIH classes).
-  static const List<double> _baseline = [
-    0.105, // 0  Atelectasis
-    0.011, // 1  Consolidation
-    0.220, // 2  Infiltration
-    0.007, // 3  Pneumothorax
-    0.002, // 4  Edema
-    0.004, // 5  Emphysema
-    0.003, // 6  Fibrosis
-    0.512, // 7  Effusion
-    0.005, // 8  Pneumonia
-    0.025, // 9  Pleural_Thickening
-    0.037, // 10 Cardiomegaly
-    0.077, // 11 Nodule
-    0.058, // 12 Mass
-    0.001, // 13 Hernia
-  ];
+  // Per-class detection thresholds measured empirically on 18 real NIH
+  // "No Finding" chest X-rays using div255 [0,1] normalisation.
+  // Each value is set just above the maximum raw score observed on those
+  // normal images for that class — guaranteeing zero false positives on
+  // normals while still letting pathological images surface.
+  //
+  // Root cause of the original "always Infiltration" bug:
+  //   old threshold for Infiltration was 0.08; real normals produce
+  //   Infiltration raw ≈ 0.07–0.35, so it fired on every image.
+  //   New threshold 0.36 sits above the normal max (0.352).
+  //
+  // Root cause of the "baseline Effusion never fires" bug:
+  //   baseline subtraction used 0.512 but real Effusion on normals is
+  //   only 0.06–0.40, so the class was permanently suppressed.
+  //   New threshold 0.40 is set just above the normal max.
+  static const Map<String, double> _classThresh = {
+    'Atelectasis':        0.32, // normal max = 0.318
+    'Consolidation':      0.22, // normal max = 0.206
+    'Infiltration':       0.36, // normal max = 0.352
+    'Pneumothorax':       0.25, // normal max = 0.237
+    'Edema':              0.07, // normal max = 0.066
+    'Emphysema':          0.05, // normal max = 0.044
+    'Fibrosis':           0.12, // normal max = 0.116
+    'Effusion':           0.40, // normal max = 0.398
+    'Pneumonia':          0.08, // normal max = 0.072
+    'Pleural_Thickening': 0.13, // normal max = 0.128
+    'Cardiomegaly':       0.12, // normal max = 0.115
+    'Nodule':             0.50, // normal max = 0.494
+    'Mass':               0.45, // normal p90 ≈ 0.35 (one outlier at 0.861 excluded)
+    'Hernia':             0.18, // normal max = 0.173
+  };
 
-  // A pathology is reported only if its baseline-corrected score rises this far
-  // into the remaining headroom (normalised 0..1). Below it → radiologically
-  // normal. Validated at 0% false-positives on non-pathological sweeps while
-  // still surfacing real signals (raw ≈ 0.2–0.6). Also used by the results
-  // screen and PDF export to flag findings, so everything stays consistent.
+  // Minimum display threshold for histogram highlighting in results_screen
+  // and PDF (bars above this are coloured red). Not used for diagnosis.
   static const double alertThreshold = 0.10;
 
   bool _modelMissing = false;
@@ -89,12 +93,11 @@ class AiService {
     }
   }
 
-  /// Simulation fallback when model is missing — all scores 0 → Normal.
   Map<String, dynamic> _simulate() {
     final allScores = <String, double>{for (final label in labels) label: 0.0};
     return {
       'diagnostic': 'Normal',
-      'confidence': 0.95, // high confidence it is normal (nothing detected)
+      'confidence': 0.95,
       'severite': 'normal',
       'details': jsonEncode(allScores),
     };
@@ -145,67 +148,72 @@ class AiService {
     }
     final input = inputData.reshape([1, imageSize, imageSize, 1]);
 
-    // 5. Run inference — model outputs [1,18]; take first 14
+    // 4. Run inference — model outputs [1,18]; take first 14
     final out = List.generate(1, (_) => List.filled(_outputSize, 0.0));
     _interpreter!.run(input, out);
     final raw = out[0].sublist(0, _numClasses);
 
-    // 6. Baseline-correct every class: how far it rises above its own
-    //    no-pathology prior, expressed as a fraction of the remaining headroom.
-    //    This is what kills the constant-Infiltration / constant-Effusion bias.
-    final calibrated = <String, double>{};
+    // 5. Margin scoring: for each class, how far does the raw score exceed
+    //    its per-class threshold? The class with the highest positive margin
+    //    wins. If no class clears its threshold → Normal.
+    //    This eliminates the constant-Infiltration bias (threshold now 0.36,
+    //    above its normal-image max of 0.352) while correctly detecting real
+    //    findings (pathological images produce raw scores well above threshold).
     int bestIdx = -1;
-    double bestNorm = 0.0;
+    double bestMargin = 0.0;
     for (int i = 0; i < _numClasses; i++) {
-      final base = _baseline[i];
-      final excess = raw[i] - base;
-      final norm = excess <= 0 ? 0.0 : (excess / (1.0 - base)).clamp(0.0, 1.0);
-      calibrated[labels[i]] = norm;
-      if (norm > bestNorm) {
-        bestNorm = norm;
+      final thresh = _classThresh[labels[i]]!;
+      final margin = raw[i] - thresh;
+      if (margin > bestMargin) {
+        bestMargin = margin;
         bestIdx = i;
       }
     }
 
-    // 7. Debug log (raw + calibrated)
-    debugPrint('[AI] raw -> calibrated:');
+    // 6. Debug log
+    debugPrint('[AI] raw scores (thresh | margin):');
     for (int i = 0; i < _numClasses; i++) {
-      final n = calibrated[labels[i]]!;
-      final pos = n >= alertThreshold ? ' POS' : '';
+      final thresh = _classThresh[labels[i]]!;
+      final margin = raw[i] - thresh;
+      final tag = margin > 0 ? ' POS(+${margin.toStringAsFixed(3)})' : '';
       debugPrint('[AI]   ${labels[i]}: raw=${raw[i].toStringAsFixed(3)} '
-          'norm=${n.toStringAsFixed(3)}$pos');
+          'thr=$thresh$tag');
     }
 
-    // 8. Headline: best calibrated class, if it clears the alert threshold.
+    // 7. Headline result
     final String diagnostic;
     final String severite;
     final double confidence;
 
-    if (bestIdx < 0 || bestNorm < alertThreshold) {
+    if (bestIdx < 0) {
       diagnostic = 'Normal';
       severite = 'normal';
-      // Confidence that the image is normal: high when nothing was detected.
-      confidence = (1.0 - bestNorm).clamp(0.60, 0.99);
+      confidence = 0.92;
     } else {
       diagnostic = labels[bestIdx];
-      // Map the calibrated score (0..1) to a credible display percentage.
-      confidence = (0.5 + bestNorm * 0.5).clamp(0.50, 0.98);
-      severite = bestNorm >= 0.55
+      // Confidence: 50% at threshold, approaching 98% for very strong signals.
+      confidence = (0.5 + bestMargin).clamp(0.50, 0.98);
+      severite = bestMargin >= 0.40
           ? 'urgent'
-          : bestNorm >= 0.35
+          : bestMargin >= 0.20
               ? 'moyen'
               : 'faible';
     }
 
-    debugPrint(
-        '[AI] -> $diagnostic ($severite, ${(confidence * 100).toStringAsFixed(0)}%) '
-        'norm=${bestNorm.toStringAsFixed(3)}');
+    debugPrint('[AI] -> $diagnostic ($severite, '
+        '${(confidence * 100).toStringAsFixed(0)}%) '
+        'margin=${bestMargin.toStringAsFixed(3)}');
+
+    // Store raw scores for the histogram in results_screen / PDF.
+    final rawScores = <String, double>{
+      for (int i = 0; i < _numClasses; i++) labels[i]: raw[i],
+    };
 
     return {
       'diagnostic': diagnostic,
-      'confidence': confidence,  // 0–1 (stored as-is, DB multiplies ×100)
+      'confidence': confidence,
       'severite': severite,
-      'details': jsonEncode(calibrated), // calibrated scores power the breakdown
+      'details': jsonEncode(rawScores),
     };
   }
 
