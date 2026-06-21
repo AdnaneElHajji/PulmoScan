@@ -378,7 +378,9 @@ class PdfService {
                     ),
                     pw.SizedBox(width: 8),
                     pw.Text(
-                      '${result.confidence.toStringAsFixed(0)}%',
+                      result.diagnostic == 'Normal'
+                          ? '✓'
+                          : '${result.confidence.toStringAsFixed(0)}%',
                       style: pw.TextStyle(
                         fontSize: 13,
                         fontWeight: pw.FontWeight.bold,

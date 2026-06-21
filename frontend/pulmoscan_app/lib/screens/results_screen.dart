@@ -107,7 +107,8 @@ class _ResultsScreenState extends State<ResultsScreen>
       'Date    : ${_fmt(r.dateAnalyse)}',
       '',
       'DIAGNOSTIC PRINCIPAL : ${r.diagnostic}',
-      'Confiance            : ${r.confidence.toStringAsFixed(0)}%',
+      if (r.diagnostic != 'Normal')
+        'Confiance            : ${r.confidence.toStringAsFixed(0)}%',
       'Sévérité             : ${V4.severityLabel(r.severite)}',
       '',
       if (findings.isNotEmpty) ...[
@@ -355,12 +356,14 @@ class _Header extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Confidence
+                  // Confidence (hidden for Normal — nothing detected)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${result.confidence.toStringAsFixed(0)}%',
+                        result.diagnostic == 'Normal'
+                            ? '✓'
+                            : '${result.confidence.toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
@@ -369,9 +372,10 @@ class _Header extends StatelessWidget {
                           fontFamily: 'monospace',
                         ),
                       ),
-                      const Text(
-                        'confiance',
-                        style: TextStyle(fontSize: 10, color: V4.inkMuted),
+                      Text(
+                        result.diagnostic == 'Normal' ? 'sain' : 'confiance',
+                        style: const TextStyle(
+                            fontSize: 10, color: V4.inkMuted),
                       ),
                     ],
                   ),
@@ -623,9 +627,13 @@ class _ResultsTabState extends State<_ResultsTab>
       );
     }
 
-    final top = widget.scores.first;
-    final topColor = _color(top.key);
-    final confNorm = widget.result.confidence / 100;
+    final isNormal = widget.result.diagnostic == 'Normal';
+    // Headline must reflect the actual diagnosis, not the highest histogram
+    // bar (on a normal image every bar is 0 and .first would be arbitrary).
+    final headline = widget.result.diagnostic;
+    final topColor =
+        isNormal ? V4.severityColor('normal') : _color(headline);
+    final confNorm = isNormal ? 1.0 : widget.result.confidence / 100;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -667,7 +675,7 @@ class _ResultsTabState extends State<_ResultsTab>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      top.key,
+                      isNormal ? 'Normal' : headline,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -698,8 +706,9 @@ class _ResultsTabState extends State<_ResultsTab>
                   size: 90,
                   progress: confNorm * _ctrl.value,
                   color: topColor,
-                  label:
-                      '${(widget.result.confidence * _ctrl.value).toStringAsFixed(0)}%',
+                  label: isNormal
+                      ? '✓'
+                      : '${(widget.result.confidence * _ctrl.value).toStringAsFixed(0)}%',
                 ),
               ),
             ],
@@ -1115,8 +1124,9 @@ class _RapportTabState extends State<_RapportTab> {
                 '${widget.patient.age} ans · ${widget.patient.genre}'),
             _row('Date', widget.fmt(widget.result.dateAnalyse)),
             _row('Diagnostic', widget.result.diagnostic),
-            _row('Confiance',
-                '${widget.result.confidence.toStringAsFixed(0)}%'),
+            if (widget.result.diagnostic != 'Normal')
+              _row('Confiance',
+                  '${widget.result.confidence.toStringAsFixed(0)}%'),
             _row('Modèle', 'DenseNet121 · NIH ChestX-ray14'),
           ],
         ),
