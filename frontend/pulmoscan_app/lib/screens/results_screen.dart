@@ -96,7 +96,7 @@ class _ResultsScreenState extends State<ResultsScreen>
     final r = _result;
     if (r == null) return;
     final findings = _scores
-        .where((e) => e.value > (AiService.classThresh[e.key] ?? 0.20))
+        .where((e) => e.value > AiService.alertThreshold)
         .map((e) => '  • ${e.key}: ${(e.value * 100).toStringAsFixed(1)}%')
         .join('\n');
     final lines = <String>[
@@ -1071,7 +1071,7 @@ class _RapportTabState extends State<_RapportTab> {
   @override
   Widget build(BuildContext context) {
     final alerts = widget.scores
-        .where((e) => e.value > (AiService.classThresh[e.key] ?? 0.20))
+        .where((e) => e.value > AiService.alertThreshold)
         .toList();
 
     return ListView(

@@ -109,7 +109,7 @@ class PdfService {
 
     final sevColor = _severityColor(result.severite);
     final sevLabel = _severityLabel(result.severite);
-    final alerts   = scores.where((e) => e.value > (AiService.classThresh[e.key] ?? 0.20)).toList();
+    final alerts   = scores.where((e) => e.value > AiService.alertThreshold).toList();
     final recs     = _recommendations(result.severite);
     final topColor = scores.isNotEmpty ? _pathColor(scores.first.key) : _teal;
     final now      = result.dateAnalyse;
