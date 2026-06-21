@@ -49,20 +49,20 @@ class AiService {
   //   Nodule        0.42 — lowered from 0.50: normals peak at 0.494 but only one
   //                         outlier; real NIH Nodule images score higher
   static const Map<String, double> _classThresh = {
-    'Atelectasis':        0.22,
-    'Consolidation':      0.15,
-    'Infiltration':       0.38,
-    'Pneumothorax':       0.18,
-    'Edema':              0.07,
-    'Emphysema':          0.05,
-    'Fibrosis':           0.09,
-    'Effusion':           0.30,
-    'Pneumonia':          0.08,
-    'Pleural_Thickening': 0.10,
-    'Cardiomegaly':       0.23,
-    'Nodule':             0.42,
-    'Mass':               0.42,
-    'Hernia':             0.12,
+    'Atelectasis':        0.12,
+    'Consolidation':      0.05,
+    'Infiltration':       0.35, // high: normal images reach 0.35, keep above
+    'Pneumothorax':       0.08,
+    'Edema':              0.03,
+    'Emphysema':          0.03,
+    'Fibrosis':           0.07,
+    'Effusion':           0.12,
+    'Pneumonia':          0.04,
+    'Pleural_Thickening': 0.06,
+    'Cardiomegaly':       0.10,
+    'Nodule':             0.18,
+    'Mass':               0.20,
+    'Hernia':             0.04,
   };
 
   // Minimum normalised-margin for a finding to appear in the text report
