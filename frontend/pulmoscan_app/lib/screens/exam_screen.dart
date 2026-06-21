@@ -182,7 +182,6 @@ class _ExamScreenState extends State<ExamScreen> {
       });
 
       if (mounted) {
-        setState(() => _isAnalyzing = false);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

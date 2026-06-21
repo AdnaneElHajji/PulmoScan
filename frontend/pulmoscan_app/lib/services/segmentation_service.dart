@@ -13,7 +13,11 @@ class SegmentationResult {
 }
 
 class SegmentationService {
-  static Interpreter? _interpreter;
+  static final SegmentationService _instance = SegmentationService._internal();
+  factory SegmentationService() => _instance;
+  SegmentationService._internal();
+
+  Interpreter? _interpreter;
 
   Future<Interpreter> _getInterpreter() async {
     _interpreter ??=
@@ -36,7 +40,7 @@ class SegmentationService {
         256,
         (y) => List.generate(
           256,
-          (x) => [resized.getPixel(x, y).r / 255.0],
+          (x) { final p = resized.getPixel(x, y); return [(0.299 * p.r + 0.587 * p.g + 0.114 * p.b) / 255.0]; },
         ),
       ),
     );

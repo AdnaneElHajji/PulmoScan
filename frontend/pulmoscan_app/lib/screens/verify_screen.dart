@@ -4,6 +4,7 @@ import '../theme/v4_theme.dart';
 import '../widgets/aperture_mark.dart';
 import '../services/auth_service.dart';
 import '../l10n/strings.dart';
+import 'login.dart';
 
 class VerifyScreen extends StatefulWidget {
   final String email;
@@ -55,7 +56,16 @@ class _VerifyScreenState extends State<VerifyScreen> {
             content: Text(S.accountCreated),
           ),
         );
-        Navigator.popUntil(context, (r) => r.isFirst);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LoginPageExact(
+              onLogin: (ctx) =>
+                  Navigator.pushNamedAndRemoveUntil(ctx, '/app', (_) => false),
+            ),
+          ),
+          (_) => false,
+        );
       }
     } catch (e) {
       setState(() =>

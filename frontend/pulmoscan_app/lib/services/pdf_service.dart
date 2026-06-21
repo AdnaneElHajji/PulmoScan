@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/patient.dart';
 import '../models/result.dart';
+import 'ai_service.dart';
 
 // ── Color palette (mirrors V4 theme) ─────────────────────────────────────────
 const _surface  = PdfColor(0.075, 0.102, 0.165);   // #131A2A
@@ -108,7 +109,7 @@ class PdfService {
 
     final sevColor = _severityColor(result.severite);
     final sevLabel = _severityLabel(result.severite);
-    final alerts   = scores.where((e) => e.value > 0.5).toList();
+    final alerts   = scores.where((e) => e.value > (AiService.classThresh[e.key] ?? 0.20)).toList();
     final recs     = _recommendations(result.severite);
     final topColor = scores.isNotEmpty ? _pathColor(scores.first.key) : _teal;
     final now      = result.dateAnalyse;

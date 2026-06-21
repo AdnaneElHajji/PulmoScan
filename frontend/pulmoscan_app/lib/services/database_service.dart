@@ -31,6 +31,7 @@ class DatabaseService {
       version: 4,
       onCreate: _createTables,
       onUpgrade: (db, oldVersion, newVersion) async {
+        await _createTables(db, newVersion);
         await _seedDemoPatients(db);
         await _seedDemoExams(db);
       },
@@ -141,9 +142,9 @@ class DatabaseService {
     final confidences = [0.87, 0.92, 0.78];
     final severites = ['modere', 'severe', 'faible']; // V4 theme tokens
     final details = [
-      'Hyperinflation pulmonaire bilatérale, compatible avec un emphysème centro-lobulaire. Suivi pneumologique recommandé.',
-      'Opacité alvéolaire lobaire inférieure droite évocatrice de pneumonie bactérienne. Antibiothérapie urgente recommandée.',
-      'Petit épanchement pleural droit de faible abondance. Surveillance clinique et radiologique à 4 semaines.',
+      jsonEncode({'Emphysema': 0.87, 'Atelectasis': 0.12, 'Effusion': 0.05}),
+      jsonEncode({'Pneumonia': 0.92, 'Consolidation': 0.61, 'Infiltration': 0.34}),
+      jsonEncode({'Effusion': 0.78, 'Atelectasis': 0.22, 'Cardiomegaly': 0.09}),
     ];
     final daysAgo = [28, 12, 5];
 
