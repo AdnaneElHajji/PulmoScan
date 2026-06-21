@@ -297,6 +297,7 @@ class _MainNavigationState extends State<MainNavigation> {
         backgroundColor: V4.teal,
         foregroundColor: V4.bg,
         elevation: 0,
+        shape: const CircleBorder(),
         child: const Icon(Icons.add, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

@@ -559,11 +559,15 @@ class _RegisterScreenCompleteState extends State<RegisterScreenComplete> {
 
       try {
         final authService = AuthService();
+        final email = _emailController.text.trim();
+        final password = _passwordController.text;
         await authService.register(
           name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
+          email: email,
+          password: password,
         );
+        // Establish session immediately so the user lands in the app logged in
+        await authService.login(email, password);
 
         widget.onRegisterComplete(true);
       } catch (e) {

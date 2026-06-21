@@ -132,7 +132,6 @@ class V4 {
         backgroundColor: teal,
         foregroundColor: bg,
         elevation: 0,
-        shape: CircleBorder(),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(color: teal),
       textSelectionTheme: const TextSelectionThemeData(cursorColor: teal),

@@ -165,8 +165,9 @@ class AiService {
         bestIdx = i;
       }
     }
-    // Fallback: if all reliable scores < 0.04, pick overall best
-    if (bestIdx < 0 || bestRaw < 0.04) {
+    // Fallback: if no reliable class clears its threshold, pick overall best
+    final minThresh = classThresh.values.reduce((a, b) => a < b ? a : b);
+    if (bestIdx < 0 || bestRaw < minThresh) {
       for (int i = 0; i < labels.length; i++) {
         if (raw[i] > bestRaw) { bestRaw = raw[i]; bestIdx = i; }
       }
@@ -176,19 +177,27 @@ class AiService {
     final String severite;
     final double confidence;
 
-    // True-positive scores on real NIH images range from ~0.05 to ~0.35.
-    // A score below 0.03 on the best reliable class means the image is
-    // radiologically normal (or the signal is too weak to report).
-    if (bestIdx < 0 || bestRaw < 0.03) {
+    // Report a pathology only if the best score clears that class's own
+    // calibrated threshold. This ensures the headline diagnosis is consistent
+    // with the per-class breakdown bars shown in the results screen.
+    final bestThreshold = bestIdx >= 0
+        ? (classThresh[labels[bestIdx]] ?? 0.10)
+        : 0.10;
+
+    if (bestIdx < 0 || bestRaw < bestThreshold) {
       diagnostic = 'Normal';
       severite = 'normal';
       confidence = bestRaw.clamp(0.0, 1.0);
     } else {
       diagnostic = labels[bestIdx];
-      // DenseNet sigmoid outputs cap around 0.35 on NIH images.
-      // Scale ×2.5 and floor at 55% so displayed confidence is credible.
-      confidence = (bestRaw * 2.5).clamp(0.55, 0.97);
-      severite = bestRaw >= 0.20 ? 'urgent' : 'moyen';
+      // Scale raw score to a credible display percentage.
+      // NIH true-positive scores: ~bestThreshold–0.35.
+      confidence = (bestRaw * 2.5).clamp(0.50, 0.97);
+      severite = bestRaw >= 0.20
+          ? 'urgent'
+          : bestRaw >= 0.10
+              ? 'moyen'
+              : 'faible';
     }
 
     debugPrint(

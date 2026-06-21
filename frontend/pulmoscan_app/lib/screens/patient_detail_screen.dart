@@ -119,6 +119,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
         backgroundColor: V4.teal,
         foregroundColor: V4.bg,
         elevation: 0,
+        shape: const StadiumBorder(),
         icon: const Icon(Icons.add_rounded, size: 20),
         label: const Text('Nouvel examen',
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
