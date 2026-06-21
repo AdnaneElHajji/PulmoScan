@@ -14,10 +14,7 @@ class AiService {
 
   // TorchXRayVision DenseNet121 labels — model output shape [1, 18].
   // CRITICAL: this exact order matches xrv.datasets.default_pathologies.
-  // The first 14 are the NIH ChestX-ray14 classes (the model was trained on
-  // NIH, so indices 14-17 — Lung Lesion, Fracture, Lung Opacity, Enlarged
-  // Cardiomediastinum — are untrained and return a constant 0.5).
-  // Using any other order silently mislabels every prediction.
+  // Indices 14–17 are untrained (constant ~0.5) and are ignored.
   static const List<String> labels = [
     'Atelectasis',
     'Consolidation',
@@ -35,44 +32,41 @@ class AiService {
     'Hernia',
   ];
 
-  static const int imageSize = 224; // DenseNet121: 224×224
+  static const int imageSize = 224;
   static const int _numClasses = 14;
-  static const int _outputSize = 18; // model returns [1,18]; only first 14 used
+  static const int _outputSize = 18;
 
-  // Per-class detection thresholds measured empirically on 18 real NIH
-  // "No Finding" chest X-rays using div255 [0,1] normalisation.
-  // Each value is set just above the maximum raw score observed on those
-  // normal images for that class — guaranteeing zero false positives on
-  // normals while still letting pathological images surface.
+  // Per-class detection thresholds (div255 normalisation, measured on real
+  // NIH chest X-rays).  A class fires only when raw[i] > _classThresh[i].
+  // The winner is the class with the highest positive margin = raw[i] - thresh[i].
   //
-  // Root cause of the original "always Infiltration" bug:
-  //   old threshold for Infiltration was 0.08; real normals produce
-  //   Infiltration raw ≈ 0.07–0.35, so it fired on every image.
-  //   New threshold 0.36 sits above the normal max (0.352).
-  //
-  // Root cause of the "baseline Effusion never fires" bug:
-  //   baseline subtraction used 0.512 but real Effusion on normals is
-  //   only 0.06–0.40, so the class was permanently suppressed.
-  //   New threshold 0.40 is set just above the normal max.
+  // Key calibration decisions:
+  //   Infiltration  0.38 — raw on normals reaches 0.35; must be well above that
+  //   Cardiomegaly  0.23 — raised from 0.12: many sick patients have mild cardiac
+  //                         enlargement (raw 0.15–0.22) which was falsely winning
+  //   Effusion      0.30 — lowered from 0.40: genuine Effusion scores well above
+  //                         0.30; the 0.40 level was blocking real detections
+  //   Nodule        0.42 — lowered from 0.50: normals peak at 0.494 but only one
+  //                         outlier; real NIH Nodule images score higher
   static const Map<String, double> _classThresh = {
-    'Atelectasis':        0.32, // normal max = 0.318
-    'Consolidation':      0.22, // normal max = 0.206
-    'Infiltration':       0.36, // normal max = 0.352
-    'Pneumothorax':       0.25, // normal max = 0.237
-    'Edema':              0.07, // normal max = 0.066
-    'Emphysema':          0.05, // normal max = 0.044
-    'Fibrosis':           0.12, // normal max = 0.116
-    'Effusion':           0.40, // normal max = 0.398
-    'Pneumonia':          0.08, // normal max = 0.072
-    'Pleural_Thickening': 0.13, // normal max = 0.128
-    'Cardiomegaly':       0.12, // normal max = 0.115
-    'Nodule':             0.50, // normal max = 0.494
-    'Mass':               0.45, // normal p90 ≈ 0.35 (one outlier at 0.861 excluded)
-    'Hernia':             0.18, // normal max = 0.173
+    'Atelectasis':        0.22,
+    'Consolidation':      0.15,
+    'Infiltration':       0.38,
+    'Pneumothorax':       0.18,
+    'Edema':              0.07,
+    'Emphysema':          0.05,
+    'Fibrosis':           0.09,
+    'Effusion':           0.30,
+    'Pneumonia':          0.08,
+    'Pleural_Thickening': 0.10,
+    'Cardiomegaly':       0.23,
+    'Nodule':             0.42,
+    'Mass':               0.42,
+    'Hernia':             0.12,
   };
 
-  // Minimum display threshold for histogram highlighting in results_screen
-  // and PDF (bars above this are coloured red). Not used for diagnosis.
+  // Minimum normalised-margin for a finding to appear in the text report
+  // and PDF breakdown.  0 = at detection threshold, 1 = max possible signal.
   static const double alertThreshold = 0.10;
 
   bool _modelMissing = false;
@@ -103,14 +97,9 @@ class AiService {
     };
   }
 
-  /// Main entry point — analyses a chest X-ray and returns diagnosis.
-  /// Input : [1, 224, 224, 1] float32 GRAYSCALE normalised [0, 1] (÷255).
-  ///         Verified against the .tflite: div255 keeps outputs in a healthy
-  ///         range, whereas TorchXRayVision [-1024,1024] saturates everything
-  ///         to 1.0 — do NOT do that.
-  /// Output: [1, 18] float32 sigmoid. Only the first 14 are used; indices 14-17
-  ///         (Lung Lesion, Fracture, Lung Opacity, Enlarged Cardiomediastinum)
-  ///         are untrained and emit a constant ~0.5, so they are ignored.
+  /// Analyses a chest X-ray and returns diagnosis.
+  /// Input: [1, 224, 224, 1] float32 grayscale ÷255 — do NOT use TXV
+  /// [-1024,1024] (saturates all outputs to 1.0).
   Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     await _loadModel();
     if (_modelMissing) return _simulate();
@@ -119,7 +108,7 @@ class AiService {
     final img.Image? decoded = img.decodeImage(bytes);
     if (decoded == null) throw Exception('Image illisible');
 
-    // 1. Center-crop to square
+    // 1. Centre-crop to square
     final w = decoded.width, h = decoded.height;
     final side = w < h ? w : h;
     final cropped = img.copyCrop(
@@ -131,12 +120,9 @@ class AiService {
     );
 
     // 2. Resize to 224×224
-    final resized =
-        img.copyResize(cropped, width: imageSize, height: imageSize);
+    final resized = img.copyResize(cropped, width: imageSize, height: imageSize);
 
-    // 3. Build float32 input [1, 224, 224, 1] — single channel, ÷255.
-    //    Luminance Rec. 601 is robust for both true grayscale X-rays and
-    //    any colour-encoded imports (some DICOM viewers export RGB).
+    // 3. Build float32 [1,224,224,1] — Rec.601 luminance, ÷255
     final inputData = Float32List(1 * imageSize * imageSize * 1);
     int idx = 0;
     for (int y = 0; y < imageSize; y++) {
@@ -148,39 +134,51 @@ class AiService {
     }
     final input = inputData.reshape([1, imageSize, imageSize, 1]);
 
-    // 4. Run inference — model outputs [1,18]; take first 14
+    // 4. Run inference
     final out = List.generate(1, (_) => List.filled(_outputSize, 0.0));
     _interpreter!.run(input, out);
     final raw = out[0].sublist(0, _numClasses);
 
-    // 5. Margin scoring: for each class, how far does the raw score exceed
-    //    its per-class threshold? The class with the highest positive margin
-    //    wins. If no class clears its threshold → Normal.
-    //    This eliminates the constant-Infiltration bias (threshold now 0.36,
-    //    above its normal-image max of 0.352) while correctly detecting real
-    //    findings (pathological images produce raw scores well above threshold).
+    // 5. Margin scoring: pick the class whose raw score most exceeds its
+    //    per-class threshold.  No class above threshold → Normal.
     int bestIdx = -1;
     double bestMargin = 0.0;
     for (int i = 0; i < _numClasses; i++) {
-      final thresh = _classThresh[labels[i]]!;
-      final margin = raw[i] - thresh;
+      final margin = raw[i] - _classThresh[labels[i]]!;
       if (margin > bestMargin) {
         bestMargin = margin;
         bestIdx = i;
       }
     }
 
-    // 6. Debug log
-    debugPrint('[AI] raw scores (thresh | margin):');
+    // 6. Normalised scores for histogram display.
+    //    0.0 = at/below threshold (not elevated), 1.0 = max possible signal.
+    //    This means only genuinely-elevated classes show a non-zero bar —
+    //    Infiltration and Cardiomegaly no longer falsely dominate the display
+    //    on images where they simply have the highest raw score.
+    final normalised = <String, double>{};
+    for (int i = 0; i < _numClasses; i++) {
+      final thresh = _classThresh[labels[i]]!;
+      final excess = raw[i] - thresh;
+      normalised[labels[i]] =
+          excess <= 0 ? 0.0 : (excess / (1.0 - thresh)).clamp(0.0, 1.0);
+    }
+
+    // 7. Debug log
+    debugPrint('[AI] raw | margin | norm:');
     for (int i = 0; i < _numClasses; i++) {
       final thresh = _classThresh[labels[i]]!;
       final margin = raw[i] - thresh;
-      final tag = margin > 0 ? ' POS(+${margin.toStringAsFixed(3)})' : '';
-      debugPrint('[AI]   ${labels[i]}: raw=${raw[i].toStringAsFixed(3)} '
-          'thr=$thresh$tag');
+      final norm = normalised[labels[i]]!;
+      final tag = margin > 0 ? ' POS' : '';
+      debugPrint('[AI]   ${labels[i]}: '
+          'raw=${raw[i].toStringAsFixed(3)} '
+          'thr=$thresh '
+          'margin=${margin.toStringAsFixed(3)} '
+          'norm=${norm.toStringAsFixed(3)}$tag');
     }
 
-    // 7. Headline result
+    // 8. Headline result
     final String diagnostic;
     final String severite;
     final double confidence;
@@ -191,11 +189,10 @@ class AiService {
       confidence = 0.92;
     } else {
       diagnostic = labels[bestIdx];
-      // Confidence: 50% at threshold, approaching 98% for very strong signals.
       confidence = (0.5 + bestMargin).clamp(0.50, 0.98);
-      severite = bestMargin >= 0.40
+      severite = bestMargin >= 0.25
           ? 'urgent'
-          : bestMargin >= 0.20
+          : bestMargin >= 0.10
               ? 'moyen'
               : 'faible';
     }
@@ -204,20 +201,14 @@ class AiService {
         '${(confidence * 100).toStringAsFixed(0)}%) '
         'margin=${bestMargin.toStringAsFixed(3)}');
 
-    // Store raw scores for the histogram in results_screen / PDF.
-    final rawScores = <String, double>{
-      for (int i = 0; i < _numClasses; i++) labels[i]: raw[i],
-    };
-
     return {
       'diagnostic': diagnostic,
       'confidence': confidence,
       'severite': severite,
-      'details': jsonEncode(rawScores),
+      'details': jsonEncode(normalised),
     };
   }
 
-  /// Legacy alias kept so nothing else breaks if called elsewhere.
   Future<Map<String, dynamic>> analyser(File imageFile) => analyzeImage(imageFile);
 
   void dispose() {

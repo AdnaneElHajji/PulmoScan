@@ -432,7 +432,7 @@ class PdfService {
           ...scores.map((e) {
             final c = _pathColor(e.key);
             final pct = e.value * 100;
-            final isAlert = e.value > 0.5;
+            final isAlert = e.value > AiService.alertThreshold;
             return pw.Padding(
               padding: const pw.EdgeInsets.only(bottom: 7),
               child: pw.Row(
